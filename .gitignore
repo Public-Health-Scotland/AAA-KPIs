@@ -12,9 +12,9 @@ testing.R
 # packrat library folder (automatically added due to packract being initialised)
 packrat/lib*/
 # 'data' folder #
-Temp/
-Output/
-Historical/
+temp/
+output/
+historical/
 data/
 archive/
 shiny app admin/
