@@ -1,4 +1,33 @@
+# they include API keys
+cookie-control.js
+*deploy*.R
+create_credentials.R
+#Not needed
+rsconnect
 .Rproj.user
 .Rhistory
-.RData
 .Ruserdata
+*.Rproj
+testing.R
+# packrat library folder (automatically added due to packract being initialised)
+packrat/lib*/
+# 'data' folder #
+Temp/
+Output/
+Historical/
+data/
+archive/
+shiny app admin/
+# Common text files that may contain data #
+*.[cC][sS][vV]
+*.[tT][xX][tT]
+# Excel files #
+*.[xX][lL][sS][xXmMtT]
+*.xlsx
+# SPSS formats #
+*.[sS][aA][vV]
+# R data files #
+*.[rR][dD][aA][tT][aA]
+*.[rR][dD][sS]
+*.[rR][dD][aA]
+*.[fF][sS][tT]
