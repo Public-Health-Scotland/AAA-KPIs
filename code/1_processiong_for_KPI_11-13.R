@@ -55,8 +55,7 @@ aaa_extract <- read_rds(paste0(extract_fpath, "aaa_extract_202209.rds"))
 # Include records where men were tested only (ie. result of +ve, -ve or
 # non-visualisation)
 last_results_initial_screens <- aaa_extract %>%
-  filter(screen_type %in% c("01", "03")) %>%
-  filter(screen_result %in% c("01", "02", "04"))
+  filter(screen_type %in% c("01", "03"))
 
 
 ### Step 3 : Create derived variables ----
@@ -64,34 +63,34 @@ last_results_initial_screens <- aaa_extract %>%
 ####### Remove once moved to initial processing scripts ####
 # # Create 'size_group' variable
 
-# # Export very large measurements as they might be errors
-# 
-# # Derive measurements for the PHS screen result categories
-# # A measurement category is derived for definitive screen results i.e. positive,
-# # negative, external postive or external negative results unless the follow up
-# # recommendation is immediate recall ('05').
-# # This means a measurement category is not derived for technical fails, non
-# # visualisations and immediate recalls.
-# last_results_initial_screens <- last_results_initial_screens %>%
-#   mutate(isd_aaa_size = case_when(screen_result %in% c("01", "02", "05", "06") &
-#                                     (followup_recom != "05" |
-#                                        is.na(followup_recom)) ~ largest_measure)) %>%
-#   mutate(isd_aaa_size_group = case_when(isd_aaa_size >= 0 &
-#                                           isd_aaa_size <= 2.9 ~ "negative",
-#                                         isd_aaa_size >= 3 &
-#                                           isd_aaa_size <= 4.4 ~ "small",
-#                                         isd_aaa_size >= 4.5 &
-#                                           isd_aaa_size <= 5.4 ~ "medium",
-#                                         isd_aaa_size >= 5.5 &
-#                                           isd_aaa_size <= 10.5 ~ "large",
-#                                         isd_aaa_size >= 10.6 ~
-#                                           "very large error"))
-# 
-# # Assume these have been investigated by the checking script
-# 
-# last_results_initial_screens <- last_results_initial_screens %>%
-#   mutate(isd_aaa_size_group = recode(isd_aaa_size_group,
-#                                      "very large error" = "large"))
+# Export very large measurements as they might be errors
+
+# Derive measurements for the PHS screen result categories
+# A measurement category is derived for definitive screen results i.e. positive,
+# negative, external postive or external negative results unless the follow up
+# recommendation is immediate recall ('05').
+# This means a measurement category is not derived for technical fails, non
+# visualisations and immediate recalls.
+last_results_initial_screens <- last_results_initial_screens %>%
+  mutate(isd_aaa_size = case_when(screen_result %in% c("01", "02", "05", "06") &
+                                    (followup_recom != "05" |
+                                       is.na(followup_recom)) ~ largest_measure)) %>%
+  mutate(isd_aaa_size_group = case_when(isd_aaa_size >= 0 &
+                                          isd_aaa_size <= 2.9 ~ "negative",
+                                        isd_aaa_size >= 3 &
+                                          isd_aaa_size <= 4.4 ~ "small",
+                                        isd_aaa_size >= 4.5 &
+                                          isd_aaa_size <= 5.4 ~ "medium",
+                                        isd_aaa_size >= 5.5 &
+                                          isd_aaa_size <= 10.5 ~ "large",
+                                        isd_aaa_size >= 10.6 ~
+                                          "very large error"))
+
+# Assume these have been investigated by the checking script
+
+last_results_initial_screens <- last_results_initial_screens %>%
+  mutate(isd_aaa_size_group = recode(isd_aaa_size_group,
+                                     "very large error" = "large"))
 ############# End of removed protion #####
 
 
@@ -104,18 +103,46 @@ last_results_initial_screens <- aaa_extract %>%
 
 first_offer_dates <- last_results_initial_screens %>%
   filter(!is.na(date_offer_sent)) %>%
-  select(upi, date_offer_sent) %>%
   group_by(upi) %>%
   mutate(
     first_offer_flag = if_else(date_offer_sent == min(date_offer_sent), 1, 0)
     ) %>%
   ungroup() %>%
   filter(first_offer_flag == 1) %>%
-  select(-first_offer_flag) %>%
+  select(upi, date_first_offer_sent = date_offer_sent) %>%
   distinct()
-  
+
 
 ### Step 5 : Create a first screening result object ----
+
+first_result <- last_results_initial_screens %>%
+  filter(!is.na(date_offer_sent)) %>%
+  filter(screen_result != "03") %>%
+  filter(!is.na(screen_result))
+
+first_result %>%
+  arrange(upi, date_screen) %>%
+  group_by(upi) %>%
+  mutate(
+    results = n(),
+    first_screen_flag = if_else(date_screen == min(date_screen), 1, 0)
+  ) %>%
+  ungroup() %>%
+  filter(first_screen_flag == 1) %>%
+  group_by(upi) %>%
+  mutate(
+    multiple_first_screens = if_else(n() == 1, 0, 1)
+  ) %>%
+  ungroup() %>%
+  filter(multiple_first_screens == 1) %>%
+  distinct() %>%
+  View()
+
+first_offer_first_result <- first_offer %>%
+  left_join() %>%
+  select(upi, date_first_offer_sent, )
+
+
 
 
 
