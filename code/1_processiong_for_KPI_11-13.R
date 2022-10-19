@@ -95,8 +95,29 @@ last_results_initial_screens <- aaa_extract %>%
 ############# End of removed protion #####
 
 
+# potentially output a file here. (probably not)
+
+### Step 4 : Create a first offer sent object ----
+# Check for the earliest 'date_offer_sent' for each upi and filter out 
+# later offers.
+# Create an object with each upi and its earliest offer date
+
+first_offer_dates <- last_results_initial_screens %>%
+  filter(!is.na(date_offer_sent)) %>%
+  select(upi, date_offer_sent) %>%
+  group_by(upi) %>%
+  mutate(
+    first_offer_flag = if_else(date_offer_sent == min(date_offer_sent), 1, 0)
+    ) %>%
+  ungroup() %>%
+  filter(first_offer_flag == 1) %>%
+  select(-first_offer_flag) %>%
+  distinct()
+  
+
+### Step 5 : Create a first screening result object ----
 
 
 
-
+### Step 5 : Create a first screening results object ----
 
