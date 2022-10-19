@@ -115,12 +115,17 @@ first_offer_dates <- last_results_initial_screens %>%
 
 ### Step 5 : Create a first screening result object ----
 
+####
+# There is a problem here where if there are multiple records with the same
+# upi and screen date then spss just picks the one that happens to be first
+####
+
 first_result <- last_results_initial_screens %>%
   filter(!is.na(date_offer_sent)) %>%
   filter(screen_result != "03") %>%
   filter(!is.na(screen_result))
 
-first_result %>%
+first_result <- first_result %>%
   arrange(upi, date_screen) %>%
   group_by(upi) %>%
   mutate(
@@ -130,17 +135,19 @@ first_result %>%
   ungroup() %>%
   filter(first_screen_flag == 1) %>%
   group_by(upi) %>%
-  mutate(
-    multiple_first_screens = if_else(n() == 1, 0, 1)
-  ) %>%
-  ungroup() %>%
-  filter(multiple_first_screens == 1) %>%
-  distinct() %>%
-  View()
+  select(upi, results,
+         FT_date_screen = date_screen,
+         FT_screen_type = screen_type,
+         FT_screen_exep = screen_exep,
+         FT_screen_result = screen_result,
+         isd_aaa_size_group) %>%
+  distinct()
+
+
 
 first_offer_first_result <- first_offer %>%
   left_join() %>%
-  select(upi, date_first_offer_sent, )
+  select(upi, date_first_offer_sent, isdaaa,results)
 
 
 
