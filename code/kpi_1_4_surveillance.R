@@ -27,6 +27,10 @@ month <- '202209' # this may not be needed
 
 aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/"))
 
+# Create not in
+
+`%!in%` <- Negate(`%in%`)
+
 ### 2 - Read in Files ---
 
 # update to take aaa_extract_path
@@ -58,7 +62,7 @@ aaa_extract %<>%
          hbres,pat_elig,att_dna,screen_type,screen_exep,result_verified,result_outcome) %>%
   mutate(screen_n = ifelse(screen_result %in% c("01","02","04") &
                                 (screen_type %in% c("02","04")),1,0)) %>% 
-  mutate(largest_measure = replace(largest_measure,is.na(largest_measure),0))
+  mutate(largest_measure = replace(largest_measure,is.na(largest_measure),0)) %>% 
   mutate(fin_year = extract_fin_year(as.Date(date_screen)),# possibly can be removed once aaa_extract is updted
          month = format(as.Date(date_screen, format = "%Y-%m-%d"),"%m"),
          qtr = case_when(month %in% c('04','05','06') ~ 1,
@@ -79,11 +83,17 @@ aaa_extract %<>%
 aaa_extract %>% filter(screen_n == 1) %>% nrow() # 18,647 screened
 View(aaa_extract %>% get_dupes()) # 1,386 duplicate rows - these should be removed later 
 
-screening_result_follow_up_summary <- aaa_extract %>%
-  filter(screen_n == 1) %>% 
-  group_by(followup_recom,screen_result) %>%
-  summarise(screen_n = sum(screen_n))
-  
+# check finiancial years
+aaa_extract %>% group_by(fin_year) %>% 
+  summarise(n())
+
+# remove pre-2012/13 and future records
+aaa_extract %<>%
+  filter(fin_year %in% c("2012/13","2013/14","2014/15",
+                         "2015/16","2016/17","2017/18",
+                         "2018/19","2019/20","2020/21",
+                         "2021/22","2022/23"))
+
 
 ### 4 - 12 Month Surveillance Uptake ---
 
