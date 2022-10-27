@@ -30,19 +30,23 @@ aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/out
 ### 2 - Read in Files ---
 
 # update to take aaa_extract_path
-aaa_extract <- readRDS("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/aaa_extract_202209.rds")
+aaa_extract <- readRDS(paste0(aaa_extracts_path,"aaa_extract_202209.rds"))
 
-aaa_exclusions <- readRDS("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/aaa_exclusions_202209.rds")
+aaa_exclusions <- readRDS(paste0(aaa_extracts_path,"aaa_exclusions_202209.rds"))
 
 ### 3 - Format Tables ---
+
+## 3.1 - Check Exclusions --
 
 # check number of screened records
 aaa_exclusions %>% nrow()
 # 133707 rows
 
+# check duplicates in aaa_exclusions
 View(aaa_exclusions %>% get_dupes())
 # 65 duplicate rows but these are not removed in SPSS so keeping for now
-  
+
+## 3.2 - Check and filter extract
 
 # aaa_extract remove columns
 # assign numerator to those screened
@@ -54,28 +58,32 @@ aaa_extract %<>%
          hbres,pat_elig,att_dna,screen_type,screen_exep,result_verified,result_outcome) %>%
   mutate(screen_n = ifelse(screen_result %in% c("01","02","04") &
                                 (screen_type %in% c("02","04")),1,0)) %>% 
-  mutate(fin_year = extract_fin_year(as.Date(date_screen)),
+  mutate(largest_measure = replace(largest_measure,is.na(largest_measure),0))
+  mutate(fin_year = extract_fin_year(as.Date(date_screen)),# possibly can be removed once aaa_extract is updted
          month = format(as.Date(date_screen, format = "%Y-%m-%d"),"%m"),
          qtr = case_when(month %in% c('04','05','06') ~ 1,
                          month %in% c('07','08','09') ~ 2,
                          month %in% c('10','11','12') ~ 3,
-                         month %in% c('01','02','03') ~ 4),
+                         month %in% c('01','02','03') ~ 4),# possibly can be removed once aaa_extract is updated
         fin_month = case_when(month %in% c('04','05','06','07','08','09','10','11','12') ~ as.numeric(month)-3,
                               month == '03' ~ 12,
                               month == '02' ~ 11,
-                              month == '01' ~ 10)) %>% 
+                              month == '01' ~ 10)) %>%
   select(-month) %>% 
   filter(!is.na(fin_year)) %>% 
   glimpse()
 
 # 485,728 rows sept 2022
 
-# check number of screened records
-aaa_exclusions %>% nrow()
-#
-aaa_extract %>% filter(screen_n == 1) %>% nrow()
+# check number of screened
+aaa_extract %>% filter(screen_n == 1) %>% nrow() # 18,647 screened
+View(aaa_extract %>% get_dupes()) # 1,386 duplicate rows - these should be removed later 
 
-# 18,647 screened
+screening_result_follow_up_summary <- aaa_extract %>%
+  filter(screen_n == 1) %>% 
+  group_by(followup_recom,screen_result) %>%
+  summarise(screen_n = sum(screen_n))
+  
 
 ### 4 - 12 Month Surveillance Uptake ---
 
