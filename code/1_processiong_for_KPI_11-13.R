@@ -136,7 +136,7 @@ first_result <- first_result %>%
   ungroup() %>%
   filter(first_screen_flag == 1) %>%
   select(upi, results,
-         FT_date_screen = date_screen,
+         FT_screen_date = date_screen,
          FT_screen_type = screen_type,
          FT_screen_exep = screen_exep,
          FT_screen_result = screen_result,
@@ -169,13 +169,10 @@ first_result <- first_result %>%
   distinct()
 
 
-first_offer_first_result <- first_offer %>%
-  left_join() %>%
-  select(upi, date_first_offer_sent, isdaaa,results)
+first_offer_first_result <- first_offer_dates %>%
+  left_join(first_result, by = "upi") %>%
+  select(upi, date_first_offer_sent, FT_screen_date:FT_screen_result,
+         isd_aaa_size_group, results)
 
 
-
-
-
-### Step 5 : Create a first screening results object ----
 
