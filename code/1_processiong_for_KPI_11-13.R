@@ -111,16 +111,20 @@ first_offer_dates <- last_results_initial_screens %>%
   filter(first_offer_flag == 1) %>%
   select(upi, date_first_offer_sent = date_offer_sent) %>%
   distinct()
+# The above has been checked against the spss with waldo::compare
+# and the data is the same
 
 
 ### Step 5 : Create a first screening result object ----
-
 
 
 first_result <- last_results_initial_screens %>%
   filter(!is.na(date_offer_sent)) %>%
   filter(screen_result != "03") %>%
   filter(!is.na(screen_result))
+
+# for each UPI. Find the earliest screening result
+# the 'FT' prefix stands for 'first tested'
 
 first_result <- first_result %>%
   arrange(upi, date_screen) %>%
@@ -131,7 +135,6 @@ first_result <- first_result %>%
   ) %>%
   ungroup() %>%
   filter(first_screen_flag == 1) %>%
-  group_by(upi) %>%
   select(upi, results,
          FT_date_screen = date_screen,
          FT_screen_type = screen_type,
@@ -140,14 +143,30 @@ first_result <- first_result %>%
          isd_aaa_size_group) %>%
   distinct()
 
+# look at duplicate upis
 first_result %>% count(upi) %>% arrange(desc(n))
-####
-# There is a problem here where if there are multiple records with the same
-# upi and screen date then spss just picks the one that happens to be first
-# for now just leave the same as spss but need to come back
-####
-first_result <- first_result %>% filter(!(upi == "1204576130" & FT_screen_result == "01"))
+# To deduplicate records with 2 first results on the one day. Choose the one
+# with the more important result
+# Presumed order of importance
+# 01 Positive
+# 05 External positive
+# 02 Negative
+# 06 External negative
+# the rest
 
+# deduplicate
+first_result <- first_result %>%
+  group_by(upi) %>%
+  mutate(importance = case_when(
+    FT_screen_result == "01" ~ 5,
+    FT_screen_result == "05" ~ 4,
+    FT_screen_result == "02" ~ 3,
+    FT_screen_result == "06" ~ 2,
+    TRUE ~ 1
+  )) %>%
+  filter(importance == max(importance)) %>%
+  ungroup() %>%
+  distinct()
 
 
 first_offer_first_result <- first_offer %>%
