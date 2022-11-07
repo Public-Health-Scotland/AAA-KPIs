@@ -175,4 +175,56 @@ first_offer_first_result <- first_offer_dates %>%
          isd_aaa_size_group, results)
 
 
+### Step 6 : Create a baseline cohort ----
+
+aaa_extract <- aaa_extract %>%
+  filter(pat_elig != "03")
+
+aaa_extract <- aaa_extract %>%
+  mutate(eligibility_period = case_when(
+    between(dob, dmy("01-04-1947"), dmy("31-03-1948")) ~ "Turned 66 in year 201314",
+    between(dob, dmy("01-04-1948"), dmy("31-03-1949")) ~ "Turned 66 in year 201415",
+    between(dob, dmy("01-04-1949"), dmy("31-03-1950")) ~ "Turned 66 in year 201516",
+    between(dob, dmy("01-04-1950"), dmy("31-03-1951")) ~ "Turned 66 in year 201617",
+    between(dob, dmy("01-04-1951"), dmy("31-03-1952")) ~ "Turned 66 in year 201718",
+    between(dob, dmy("01-04-1952"), dmy("31-03-1953")) ~ "Turned 66 in year 201819",
+    between(dob, dmy("01-04-1953"), dmy("31-03-1954")) ~ "Turned 66 in year 201920",
+    between(dob, dmy("01-04-1954"), dmy("31-03-1955")) ~ "Turned 66 in year 202021",
+    between(dob, dmy("01-04-1955"), dmy("31-03-1956")) ~ "Turned 66 in year 202122",
+    between(dob, dmy("01-04-1956"), dmy("31-03-1957")) ~ "Turned 66 in year 202223",
+    between(dob, dmy("01-04-1957"), dmy("31-03-1958")) ~ "Turned 66 in year 202324"
+  ),
+    age65_onstartdate = case_when(
+      hbres == "Ayrshire & Arran" &
+        between(dob, dmy("01-06-1947"), dmy("31-05-1948")) ~ 1,
+      hbres == "Borders" &
+        between(dob, dmy("09-08-1946"), dmy("08-08-1947")) ~ 1,
+      hbres == "Dumfries & Galloway" &
+        between(dob, dmy("24-07-1947"), dmy("23-07-1948")) ~ 1,
+      hbres == "Fife" &
+        between(dob, dmy("09-01-1947"), dmy("08-01-1948")) ~ 1,
+      hbres == "Forth Valley" &
+        between(dob, dmy("18-09-1947"), dmy("17-09-1948")) ~ 1,
+      hbres == "Grampian" &
+        between(dob, dmy("03-10-1946"), dmy("02-10-1947")) ~ 1,
+      hbres == "Greater Glasgow & Clyde" &
+        between(dob, dmy("06-02-1947"), dmy("05-02-1948")) ~ 1,
+      hbres == "Highland" &
+        between(dob, dmy("29-06-1946"), dmy("28-06-1947")) ~ 1,
+      hbres == "Lanarkshire" &
+        between(dob, dmy("01-04-1947"), dmy("31-03-1948")) ~ 1,
+      hbres == "Lothian" &
+        between(dob, dmy("09-08-1946"), dmy("08-08-1947")) ~ 1,
+      hbres == "Orkney" &
+        between(dob, dmy("03-10-1946"), dmy("02-10-1947")) ~ 1,
+      hbres == "Shetland" &
+        between(dob, dmy("03-10-1946"), dmy("02-10-1947")) ~ 1,
+      hbres == "Tayside" &
+        between(dob, dmy("09-01-1947"), dmy("08-01-1948")) ~ 1,
+      hbres == "Western Isles" &
+        between(dob, dmy("29-06-1946"), dmy("28-06-1947")) ~ 1
+    ))
+
+
+
 
