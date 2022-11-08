@@ -222,8 +222,31 @@ aaa_extract <- aaa_extract %>%
       hbres == "Tayside" &
         between(dob, dmy("09-01-1947"), dmy("08-01-1948")) ~ 1,
       hbres == "Western Isles" &
-        between(dob, dmy("29-06-1946"), dmy("28-06-1947")) ~ 1
-    ))
+        between(dob, dmy("29-06-1946"), dmy("28-06-1947")) ~ 1,
+      TRUE ~ 0
+    ),
+  over65_onstartdate = case_when(
+    hbres == "Ayrshire & Arran" & dob < dmy("01-06-1947") ~ 1,
+    hbres == "Borders" & dob < dmy("09-08-1946") ~ 1,
+    hbres == "Dumfries & Galloway" & dob < dmy("24-07-1947") ~ 1,
+    hbres == "Fife" & dob < dmy("09-01-1947") ~ 1,
+    hbres == "Forth Valley" & dob < dmy("18-09-1947") ~ 1,
+    hbres == "Grampian" & dob < dmy("03-10-1946") ~ 1,
+    hbres == "Greater Glasgow & Clyde" & dob < dmy("06-02-1947") ~ 1,
+    hbres == "Highland" & dob < dmy("29-06-1946") ~ 1,
+    hbres == "Lanarkshire" & dob < dmy("01-04-1947") ~ 1,
+    hbres == "Lothian" & dob < dmy("09-08-1946") ~ 1,
+    hbres == "Orkney" & dob < dmy("03-10-1946") ~ 1,
+    hbres == "Shetland" & dob < dmy("03-10-1946") ~ 1,
+    hbres == "Tayside" & dob < dmy("09-01-1947") ~ 1,
+    hbres == "Western Isles" & dob < dmy("29-06-1946") ~ 1,
+    TRUE ~ 0
+  ),
+  dob_eligibility = case_when(
+    over65_onstartdate == 1 ~ "Over eligible age cohort - age 66plus on start date",
+    age65_onstartdate == 1 ~ "Older cohort - age 65 on start date",
+    !is.na(eligibility_period) & age65_onstartdate == 0 ~ eligibility_period
+  ))
 
 
 
