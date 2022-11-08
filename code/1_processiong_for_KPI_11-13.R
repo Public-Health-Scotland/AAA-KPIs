@@ -177,10 +177,10 @@ first_offer_first_result <- first_offer_dates %>%
 
 ### Step 6 : Create a baseline cohort ----
 
-aaa_extract <- aaa_extract %>%
+cohort1 <- aaa_extract %>%
   filter(pat_elig != "03")
 
-aaa_extract <- aaa_extract %>%
+cohort1 <- cohort1 %>%
   mutate(eligibility_period = case_when(
     between(dob, dmy("01-04-1947"), dmy("31-03-1948")) ~ "Turned 66 in year 201314",
     between(dob, dmy("01-04-1948"), dmy("31-03-1949")) ~ "Turned 66 in year 201415",
@@ -247,6 +247,7 @@ aaa_extract <- aaa_extract %>%
     age65_onstartdate == 1 ~ "Older cohort - age 65 on start date",
     !is.na(eligibility_period) & age65_onstartdate == 0 ~ eligibility_period
   ))
+
 
 
 
