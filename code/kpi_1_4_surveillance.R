@@ -98,7 +98,7 @@ aaa_extract %>% filter(screen_n == 1) %>% nrow() # 18,647 screened
 View(aaa_extract %>% get_dupes()) # 1,386 duplicate rows - these should be removed later 
 
 # check finiancial years
-aaa_extract %>% group_by(fin_year) %>% 
+aaa_extract %>% group_by(financial_year) %>% 
   summarise(n())
 
 # remove pre-2012/13 and future records
@@ -169,17 +169,32 @@ exclusions_appointments <- annual_surveillance_cohort %>%
            interval >= 0 & 
            interval <= 408 &
            !is.na(fin_month_ac))%>%
-  arrange(upi_ac, financial_year_ac,fin_month_ac,date_start) %>%
-  group_by(upi_ac, financial_year_ac,fin_month_ac) %>% 
+  arrange(upi_ac,desc(date_start)) %>%
+  group_by(upi_ac) %>% 
   slice(n()) %>% 
   ungroup()
 # 106 rows
 
+# Check duplicates
+View(exclusions_appointments %>% get_dupes()) 
+View(follow_up_appointments %>% get_dupes(upi_ac))
+
+# Combine follow up appointments and indi
+combined_appointments <- follow_up_appointments %>% 
+  bind_rows(exclusions_appointments) %>% 
+  filter(financial_year_ac == "2020/21")
+
+#1407 rows
+  
+View(combined_appointments %>% get_dupes()) 
+View(combined_appointments %>% get_dupes(upi_ac))
 
 
 
 
 
+
+################ DO NOT USE - Kept for reference ---------------
 
 # Create combined extract and exclusions file
 combined_extract_exclusions <- bind_rows(aaa_extract,aaa_exclusions) # 619435 rows
