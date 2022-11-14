@@ -31,3 +31,5 @@ shiny app admin/
 *.[rR][dD][sS]
 *.[rR][dD][aA]
 *.[fF][sS][tT]
+# other files #
+scrap.R
