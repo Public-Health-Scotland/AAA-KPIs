@@ -255,156 +255,78 @@ cohort1 <- cohort1 %>%
 cohort1 <- cohort1 %>%
   filter(screen_type %in% c("01","03",NA))
 
+### Sift through the duplicates
+# This has been done
+# If the chi != upi ends up being a problem then this will need redone
 
+# Some duplicates are identical for all the relevant variables
+cohort1 <- cohort1 %>%
+  distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
+           dob_eligibility, dob, .keep_all = TRUE)
 
-# Take the demographic details from the most recent initial screen
-# record for each man (based on offer sent date)
-
-# 359,759 unique upis.
-cohort1 %>% 
-  group_by(upi) %>%
-  summarise(
-    all_na = if_else(all(is.na(date_offer_sent)), 1, 0)
-  ) %>% 
-  ungroup() %>%
-  count(all_na)
-# 321,550 with dates
-#  38,209 all na (most of these are single chis)
-
-# Check how many records have chi != upi
-cohort1 %>%
-  mutate(diff_chi = if_else(chi != upi, 1, 0)) %>%
-  count(diff_chi)
-# 603 records where chi != upi
-
-# make max offer date variable
+# Create variable called 'keep' to add records to.
+# Start with all the non duplicates then start bringing more records in
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(
-    flag_last = if_else(date_offer_sent == max(date_offer_sent), 1, 0)) %>%
+  mutate(keep = if_else(n() == 1, 1, 0)) %>%
   ungroup()
 
-# look at all records with no date
-cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    all_na = if_else(all(is.na(date_offer_sent)), 1, 0)
-  ) %>% 
-  ungroup() %>%
-  View()
-
-# make no date variable
-cohort1 <- cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    all_na = if_else(all(is.na(date_offer_sent)), 1, 0)) %>%
-  ungroup()
-
-# of the upis with no date. automatically flag the ones with no duplicates
-cohort1 <- cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    only_record = if_else(n() == 1 & all_na == 1, 1, 0)) %>%
-  ungroup()
-
-# Some UPIs with multiple screens. take the latest one.
-cohort1 <- cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    last_screen = if_else(date_screen == max(date_screen),1,0)
-  ) %>%
-  ungroup()
-
-# Some UPIs with multiple records where 1 chi == upi and 1 chi != upi
-cohort1 <- cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    match = if_else(chi == upi, 1, 0)
-  ) %>%
-  ungroup()
-
-# Look at the remaining records
-cohort1 %>%
-  filter(only_record != 1 & is.na(flag_last) & all_na == 1) %>%
-  View()
-
-# create variable for dropping
+# keep only the last offer
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
   mutate(
     keep = case_when(
-      only_record == 1 ~ 1,
-      last_scre
+      keep == 1 ~ 1,
+      date_offer_sent == max(date_offer_sent) ~ 1,
+      TRUE ~ 0
+    )) %>%
+  ungroup()
+
+# keep only ones where there is an offer sent
+cohort1 <- cohort1 %>%
+  group_by(upi) %>%
+  mutate(
+    keep = case_when(
+      keep == 1 ~ 1,
+      !is.na(date_offer_sent) ~ 1,
+      TRUE ~ 0
+    )
+  ) %>%
+  ungroup()
+
+# get rid of records where the upi is accounted for
+cohort1 <- cohort1 %>%
+  group_by(upi) %>%
+  mutate(
+    drop = if_else(any(keep == 1) & keep == 0, 1, 0)
+  ) %>%
+  ungroup() %>%
+  filter(drop == 0)
+
+# sort the rest by if chi == upi
+cohort1 <- cohort1 %>%
+  mutate(
+    keep = case_when(
+      keep == 1 ~ 1,
+      chi == upi ~ 1,
+      TRUE ~ 0
     )
   )
 
-cohort1 %>% 
+# We now have all the chis
+cohort1 <- filter(cohort1, keep == 1)
+# couple of pairs with the same date_offer_sent so get rid of the one
+# with the mismatching chi
+cohort1 <- cohort1 %>%
   group_by(upi) %>%
   mutate(
-    all_na = if_else(all(is.na(date_offer_sent)), 1, 0)
-  ) %>% 
-  ungroup() %>%
-  filter(all_na == 1) %>%
-  select(chi, upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
-         dob_eligibility, dob) %>%
-  distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
-           dob_eligibility, dob, .keep_all = TRUE) %>%
-  group_by(upi) %>%
-  mutate(n = n()) %>%
-  ungroup() %>%
-  filter(n != 1) %>%
-  View()
+    keep = case_when(
+      n() != 1 & chi != upi ~ 0,
+      TRUE ~ 1
+    )) %>%
+  ungroup()
 
-######
-# There were 5 upis with multiple distinct records with the same 
-# date_offer_sent. Each one of them had 1 record where chi==upi and one record
-# where chi!=upi. In each of the cases the record with chi==upi was of higher
-# quality so going to make that the rule of thumb for deduplication in this
-# instance. Maybe something for the issues log?
-
-# duplicate_upis <- cohort1 %>%
-#   group_by(upi) %>%
-#   mutate(flag_last = if_else(date_offer_sent == max(date_offer_sent), 1, 0)) %>%
-#   ungroup() %>%
-#   filter(flag_last == 1) %>%
-#   group_by(upi) %>%
-#   mutate(n = n()) %>%
-#   ungroup() %>%
-#   filter(n > 1) %>%
-#   select(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
-#          dob_eligibility, dob) %>%
-#   distinct() %>%
-#   group_by(upi) %>%
-#   mutate(count = n()) %>%
-#   ungroup() %>%
-#   filter(count != 1)
-######
-
-cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    flag_last = if_else(date_offer_sent == max(date_offer_sent, na.rm = TRUE), 1, 0),
-    all_na = if_else(all(is.na(date_offer_sent)), 1, 0)) %>%
-  ungroup() %>%
-  filter(all_na == 1 & chi == upi |
-           flag_last == 1) %>% View()
-  group_by(upi, all_na) %>%
-  mutate(first_na = if_else(all_na == 1, 1:n), NA) %>%
-  ungroup() %>%
-  filter(!first_na %in% c(1, NA))
-  select(chi, upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
-         dob_eligibility, dob) %>%
-  distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
-           dob_eligibility, dob, .keep_all = TRUE) %>%
-  group_by(upi) %>%
-  mutate(
-    n = n(),
-    drop = if_else(n != 1 & chi != upi, 1, 0)) %>%
-  ungroup() %>%
-  filter(drop == 0) %>%
-  select(-c(drop, n, chi))
-
-
+cohort1 <- filter(cohort1, keep == 1)
 
 
 
