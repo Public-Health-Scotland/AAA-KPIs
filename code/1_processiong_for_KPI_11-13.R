@@ -266,6 +266,16 @@ cohort1 <- cohort1 %>%
   distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
            dob_eligibility, dob, .keep_all = TRUE)
 
+### temporary
+cohort1 <- cohort1 %>%
+  group_by(upi) %>%
+  mutate(
+    oldest = if_else(dob == max(dob), 1, 0)
+  ) %>%
+  ungroup() %>%
+  filter(oldest == 1)
+###
+
 # Create variable called 'keep' to add records to.
 # Start with all the non duplicates then start bringing more records in
 cohort1 <- cohort1 %>%
@@ -494,16 +504,158 @@ vasc_sur_summary <- vasc_sur %>%
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
 # Referred
+referred <- aaa_exclusions %>%
+  filter(pat_inelig == "19") %>%
+  mutate(exlength = date_end - date_start)
 
+referred <- referred %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+referred <- referred %>%
+  distinct(upi, pat_inelig)
+
+referred_summary <- referred %>%
+  count(pat_inelig)
+
+referred <- referred %>% select(upi) %>% arrange(upi)
 
 # Unfit
+unfit <- aaa_exclusions %>%
+  filter(pat_inelig == "18") %>%
+  mutate(exlength = date_end - date_start)
+
+unfit <- unfit %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+unfit <- unfit %>%
+  distinct(upi, pat_inelig)
+
+unfit_summary <- unfit %>%
+  count(pat_inelig)
+
+unfit <- unfit %>% select(upi) %>% arrange(upi)
 
 # Other exclusion
+other <- aaa_exclusions %>%
+  filter(pat_inelig %in% c("11","12","13","14","17")) %>%
+  mutate(exlength = date_end - date_start) %>%
+  mutate(exlength_group = case_when(
+    between(exlength, 0, 7) ~ 1,
+    between(exlength, 8, 30) ~ 2,
+    between(exlength, 31, 91) ~ 3,
+    between(exlength, 92, 183) ~ 4,
+    between(exlength, 184, 365) ~ 5,
+    exlength > 365 ~ 6
+  ))
+
+other_exlength <- other %>%
+  filter(!is.na(exlength_group)) %>%
+  count(pat_inelig, exlength_group)
+
+other <- other %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+other <- other %>%
+  distinct(upi, pat_inelig)
+
+other_summary <- other %>%
+  count(pat_inelig)
+
+other <- other %>% distinct(upi) %>% arrange(upi)
 
 # GANA and temporary residents
 
-# 
+temp_gana <- aaa_exclusions %>%
+  filter(pat_inelig %in% c("25","26")) %>%
+  mutate(exlength = date_end - date_start)
 
+temp_gana <- temp_gana %>%
+  distinct(upi) %>%
+  arrange(upi)
+
+
+### Step 8 : Join files together
+
+cohort1 <- cohort1 %>%
+  left_join(first_offer_first_result, by = "upi") %>%
+  mutate(
+    inoffertested = if_else(upi %in% first_offer_first_result$upi,1,0),
+    intempgana = if_else(upi %in% temp_gana$upi,1,0),
+    inexternal = if_else(upi %in% external_only$upi,1,0),
+    inonlyhavesurv_record = if_else(upi %in% prior_sur$upi,1,0),
+    indeceased = if_else(upi %in% deceased$upi,1,0),
+    inprior = if_else(upi %in% prior_scr$upi,1,0),
+    inoptedout = if_else(upi %in% optout$upi,1,0),
+    inrepair = if_else(upi %in% repaired$upi,1,0),
+    inundersurv_vas = if_else(upi %in% vasc_sur$upi,1,0),
+    inrefvas = if_else(upi %in% referred$upi,1,0),
+    inunfit = if_else(upi %in% unfit$upi,1,0),
+    inother = if_else(upi %in% other$upi,1,0)
+  ) %>%
+  mutate(
+    inresult = if_else(!is.na(FT_screen_result), 1, 0),
+    inoffer = if_else(!is.na(date_first_offer_sent), 1, 0)
+  )
+  
+
+cohort1 %>% count(inoffertested, inoptedout)
+
+temp <- data.frame(cohort1)
+
+cohort1 <- cohort1 %>%
+  mutate(
+    intempgana = if_else(inresult == 1, 0, intempgana),
+    inonlyhavesurv_record = if_else(inresult == 1, 0, inonlyhavesurv_record),
+    indeceased = if_else(inresult == 1, 0, indeceased),
+    inprior = if_else(inresult == 1, 0, inprior),
+    inrepair = if_else(inresult == 1, 0, inrepair),
+    inundersurv_vas = if_else(inresult == 1, 0, inundersurv_vas),
+    inrefvas = if_else(inresult == 1, 0, inrefvas),
+    inunfit = if_else(inresult == 1, 0, inunfit),
+    inother = if_else(inresult == 1, 0, inother)
+  )
+
+cohort1 %>% count(inresult, intempgana)
+cohort1 %>% count(inresult, inonlyhavesurv_record)
+cohort1 %>% count(inresult, indeceased)
+cohort1 %>% count(inresult, inprior)
+cohort1 %>% count(inresult, inrepair)
+cohort1 %>% count(inresult, inundersurv_vas)
+cohort1 %>% count(inresult, inrefvas)
+cohort1 %>% count(inresult, inunfit)
+cohort1 %>% count(inresult, inother)
+
+# remove exclusion
+
+cohort1 <- cohort1 %>%
+  filter(sum(intempgana, inonlyhavesurv_record, indeceased, ininprior,
+             inrepair, inundersurv_vas, inrefvas, inunfit, inother) == 0)
+
+cohort1 <- cohort1 %>%
+  filter(inexternal != 1)
+
+cohort1 <- cohort1 %>%
+  select()
+
+write_rds(cohort1, "fpath")
 
 
 
