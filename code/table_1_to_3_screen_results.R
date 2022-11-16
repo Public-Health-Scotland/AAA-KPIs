@@ -123,8 +123,8 @@ aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
 # visualisations and immediate recalls. 
 
 aaa_filtered <- aaa_extract %>% 
-  filter(screen_type %in% c("01", "03")) %>%
-  filter(screen_result %in% c("01", "02", "04")) %>%
+  filter(screen_type %in% c("01", "03") & 
+         screen_result %in% c("01", "02", "04")) %>%
   mutate(isd_aaa_size = case_when(screen_result %in% c("01", "02", "05", "06") & 
                                     (followup_recom != "05" | 
                                        is.na(followup_recom)
@@ -181,8 +181,7 @@ rm(aaa_filtered)
 # 2016 (invite not sent yet).
 
 first_offer_initial_screens <- aaa_extract %>% 
-  filter(screen_type %in% c("01", "03")) %>%
-  filter(!is.na(date_offer_sent)) %>% 
+  filter(screen_type %in% c("01", "03") & !is.na(date_offer_sent)) %>% 
   arrange(upi, date_offer_sent) %>% 
   group_by(upi) %>% 
   slice(1) %>% 
@@ -345,3 +344,16 @@ table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile,
          starts_with(year_three), 
          starts_with("Cumulative")) %>% 
   arrange(simd2020v2_sc_quintile != "Scotland", simd2020v2_sc_quintile)
+
+
+
+### 8 Output ----
+
+# Need to save output somewhere
+# Ask on hackday where is best
+
+write_rds(table_one, filepath)
+
+write_rds(table_two, filepath)
+
+write_rds(table_three, filepath)
