@@ -104,7 +104,7 @@ aaa_extract %<>%
 screened_cohort <- aaa_extract %>% 
   mutate(screen_flag = ifelse(screen_result %in% c("01","02","04") &
                            (screen_type %in% c("02","04")),1,0)) %>% 
-  filter(screen_flag ==1) )
+  filter(screen_flag ==1)
 
 # check number of screened
 screened_cohort %>% filter(screen_flag == 1) %>% nrow()# 18,647 screened
@@ -178,7 +178,10 @@ follow_up_appointments <- screened_cohort %>%
   arrange(upi_sc,financial_year_ac,fin_month_ac,date_screen_sc) %>%
   group_by(upi_sc,financial_year_ac,fin_month_ac) %>% 
   slice(n()) %>% 
-  ungroup() # 1301 rows
+  ungroup() %>% 
+  rename(upi = upi_sc)# 1301 rows
+
+#colnames(follow_up_appointments)<-paste(colnames(follow_up_appointments),"fua",sep="_")
 
 # Check duplicates
 View(follow_up_appointments %>% get_dupes()) 
@@ -200,14 +203,31 @@ exclusions_appointments <- aaa_exclusions %>%
   ungroup()
 # 106 rows
 
+#colnames(exclusions_appointments)<-paste(colnames(exclusions_appointments),"ea",sep="_")
+
+
 # Check duplicates
 View(exclusions_appointments %>% get_dupes()) 
-View(follow_up_appointments %>% get_dupes(upi_ac))
+View(exclusions_appointments %>% get_dupes(upi_ac))
 
 # Combine follow up appointments and exclusions
 combined_appointments <- follow_up_appointments %>% 
-  bind_rows(exclusions_appointments) %>% 
-  filter(financial_year_ac == current_year)
+   bind_rows(exclusions_appointments) %>% 
+   filter(financial_year_ac == current_year)
+
+
+final_follow_ups <- annual_surveillance_cohort %>% 
+  left_join(combined_appointments, by = c("upi_ac"="upi"))
+
+# final_follow_ups %<>% 
+#   filter(financial_year_ac.x == current_year) %>% 
+#   distinct(upi_ac)
+
+# Combine follow up appointments and exclusions
+  # combined_appointments <- annual_surveillance_cohort %>%
+  #   left_join(follow_up_appointments, by = c("upi_ac"="upi_sc_fua")) %>% 
+  #   left_join(exclusions_appointments, by = c("upi_ac"="upi_ea"))%>% 
+  #   filter(financial_year_ac == current_year)
 
 #1407 rows
   
@@ -220,23 +240,39 @@ View(combined_appointments %>% get_dupes(upi_ac))
 # Filter for only those records with no exclusion
 # select all records where screen_n_ac = 1 to select only records from the original cohort
 # Add expected follow-up year
-combined_appointments <- combined_appointments %>%
+
+
+#####FUTURE EDIT: These are arbitrarily sorted before deduplication * 
+# this comes out with a comparable result to SPSS but should be clarified in future
+final_follow_ups <- final_follow_ups %>%
   mutate(follow_up_screen_flag = (case_when(!is.na(date_screen_sc)~ 1,
                                             is.na(date_screen_sc)~0))) %>% 
-  arrange(upi_sc) %>%
+
+  
+  arrange(upi_ac) %>%
   mutate(attend = case_when(!is.na(date_screen_sc) ~ 1,
                             is.na(date_screen_sc) ~ 0)) %>%
-  mutate(exclusion_flag = (case_when(!is.na(date_screen_sc) & is.na(exclusion) ~ 0, # screened date, no exclusion = 0
-                                    !is.na(date_screen_sc)  & exclusion == 1 ~ 0, # screened date, is exlusion recode to 0
-                                    #is.na(date_screen_sc) & is.na(exclusion) ~ 0, # no screened date, no exlusion, NA, there should be none of these
-                                    is.na(date_screen_sc)  & exclusion == 1 ~ 1))) %>% # no screened date, is exclusion flag = 1
-  filter(exclusion_flag == 0) %>%
-  mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_ac)+years(1))))
+  
+  mutate(exclusion_flag = ifelse((pat_inelig %in% c('04','06','11','12','13','14','15','16','17','18','19','21', '22', '25', '26') &
+                                  is.na(date_end))|
+                                   pat_inelig %in% c('03','05'),1,0)) %>% 
+  mutate(exclusion_flag_final = ifelse(attend ==1,0,exclusion_flag)) %>% 
+  filter(exclusion_flag_final == 0) %>%
+  mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_ac.x)+years(1)))) %>% 
+  filter(fy_due == "2021/22") %>% 
+  arrange(upi_ac,financial_year_ac.x,fin_month_ac.x,desc(date_start)) %>%
+  group_by(upi_ac,financial_year_ac.x,fin_month_ac.x) %>% 
+  slice(n()) %>% 
+  ungroup()
   
   
-View(combined_appointments %>% tabyl(exclusion_flag))
-View(combined_appointments %>% get_dupes()) 
-View(combined_appointments %>% get_dupes(upi_ac))
+  
+View(final_follow_ups %>% filter(financial_year_ac.x == current_year) %>%
+  distinct(upi_ac,financial_year_ac.x,fin_month_ac.x))
+  
+View(final_follow_ups %>% tabyl(exclusion_flag))
+View(final_follow_ups %>% get_dupes()) 
+View(final_follow_ups %>% get_dupes(upi_ac))
 
 ### 5-  Create KPI 1.4a table -----
 
@@ -248,69 +284,153 @@ View(combined_appointments %>% get_dupes(upi_ac))
 
 # Allocate correct hb in case an individual has moved between screenings
 # Create variable for Scotland
-combined_appointments %<>% 
+final_follow_ups %<>% 
   mutate(hbres_final = (case_when(!is.na(date_screen_sc) ~ hbres_sc,
-                                      is.na(date_screen_sc) ~ hbres_ac)))
+                                      is.na(date_screen_sc) ~ hbres_ac.x)))
 
 # number of screenings by 
 
-kpi_1.4a <- combined_appointments %>% 
+kpi_1.4a <- final_follow_ups %>% 
   group_by(fy_due,hbres_final) %>% 
-  summarise(sum(cohort_ac),sum(attend)) %>% 
+  summarise(sum(cohort_ac.x),sum(attend)) %>% 
   group_modify(~ adorn_totals(.x, where = "row")) %>% 
   ungroup() %>%
-  mutate(pc = `sum(attend)` * 100 / `sum(cohort_ac)`) %>%
+  mutate(pc = `sum(attend)` * 100 / `sum(cohort_ac.x)`) %>%
   mutate(pc = round_half_up(pc, 2))
 
   
 View(kpi_1.4a)
 
 
-################ DO NOT USE - Kept for reference until finalised ---------------
+### 6 - Create 3M Surveillance figures ----
 
-# # Create combined extract and exclusions file
-# combined_extract_exclusions <- bind_rows(aaa_extract,aaa_exclusions) # 619435 rows
-# 
-# # Create column of combined start and screening dates to filter
-# # Keep latest screening date per month per upi
-# combined_extract_exclusions %<>%
-#   mutate(date_equivalent = case_when(exclusion == 1 ~ date_start,
-#                                      is.na(exclusion) ~ date_screen)) %>% 
-#   filter(date_equivalent >= next_year_start) %>% 
-#   arrange(upi,financial_year,fin_month,date_equivalent) %>% 
-#   group_by(upi,financial_year,fin_month) %>% 
-#   slice(n()) %>% 
-#   ungroup()
-# # 79212 rows
-# 
-# View(combined_extract_exclusions %>% get_dupes()) # no full duplicates
-# View(combined_extract_exclusions %>% get_dupes(upi)) # 12913 duplicate upis 30388 duplicate rows
-# combined_extract_exclusions %>% distinct(upi) %>% nrow()
-# 
-# annual_follow_up_appointments <- annual_surveillance_cohort %>% 
-#   left_join(combined_extract_exclusions, by = "upi") %>% 
-#   mutate(interval = difftime(date_screen,c_date_screen,units = "days")) %>% 
-#   filter(interval >= 0 & interval <= 408)
-# 
-# annual_follow_up_appointments %>% nrow() # 1,876 rows
-# 
-# View(annual_follow_up_appointments %>% get_dupes())
-# View(annual_follow_up_appointments %>% get_dupes(upi))
-# annual_follow_up_appointments %>% distinct(upi) %>% nrow()
-# 
-# 
-# 
-# 
-# screening_cohort <- aaa_extract %>% 
-#   filter(screen_n == 1) #%>% 
-#   #inner_join(annual_surveillance_cohort, by = "upi")
-# 
-# #fin_month
-# #fin_qtr
-# 
-#   
-# annual_follow_up_appointments %>% filter(fin_year == "2020/21") %>% nrow()
+quarterly_surveillance_cohort <- aaa_extract %>% 
+  filter(!is.na(financial_year)) %>% 
+  filter(followup_recom == "01") %>% #12,059 rows
+  
+  # arrange(upi, financial_year,fin_month,date_screen) %>% 
+  # group_by(upi, financial_year,fin_month) %>% 
+  # slice(n()) %>% 
+  # ungroup() %>% #12057
+  
+  filter(fy_quarter %in% c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")) %>% # needs to be added to beginning of script
+  mutate(cohort = 1) #%>% # 2826 rows - matched
+#filter(financial_year == "2020/21") # 1,353 rows
+
+# add ac for annual cohort to identify more easily when joining
+colnames(quarterly_surveillance_cohort)<-paste(colnames(quarterly_surveillance_cohort),"qc",sep="_")
+
+quarterly_follow_up_appointments <- screened_cohort %>% 
+  left_join(quarterly_surveillance_cohort, by = c("upi_sc"="upi_qc")) %>%
+  #select(-upi_sc) %>% 
+  # select(financial_year.x:sex.x,pat_elig.x:simd2020v2_hb2019_quintile.x,screen_type.x:followup_recom.x,
+  #        largest_measure.x:date_verified.x,screen_n.x,fin_month.x,screen_type.y:date_verified.y,financial_year) %>% 
+  mutate(interval = difftime(date_screen_sc,date_screen_qc,units = "days")) %>% 
+  filter(date_screen_sc > date_screen_qc & 
+           interval >= 0 & 
+           interval <= 120 &
+           !is.na(fin_month_qc))  %>% # 3050 rows
+  arrange(upi_sc,financial_year_qc,fin_month_qc,date_screen_sc) %>%
+  group_by(upi_sc,financial_year_qc,fin_month_qc) %>% 
+  slice(n()) %>% 
+  ungroup() %>% 
+  rename(upi = upi_sc)# 1301 rows
+
+#colnames(follow_up_appointments)<-paste(colnames(follow_up_appointments),"fua",sep="_")
+
+# Check duplicates
+View(follow_up_appointments %>% get_dupes()) 
+View(follow_up_appointments %>% get_dupes(upi_ac))
+
+# Match exlusions to cohort
+# calculate interval and only keep those within 408 days of the surveillance cohort date
+# remove duplicates
+quarterly_exclusions_appointments <- aaa_exclusions %>% 
+  left_join(quarterly_surveillance_cohort, by = c("upi"="upi_qc")) %>% 
+  mutate(interval = difftime(date_start,date_screen_qc,units = "days")) %>% 
+  filter(date_start >= date_screen_qc & 
+           interval >= 0 & 
+           interval <= 120 &
+           !is.na(fin_month_qc))%>%
+  arrange(upi,financial_year_qc,fin_month_qc,desc(date_start)) %>%
+  group_by(upi,financial_year_qc,fin_month_qc) %>% 
+  slice(n()) %>% 
+  ungroup()
+
+# 106 rows
+
+#colnames(exclusions_appointments)<-paste(colnames(exclusions_appointments),"ea",sep="_")
 
 
+# Check duplicates
+View(exclusions_appointments %>% get_dupes()) 
+View(exclusions_appointments %>% get_dupes(upi_ac))
 
+# Combine follow up appointments and exclusions
+quarterly_combined_appointments <- quarterly_follow_up_appointments %>% 
+  bind_rows(quarterly_exclusions_appointments) #%>% 
+  #filter(financial_year_qc == current_year)
+
+# create final follow-ups table
+quarterly_final_follow_ups <- quarterly_surveillance_cohort %>% 
+  left_join(quarterly_combined_appointments, by = c("upi_qc"="upi"))
+
+
+View(combined_appointments %>% get_dupes()) 
+View(combined_appointments %>% get_dupes(upi_ac))
+
+# Remove unecessary columns
+# Create a flag for attended follow up appointments
+# If there is an exclusion flag but the appointment was attended and has a date_screen recode exclusion to zero
+# Filter for only those records with no exclusion
+# select all records where screen_n_ac = 1 to select only records from the original cohort
+# Add expected follow-up year
+
+#### CHECK: line 720 SPSS - altered year due as SPSS suggests the appointment will always be due in the same year as the original screening however this is not the case
+#####FUTURE EDIT: These are arbitrarily sorted before deduplication * 
+# this comes out with a comparable result to SPSS but should be clarified in future
+quarterly_final_follow_ups <- quarterly_final_follow_ups %>%
+  mutate(follow_up_screen_flag = (case_when(!is.na(date_screen_sc)~ 1,
+                                            is.na(date_screen_sc)~0))) %>% 
+  
+  
+  arrange(upi_qc) %>%
+  mutate(attend = case_when(!is.na(date_screen_sc) ~ 1,
+                            is.na(date_screen_sc) ~ 0)) %>%
+  
+  mutate(exclusion_flag = ifelse((pat_inelig %in% c('04','06','11','12','13','14','15','16','17','18','19','21', '22', '25', '26') &
+                                    is.na(date_end))|
+                                   pat_inelig %in% c('03','05'),1,0)) %>% 
+  mutate(exclusion_flag_final = ifelse(attend ==1,0,exclusion_flag)) %>% 
+  filter(exclusion_flag_final == 0) %>%
+  mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_qc.x)+months(3)))) %>% 
+  filter(!is.na(fy_due)) %>% 
+  arrange(upi_qc,financial_year_qc.x,fy_quarter_qc.x,desc(date_start)) %>%
+  group_by(upi_qc,financial_year_qc.x,fy_quarter_qc.x) %>% 
+  slice(n()) %>% 
+  ungroup()
+
+quarterly_final_follow_ups %<>% 
+  mutate(hbres_final = (case_when(!is.na(date_screen_sc) ~ hbres_sc,
+                                  is.na(date_screen_sc) ~ hbres_qc.x)))
+
+# View(final_follow_ups %>% filter(financial_year_ac.x == current_year) %>%
+#        distinct(upi_ac,financial_year_ac.x,fin_month_ac.x))
+
+View(final_follow_ups %>% tabyl(exclusion_flag))
+View(final_follow_ups %>% get_dupes()) 
+View(final_follow_ups %>% get_dupes(upi_ac))
+
+# number of screenings by 
+
+kpi_1.4b <- quarterly_final_follow_ups %>% 
+  group_by(fy_due,hbres_final) %>% 
+  summarise(sum(cohort_qc.x),sum(attend)) %>% 
+  group_modify(~ adorn_totals(.x, where = "row")) %>% 
+  ungroup() %>%
+  mutate(pc = `sum(attend)` * 100 / `sum(cohort_qc.x)`) %>%
+  mutate(pc = round_half_up(pc, 2))
+
+
+View(kpi_1.4b)
 
