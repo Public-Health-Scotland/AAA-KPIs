@@ -102,9 +102,9 @@ aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
 # Filter for tested (+ve, -ve, non-visualisation screen result)
 
 aaa_extract <- aaa_extract %>% 
-  filter(date_screen <= cut_off_date) %>% 
-  filter(pat_elig == "03" & screen_type %in% c("01", "03")) %>% 
-  filter(screen_result %in% c("01", "02", "04"))
+  filter(date_screen <= cut_off_date, 
+         pat_elig == "03" & screen_type %in% c("01", "03"), 
+         screen_result %in% c("01", "02", "04"))
 
 # Arrange data by upi and date_screen
 # Group by upi and hbres and take the last row for each group
@@ -117,7 +117,7 @@ aaa_extract_one_row_per_upi <- aaa_extract  %>%
   group_by(upi, hbres) %>% 
   slice(n()) %>% 
   ungroup() %>% 
-  mutate(year_screen = fin_year(date_screen), 
+  mutate(year_screen = extract_fin_year(date_screen), 
          age_at_screening = age_calculate(dob, date_screen)) %>% 
   mutate(year_screen = if_else(year_screen %in% c(year_one, year_two, 
                                                   year_three), 
@@ -140,6 +140,7 @@ all_years <- calculate_rates(aaa_extract_one_row_per_upi) %>%
 # Pivot data into wider format, using names from year_screen and values from
 # tested, positive and rate
 # Select column order to match output file specification
+# Arrange output file so that Scotland row is first
 
 output <- bind_rows(individual_years, all_years) %>% 
   pivot_wider(names_from = year_screen, 
@@ -147,6 +148,7 @@ output <- bind_rows(individual_years, all_years) %>%
               names_glue = "{year_screen}_{.value}") %>% 
   select(hbres, starts_with(year_one), starts_with(year_two), 
          starts_with(year_three), starts_with("Other"), 
-         starts_with("Cumulative"))
+         starts_with("Cumulative")) %>% 
+  arrange(hbres != "Scotland")
 
 saveRDS(output, paste0(temp_path, "/table_5_self_referrals.rds"))
