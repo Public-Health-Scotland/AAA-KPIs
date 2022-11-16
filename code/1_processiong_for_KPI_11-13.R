@@ -50,6 +50,8 @@ extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
 ### Step 2 : Import and trim data ----
 
 aaa_extract <- read_rds(paste0(extract_fpath, "aaa_extract_202209.rds"))
+aaa_exclusions <- read_rds(paste0(extract_fpath, "aaa_exclusions_202209.rds"))
+
 
 # Only want initial screens so select if screen type is initial or QA initial
 # Include records where men were tested only (ie. result of +ve, -ve or
@@ -327,6 +329,180 @@ cohort1 <- cohort1 %>%
   ungroup()
 
 cohort1 <- filter(cohort1, keep == 1)
+
+cohort1 <- cohort1 %>%
+  select(upi, postcode, ca2019, simd2020v2_sc_quintile,
+         hbres, dob_eligibility, dob)
+
+# trim to cutoff date
+cohort1 <- cohort1 %>%
+  filter(dob <= cutoff_date)
+
+
+# Step 7 : Create series of exclusions objects ----
+
+# Already on surveillance prior to national programme
+prior_sur <- aaa_extract %>%
+  filter(screen_type %in% c("01", "02"))
+
+# if upi has a screen_type 01 then take that
+prior_sur <- prior_sur %>%
+  group_by(upi) %>%
+  mutate(
+    keep = if_else(any(screen_type == "01") & 
+                     screen_type == "02", 0, 1)
+  ) %>%
+  ungroup() %>%
+  filter(keep == 1) %>%
+  distinct(upi, screen_type)
+  
+prior_sur <- filter(prior_sur, screen_type == "02")
+
+# Only an external result
+external_only <- aaa_extract %>%
+  filter(screen_result %in% c("05", "06"))
+
+external_only <- external_only %>%
+  distinct(upi, screen_result)
+
+external_only_summary <- external_only %>%
+  count(screen_result)
+
+external_only <- select(external_only, upi)
+
+# Deceased
+deceased <- aaa_exclusions %>%
+  filter(pat_inelig %in% c("15","16"))
+
+# Keep only exclusions that started before their 66th birthday
+# (with some trickery to get round leap years)
+# Don't keep exclusions that have ended
+deceased <- deceased %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+deceased <- deceased %>%
+  distinct(upi, pat_inelig)
+
+deceased_summary <- deceased %>%
+  count(pat_inelig)
+
+deceased <- deceased %>% select(upi)
+
+# Prior screen exclusion
+prior_scr <- aaa_exclusions %>%
+  filter(pat_inelig == "21")
+
+# Keep only exclusions that started before their 66th birthday
+# (with some trickery to get round leap years)
+# Don't keep exclusions that have ended
+prior_scr <- prior_scr %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+prior_scr <- prior_scr %>%
+  distinct(upi, pat_inelig)
+
+prior_scr_summary <- prior_scr %>%
+  count(pat_inelig)
+
+prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
+
+# Opted out
+optout <- aaa_exclusions %>%
+  filter(pat_inelig == "01") %>%
+  mutate(
+    optout_length = date_end - date_start
+  )
+
+optout_length_summary <- optout %>%
+  filter(!is.na(optout_length)) %>%
+  count(optout_length)
+
+# Keep only exclusions that started before their 66th birthday
+# (with some trickery to get round leap years)
+# Don't keep exclusions that have ended
+optout <- optout %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+optout <- optout %>%
+  distinct(upi, pat_inelig)
+
+optout_summary <- optout %>%
+  count(pat_inelig)
+
+optout <- optout %>% select(upi) %>% arrange(upi)
+
+# AAA repaired
+repaired <- aaa_exclusions %>%
+  filter(pat_inelig == "04") %>%
+  mutate(exlength = date_end - date_start)
+
+repaired <- repaired %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+repaired <- repaired %>%
+  distinct(upi, pat_inelig)
+
+repaired_summary <- repaired %>%
+  count(pat_inelig)
+
+repaired <- repaired %>% select(upi) %>% arrange(upi)
+
+# Under vascular surveillance
+vasc_sur <- aaa_exclusions %>%
+  filter(pat_inelig == "06") %>%
+  mutate(exlength = date_end - date_start)
+
+vasc_sur <- vasc_sur %>%
+  mutate(exclflag = case_when(
+    !is.na(date_end) ~ 0,
+    date_start < dob+years(66) ~ 1,
+    is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
+    TRUE ~ 0
+  )) %>%
+  filter(exclflag == 1)
+
+vasc_sur <- vasc_sur %>%
+  distinct(upi, pat_inelig)
+
+vasc_sur_summary <- vasc_sur %>%
+  count(pat_inelig)
+
+vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
+
+# Referred
+
+
+# Unfit
+
+# Other exclusion
+
+# GANA and temporary residents
+
+# 
 
 
 
