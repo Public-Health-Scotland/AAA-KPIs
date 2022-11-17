@@ -9,26 +9,18 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # invite/uptake file is a patient level extract with information on invites
-# and attendances for each individual
+# and attendances for each individual. This can then be used to calculate
+# figures for the uptake KPIs
  
 # Step 1 : Import packages and filepaths
-
 # Step 2 : Import and trim data
-
-# Step 3: Create derived variables
-
-# Step 2: Create a first offer sent file
-
-# STEP 3: Create first screening result file
-
-# STEP 4: Create baseline cohorts file
-
-# STEP 5: Create exclusions files
-
-# STEP 6: Match .
-
-
-
+# Step 3 : Create derived variables
+# Step 4 : Create a 'first offer sent' file
+# Step 5 : Create a 'first screening result' object
+# Step 6 : Create a baseline cohort
+# Step 7 : Create series of exclusions objects
+# Step 8 : Remove exclusions
+# Step 9 : Write out
 
 
 ### Step 1 : Import packages and filepaths ----
@@ -45,15 +37,19 @@ kpi_month <- "sep22"
 cutoff_date <- dmy("31-03-1957")
 
 extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
-                        "202209/output/")
+                        "202209/output/aaa_extract_202209.rds")
+
+exclusions_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
+                           "202209/output/aaa_exclusions_202209.rds")
 
 output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
                        "temp/KPIs/KPI1.1 - KPI1.3/")
 
+
 ### Step 2 : Import and trim data ----
 
-aaa_extract <- read_rds(paste0(extract_fpath, "aaa_extract_202209.rds"))
-aaa_exclusions <- read_rds(paste0(extract_fpath, "aaa_exclusions_202209.rds"))
+aaa_extract <- read_rds(extract_fpath)
+aaa_exclusions <- read_rds(extract_fpath)
 
 
 # Only want initial screens so select if screen type is initial or QA initial
@@ -185,8 +181,10 @@ first_offer_first_result <- first_offer_dates %>%
 cohort1 <- aaa_extract %>%
   filter(pat_elig != "03")
 
-### There should be a function for the below so it doesn't need to be updated
-### with more recent years
+####### Remove once moved to initial processing scripts ####
+
+### There should be a function for the first variable below so it doesn't
+### need to be updated with more recent years
 
 cohort1 <- cohort1 %>%
   mutate(eligibility_period = case_when(
@@ -255,33 +253,26 @@ cohort1 <- cohort1 %>%
     age65_onstartdate == 1 ~ "Older cohort - age 65 on start date",
     !is.na(eligibility_period) & age65_onstartdate == 0 ~ eligibility_period
   ))
-
+############ End of removed portion ######
 
 cohort1 <- cohort1 %>%
   filter(screen_type %in% c("01","03",NA))
 
 ### Sift through the duplicates
-# This has been done
-# If the chi != upi ends up being a problem then this will need redone
+# This has been done in spss by sorting on date_offer_sent and then picking
+# whatever record happens to be last. Trying to do it slightly
+# more methodically here
+# There are some records where chi != upi. If the chi != upi ends up being
+# a problem then this will need redone
 
 # Some duplicates are identical for all the relevant variables
 cohort1 <- cohort1 %>%
   distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
            dob_eligibility, dob, .keep_all = TRUE)
 
-### temporary
-# cohort1 <- cohort1 %>%
-#   group_by(upi) %>%
-#   mutate(
-#     oldest = if_else(dob == max(dob), 1, 0)
-#   ) %>%
-#   ungroup() %>%
-#   filter(oldest == 1) %>%
-#   distinct(upi, dob)
-###
 
 # Create variable called 'keep' to add records to.
-# Start with all the non duplicates then start bringing more records in
+# Start with all the non duplicates then bring more records in
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
   mutate(keep = if_else(n() == 1, 1, 0)) %>%
@@ -363,8 +354,11 @@ cohort1 <- cohort1 %>%
 
 
 # Step 7 : Create series of exclusions objects ----
+# some of these have '_summary' objects which were previously written to
+# excel. They aren't written out from here currently but can add that step
+# in if required.
 
-# Already on surveillance prior to national programme
+### Already on surveillance prior to national programme
 prior_sur <- aaa_extract %>%
   filter(screen_type %in% c("01", "02"))
 
@@ -381,7 +375,7 @@ prior_sur <- prior_sur %>%
   
 prior_sur <- filter(prior_sur, screen_type == "02")
 
-# Only an external result
+### Only an external result
 external_only <- aaa_extract %>%
   filter(screen_result %in% c("05", "06"))
 
@@ -393,7 +387,7 @@ external_only_summary <- external_only %>%
 
 external_only <- select(external_only, upi)
 
-# Deceased
+### Deceased
 deceased <- aaa_exclusions %>%
   filter(pat_inelig %in% c("15","16"))
 
@@ -417,7 +411,7 @@ deceased_summary <- deceased %>%
 
 deceased <- deceased %>% select(upi)
 
-# Prior screen exclusion
+### Prior screen exclusion
 prior_scr <- aaa_exclusions %>%
   filter(pat_inelig == "21")
 
@@ -441,7 +435,7 @@ prior_scr_summary <- prior_scr %>%
 
 prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
 
-# Opted out
+### Opted out
 optout <- aaa_exclusions %>%
   filter(pat_inelig == "01") %>%
   mutate(
@@ -472,7 +466,7 @@ optout_summary <- optout %>%
 
 optout <- optout %>% select(upi) %>% arrange(upi)
 
-# AAA repaired
+### AAA repaired
 repaired <- aaa_exclusions %>%
   filter(pat_inelig == "04") %>%
   mutate(exlength = date_end - date_start)
@@ -494,7 +488,7 @@ repaired_summary <- repaired %>%
 
 repaired <- repaired %>% select(upi) %>% arrange(upi)
 
-# Under vascular surveillance
+### Under vascular surveillance
 vasc_sur <- aaa_exclusions %>%
   filter(pat_inelig == "06") %>%
   mutate(exlength = date_end - date_start)
@@ -516,7 +510,7 @@ vasc_sur_summary <- vasc_sur %>%
 
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
-# Referred
+### Referred
 referred <- aaa_exclusions %>%
   filter(pat_inelig == "19") %>%
   mutate(exlength = date_end - date_start)
@@ -538,7 +532,7 @@ referred_summary <- referred %>%
 
 referred <- referred %>% select(upi) %>% arrange(upi)
 
-# Unfit
+### Unfit
 unfit <- aaa_exclusions %>%
   filter(pat_inelig == "18") %>%
   mutate(exlength = date_end - date_start)
@@ -560,7 +554,7 @@ unfit_summary <- unfit %>%
 
 unfit <- unfit %>% select(upi) %>% arrange(upi)
 
-# Other exclusion
+### Other exclusion
 other <- aaa_exclusions %>%
   filter(pat_inelig %in% c("11","12","13","14","17")) %>%
   mutate(exlength = date_end - date_start) %>%
@@ -594,7 +588,7 @@ other_summary <- other %>%
 
 other <- other %>% distinct(upi) %>% arrange(upi)
 
-# GANA and temporary residents
+### GANA and temporary residents
 
 temp_gana <- aaa_exclusions %>%
   filter(pat_inelig %in% c("25","26")) %>%
@@ -605,9 +599,7 @@ temp_gana <- temp_gana %>%
   arrange(upi)
 
 
-### Step 8 : Join files together
-
-temp <- data.frame(cohort1)
+### Step 8 : Remove exclusions ----
 
 cohort1 <- cohort1 %>%
   left_join(first_offer_first_result, by = "upi") %>%
@@ -657,14 +649,16 @@ cohort1 %>% count(inresult, inrefvas)
 cohort1 %>% count(inresult, inunfit)
 cohort1 %>% count(inresult, inother)
 
-# remove exclusion
 
+# remove exclusions
 cohort1 <- cohort1 %>%
   filter(intempgana + inonlyhavesurv_record + indeceased + inprior +
          inrepair + inundersurv_vas + inrefvas + inunfit + inother == 0)
 
 cohort1 <- cohort1 %>%
   filter(inexternal != 1)
+
+# Step 9 : Write out ----
 
 cohort1 <- cohort1 %>%
   select(postcode,
