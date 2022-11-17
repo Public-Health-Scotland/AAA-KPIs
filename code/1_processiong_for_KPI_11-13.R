@@ -267,13 +267,14 @@ cohort1 <- cohort1 %>%
            dob_eligibility, dob, .keep_all = TRUE)
 
 ### temporary
-cohort1 <- cohort1 %>%
-  group_by(upi) %>%
-  mutate(
-    oldest = if_else(dob == max(dob), 1, 0)
-  ) %>%
-  ungroup() %>%
-  filter(oldest == 1)
+# cohort1 <- cohort1 %>%
+#   group_by(upi) %>%
+#   mutate(
+#     oldest = if_else(dob == max(dob), 1, 0)
+#   ) %>%
+#   ungroup() %>%
+#   filter(oldest == 1) %>%
+#   distinct(upi, dob)
 ###
 
 # Create variable called 'keep' to add records to.
@@ -293,6 +294,15 @@ cohort1 <- cohort1 %>%
       TRUE ~ 0
     )) %>%
   ungroup()
+
+# get rid of records where the upi is accounted for
+cohort1 <- cohort1 %>%
+  group_by(upi) %>%
+  mutate(
+    drop = if_else(any(keep == 1) & keep == 0, 1, 0)
+  ) %>%
+  ungroup() %>%
+  filter(drop == 0)
 
 # keep only ones where there is an offer sent
 cohort1 <- cohort1 %>%
