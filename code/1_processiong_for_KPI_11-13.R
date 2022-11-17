@@ -661,7 +661,8 @@ cohort1 <- cohort1 %>%
 # Step 9 : Write out ----
 
 cohort1 <- cohort1 %>%
-  select(postcode,
+  select(upi,
+         postcode,
          ca2019,
          simd2020v2_sc_quintile,
          hbres,
@@ -671,7 +672,12 @@ cohort1 <- cohort1 %>%
          screen_date = FT_screen_date,
          screen_type = FT_screen_type,
          screen_exep = FT_screen_exep,
-         screen_result = FT_screen_result
+         screen_result = FT_screen_result,
+         isd_aaa_size_group,
+         results,
+         inoffertested,
+         inresult,
+         inoffer
   )
 
 write_rds(cohort1, paste0(output_fpath, "inviteanduptake_initial.rds"))
