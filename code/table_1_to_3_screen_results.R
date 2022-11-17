@@ -124,30 +124,15 @@ aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
 
 aaa_filtered <- aaa_extract %>% 
   filter(screen_type %in% c("01", "03") & 
-         screen_result %in% c("01", "02", "04")) %>%
-  mutate(isd_aaa_size = case_when(screen_result %in% c("01", "02", "05", "06") & 
-                                    (followup_recom != "05" | 
-                                       is.na(followup_recom)
-                                     ) ~ largest_measure)) %>% 
-  mutate(isd_aaa_size_group = case_when(isd_aaa_size >= 0 & 
-                                          isd_aaa_size <= 2.9 ~ "negative", 
-                                        isd_aaa_size >= 3 & 
-                                          isd_aaa_size <= 4.4 ~ "small",
-                                        isd_aaa_size >= 4.5 & 
-                                          isd_aaa_size <= 5.4 ~ "medium",
-                                        isd_aaa_size >= 5.5 & 
-                                          isd_aaa_size <= 10.5 ~ "large",
-                                        isd_aaa_size >= 10.6 ~ 
-                                          "very large error"))
+         screen_result %in% c("01", "02", "04"))
 
-aaa_filtered %>% count(isd_aaa_size_group)
+aaa_filtered %>% count(aaa_size_group)
 
-# There is 1 screen assigned to the category very large error - this was 
+# There are 2 screens assigned to the category very large error - one was 
 # investigated in May 2021 and found to be legitimate, recode to large group
 
 aaa_filtered <- aaa_filtered %>% 
-  mutate(isd_aaa_size_group = recode(isd_aaa_size_group, 
-                                     "very large error" = "large"))
+  mutate(aaa_size_group = recode(aaa_size_group, "very large error" = "large"))
 
 # Aggregate to one record per UPI
 # Initial screens with a result of non-visualisation, positive, negative 
@@ -160,7 +145,7 @@ last_results_initial_screens_output <- aaa_filtered %>%
   slice(n()) %>% 
   ungroup() %>% 
   select(upi, date_screen, screen_type, screen_exep, screen_result, 
-         followup_recom, isd_aaa_size_group)
+         followup_recom, aaa_size_group)
 
 # Count screen_result
 
@@ -207,14 +192,10 @@ rm(aaa_extract, first_offer_initial_screens,
 # Read in invite and uptake data
 # UPDATE TO RDS WHEN AVAILABLE
 
-invite_and_uptake <- read_sav(paste0("/PHI_conf/AAA/Topics/Screening/KPI/", 
+invite_and_uptake <- read_rds(paste0("/PHI_conf/AAA/Topics/Screening/KPI/", 
                                      "202209/temp/KPIs/KPI1.1 - KPI1.3/", 
-                                     "inviteanduptake_initial.zsav")) %>% 
-  zap_formats() %>%
-  zap_widths() %>%
-  sjlabelled::remove_all_labels() %>% 
-  select(upi = UPI, pc7, ca2019, simd2020v2_sc_quintile, hbres, dob_eligibility, 
-         dob)
+                                     "inviteanduptake_initial.rds")) %>% 
+  select(upi, ca2019, simd2020v2_sc_quintile, hbres, dob_eligibility, dob)
 
 # Join invite_and_uptake and fo_lr_initial_screens
 # Define a result_type, showing positive or negative depending on result
@@ -281,10 +262,10 @@ table_one <- calculate_totals(table_one_data, hbres, result_type) %>%
 table_two_data <- combined_output %>% 
  filter(result_type == "positive" & !is.na(year_screen))
 
-table_two_data %>% count(isd_aaa_size_group)
+table_two_data %>% count(aaa_size_group)
 
-# Calculate totals for table_two_data by hbres and isd_aaa_size_group
-# Pivot data into wider format, using names from isd_aaa_size_group and values 
+# Calculate totals for table_two_data by hbres and aaa_size_group
+# Pivot data into wider format, using names from aaa_size_group and values 
 # from n
 # Calculate a percentage positive value across large, medium and small columns
 # Pivot data into wider format, using names from year_screen and values from
@@ -292,8 +273,8 @@ table_two_data %>% count(isd_aaa_size_group)
 # Select column order to match output file specification
 # Arrange data to put Scotland row first and then alphabetical below
 
-table_two <- calculate_totals(table_two_data, hbres, isd_aaa_size_group) %>% 
-  pivot_wider(names_from = isd_aaa_size_group,
+table_two <- calculate_totals(table_two_data, hbres, aaa_size_group) %>% 
+  pivot_wider(names_from = aaa_size_group,
               values_from = n) %>% 
   mutate(across(c(large, medium, small), 
                 ~ round_half_up(. * 100 / total, 1), 
@@ -313,13 +294,15 @@ table_two <- calculate_totals(table_two_data, hbres, isd_aaa_size_group) %>%
 
 # Define table_three_data by setting simd as a character
 # Set NAs as unknown and add most and least to 1 and 5
+# Remove rows with blank year_screen
 
 table_three_data <- combined_output %>% 
   mutate(simd2020v2_sc_quintile = 
            case_when(simd2020v2_sc_quintile == 1 ~ "1=most", 
                      simd2020v2_sc_quintile == 5 ~ "5=least",
                      is.na(simd2020v2_sc_quintile) ~ "unknown", 
-                     TRUE ~ as.character(simd2020v2_sc_quintile)))
+                     TRUE ~ as.character(simd2020v2_sc_quintile))) %>% 
+  filter(!is.na(year_screen))
 
 table_three_data %>% count(simd2020v2_sc_quintile)
 
@@ -333,7 +316,7 @@ table_three_data %>% count(simd2020v2_sc_quintile)
 
 table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile, 
                                 result_type) %>% 
-  filter(result_type != "negative"& year_screen != "older" & !is.na(year_screen)) %>% 
+  filter(result_type != "negative" & year_screen != "older") %>% 
   pivot_wider(names_from = result_type,
               values_from = n) %>% 
   mutate(pc = round_half_up(positive * 100 / total, 1)) %>% 
