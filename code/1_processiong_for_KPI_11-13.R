@@ -47,6 +47,9 @@ cutoff_date <- dmy("31-03-1957")
 extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
                         "202209/output/")
 
+output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
+                       "temp/KPIs/KPI1.1 - KPI1.3/")
+
 ### Step 2 : Import and trim data ----
 
 aaa_extract <- read_rds(paste0(extract_fpath, "aaa_extract_202209.rds"))
@@ -604,6 +607,8 @@ temp_gana <- temp_gana %>%
 
 ### Step 8 : Join files together
 
+temp <- data.frame(cohort1)
+
 cohort1 <- cohort1 %>%
   left_join(first_offer_first_result, by = "upi") %>%
   mutate(
@@ -628,7 +633,6 @@ cohort1 <- cohort1 %>%
 
 cohort1 %>% count(inoffertested, inoptedout)
 
-temp <- data.frame(cohort1)
 
 cohort1 <- cohort1 %>%
   mutate(
@@ -656,16 +660,27 @@ cohort1 %>% count(inresult, inother)
 # remove exclusion
 
 cohort1 <- cohort1 %>%
-  filter(sum(intempgana, inonlyhavesurv_record, indeceased, ininprior,
-             inrepair, inundersurv_vas, inrefvas, inunfit, inother) == 0)
+  filter(intempgana + inonlyhavesurv_record + indeceased + inprior +
+         inrepair + inundersurv_vas + inrefvas + inunfit + inother == 0)
 
 cohort1 <- cohort1 %>%
   filter(inexternal != 1)
 
 cohort1 <- cohort1 %>%
-  select()
+  select(postcode,
+         ca2019,
+         simd2020v2_sc_quintile,
+         hbres,
+         dob_eligibility,
+         dob,
+         date_first_offer_sent,
+         screen_date = FT_screen_date,
+         screen_type = FT_screen_type,
+         screen_exep = FT_screen_exep,
+         screen_result = FT_screen_result
+  )
 
-write_rds(cohort1, "fpath")
+write_rds(cohort1, paste0(output_fpath, "inviteanduptake_initial.rds"))
 
 
 
