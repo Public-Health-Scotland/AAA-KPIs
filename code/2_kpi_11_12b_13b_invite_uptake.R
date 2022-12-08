@@ -65,26 +65,39 @@ invite_uptake <- invite_uptake %>%
 
 # assign year eligible cohorts
 invite_uptake <- invite_uptake %>%
-  mutate(cohort_year = case_when(
+  mutate(cohort_year1 = case_when(
     between(dob, year1_start, year1_end) ~ 1,
-    between(dob, year2_start, year2_end) ~ 2,
-    TRUE ~ NA
-  ))
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  cohort_year2 = case_when(
+    between(dob, year2_start, year2_end) ~ 1,
+    TRUE ~ as.numeric(NA)
+  )
+  )
 
 # assign year offer cohorts (offered before 66)
 invite_uptake <- invite_uptake %>%
-  mutate(offer_year = case_when(
-    cohort_year == 1 & inoffer == 1 & age_offer < 66 ~ 1,
-    cohort_year == 2 & inoffer == 1 & age_offer < 66 ~ 2,
-    TRUE ~ NA
+  mutate(offer_year1 = case_when(
+    cohort_year1 == 1 & inoffer == 1 & age_offer < 66 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  offer_year2 = case_when(
+    cohort_year2 == 1 & inoffer == 1 & age_offer < 66 ~ 1,
+    TRUE ~ as.numeric(NA)
   ))
 
 # secondary numerator. For those offered an appointment at any point
 invite_uptake <- invite_uptake %>%
-  mutate(offer_year_any = case_when(
-    cohort_year == 1 & inoffer == 1 ~ 1,
-    cohort_year == 2 & inoffer == 1 ~ 2,
-    TRUE ~ NA
+  mutate(offer_any_year1 = case_when(
+    cohort_year1 == 1 & inoffer == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  offer_any_year2 = case_when(
+    cohort_year2 == 1 & inoffer == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
   ))
 
 ## for KPI 1.2b
@@ -92,17 +105,38 @@ invite_uptake <- invite_uptake %>%
 # offered before age 66 (done?)
 # tested before 795 months and offered before 66
 invite_uptake <- invite_uptake %>%
-  mutate(tested_1_2b = case_when(
-    cohort_year == 1 & inoffer == 1 ~ 1,
-    cohort_year == 2 & inoffer == 1 ~ 2,
-    TRUE ~ NA
+  mutate(tested_year1 = case_when(
+    cohort_year1 == 1 & inoffer == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested_year2 = case_when(
+    cohort_year2 == 1 & inoffer == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
   ))
 
 ### KPI 1.1 ----
 
 # trim date
-invite_uptake_slim <- invite_uptake %>%
+invite_uptake_1_1 <- invite_uptake %>%
   filter(dob >= dmy("01-04-1948"))
+
+breakdown_1_1 <- invite_uptake_1_1 %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested_year2, sum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+scotland_1_1 <- breakdown_1_1 %>%
+  summarise(
+    across(cohort_year1:tested_year2, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland")
+
+breakdown_1_1 <- bind_rows(breakdown_1_1, scotland_1_1)
+
+
 
 # create individual board breakdown
 # join on scotland data
