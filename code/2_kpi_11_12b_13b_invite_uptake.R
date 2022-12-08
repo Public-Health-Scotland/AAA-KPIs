@@ -121,6 +121,7 @@ invite_uptake <- invite_uptake %>%
 invite_uptake_1_1 <- invite_uptake %>%
   filter(dob >= dmy("01-04-1948"))
 
+# create health board breakdown
 breakdown_1_1 <- invite_uptake_1_1 %>%
   group_by(hbres) %>%
   summarise(
@@ -136,12 +137,25 @@ scotland_1_1 <- breakdown_1_1 %>%
 
 breakdown_1_1 <- bind_rows(breakdown_1_1, scotland_1_1)
 
-
-
-# create individual board breakdown
-# join on scotland data
 # create percentages
-# create output tables?
+breakdown_1_1 <- breakdown_1_1 %>%
+  mutate(
+    percent_year1 = (offer_year1/cohort_year1)*100,
+    percent_year2 = (offer_year2/cohort_year2)*100,
+    
+    percent_any_year1 = (offer_any_year1/cohort_year1)*100,
+    percent_any_year2 = (offer_any_year2/cohort_year2)*100
+  )
+
+# Output tables (tidy?)
+output_a_1_1 <- breakdown_1_1 %>%
+  select(hbres, cohort_year1, offer_year1, percent_year1,
+         cohort_year2, offer_year2, percent_year2)
+
+output_b_1_1 <- breakdown_1_1 %>%
+  select(hbres, cohort_year1, offer_any_year1, percent_any_year1,
+         cohort_year2, offer_any_year2, percent_any_year2)
+
 
 ### KPI 1.2b ----
 
