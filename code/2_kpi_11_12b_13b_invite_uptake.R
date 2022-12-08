@@ -45,6 +45,16 @@ year1_end <- dmy("31-03-1956")
 year2_start <- dmy("01-04-1956")
 year2_end <- dmy("31-03-1957")
 
+# Functions
+
+# pass a dataframe and 
+make_summary <- function(df, ...) {
+  
+  
+  summary
+}
+
+
 ### Step 2 : Import data ----
 
 invite_uptake <- read_rds(invite_uptake_fpath)
@@ -86,7 +96,11 @@ invite_uptake <- invite_uptake %>%
   offer_year2 = case_when(
     cohort_year2 == 1 & inoffer == 1 & age_offer < 66 ~ 1,
     TRUE ~ as.numeric(NA)
-  ))
+  ),
+  
+  offer_not_assigned = if_else(offer_year1 != 1 &
+                                 offer_year2 != 1, 1, 0)
+  )
 
 # secondary numerator. For those offered an appointment at any point
 invite_uptake <- invite_uptake %>%
@@ -106,14 +120,20 @@ invite_uptake <- invite_uptake %>%
 # tested before 795 months and offered before 66
 invite_uptake <- invite_uptake %>%
   mutate(tested_year1 = case_when(
-    cohort_year1 == 1 & inoffer == 1 ~ 1,
+    !is.na(screen_result) == 1 & age_screen < 795 &
+      age_offer < 66 & cohort_year1 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
   ),
   
   tested_year2 = case_when(
-    cohort_year2 == 1 & inoffer == 1 ~ 1,
+    !is.na(screen_result) == 1 & age_screen < 795 &
+      age_offer < 66 & cohort_year2 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
-  ))
+  ),
+  
+  tested_not_assigned = if_else(tested_year1 != 1 &
+                                 tested_year2 != 1, 1, 0)
+  )
 
 ### KPI 1.1 ----
 
@@ -125,13 +145,13 @@ invite_uptake_1_1 <- invite_uptake %>%
 breakdown_1_1 <- invite_uptake_1_1 %>%
   group_by(hbres) %>%
   summarise(
-    across(cohort_year1:tested_year2, sum, na.rm = TRUE)
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup()
 
 scotland_1_1 <- breakdown_1_1 %>%
   summarise(
-    across(cohort_year1:tested_year2, sum, na.rm = TRUE)
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
   mutate(hbres = "Scotland")
 
@@ -159,8 +179,89 @@ output_b_1_1 <- breakdown_1_1 %>%
 
 ### KPI 1.2b ----
 
+breakdown_1_2 <- invite_uptake %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+scotland_1_2 <- breakdown_1_2 %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland")
+
+breakdown_1_2 <- bind_rows(breakdown_1_2, scotland_1_2)
+
+# create percentages
+breakdown_1_2 <- breakdown_1_2 %>%
+  mutate(
+    percent_year1 = (tested_year1/offer_year1)*100,
+    percent_year2 = (tested_year2/offer_year2)*100,
+    
+    p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
+  )
+
+# Output tables (tidy?)
+output_1_2 <- breakdown_1_2 %>%
+  select(hbres, offer_year1, tested_year1, percent_year1,
+         offer_year2, tested_year2, percent_year2)
+
+
 ### KPI 1.3b ----
 
+breakdown_1_3 <- invite_uptake %>%
+  group_by(hbres, simd2020v2_sc_quintile) %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+breakdown_1_3_tot <- invite_uptake %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(simd2020v2_sc_quintile = 0)
+
+scotland_1_3 <- breakdown_1_3 %>%
+  group_by(simd2020v2_sc_quintile) %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland")
+
+scotland_1_3_tot <- breakdown_1_3 %>%
+  summarise(
+    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland") %>%
+  mutate(simd2020v2_sc_quintile = 0)
+
+breakdown_1_3 <- bind_rows(breakdown_1_3, breakdown_1_3_tot) %>%
+  arrange(hbres)
+
+scotland_1_3 <- bind_rows(scotland_1_3, scotland_1_3_tot)
+
+breakdown_1_3 <- bind_rows(scotland_1_3, breakdown_1_3) %>%
+  select(hbres, everything())
+
+# create percentages
+breakdown_1_3 <- breakdown_1_3 %>%
+  mutate(
+    percent_year1 = (tested_year1/offer_year1)*100,
+    percent_year2 = (tested_year2/offer_year2)*100,
+    
+    p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
+  )
+
+# Output tables (tidy?)
+output_1_3 <- breakdown_1_3 %>%
+  select(hbres, simd2020v2_sc_quintile, offer_year1, tested_year1,
+         percent_year1, offer_year2, tested_year2, percent_year2) %>%
+  mutate_all(~ifelse(is.nan(.), NA, .))
 
 
-
+# Not decided what needs saved out from this script yet. Will come back.
