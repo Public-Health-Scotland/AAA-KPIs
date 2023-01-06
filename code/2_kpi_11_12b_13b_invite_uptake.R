@@ -265,3 +265,61 @@ output_1_3 <- breakdown_1_3 %>%
 
 
 # Not decided what needs saved out from this script yet. Will come back.
+
+
+# For now going to write the coverage stuff on the end of this script.
+# Might move to a seperate script after.
+
+
+### define variables
+
+### create derived variables
+## Coverage rate
+# denominator : cohort who are eligible to be screened
+#           already have
+# numerator : if man has been tested and age screen < 795 months
+invite_uptake <- invite_uptake %>%
+  mutate(tested2_year1 = case_when(
+    !is.na(screen_result) == 1 & age_screen < 795 &
+      cohort_year1 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_year2 = case_when(
+    !is.na(screen_result) == 1 & age_screen < 795 &
+      cohort_year2 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_not_assigned = if_else(tested2_year1 != 1 &
+                                  tested2_year2 != 1, 1, 0)
+  )
+  
+# additional : if man has been tested at any time
+invite_uptake <- invite_uptake %>%
+  mutate(tested_any_year1 = case_when(
+    cohort_year1 == 1 & teste ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested_any_year2 = case_when(
+    !is.na(screen_result) == 1 & age_screen < 795 &
+      cohort_year2 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_not_assigned = if_else(tested2_year1 != 1 &
+                                   tested2_year2 != 1, 1, 0)
+  )
+
+# additional : if man has been tested before sep 1 of extract year
+#           don't have
+## Coverage by simd.
+# all variables covered
+
+### Create tables
+
+## coverage
+
+## Coverage by simd
+
