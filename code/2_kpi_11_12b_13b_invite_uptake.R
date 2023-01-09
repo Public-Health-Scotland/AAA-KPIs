@@ -280,40 +280,42 @@ output_1_3 <- breakdown_1_3 %>%
 # numerator : if man has been tested and age screen < 795 months
 invite_uptake <- invite_uptake %>%
   mutate(tested2_year1 = case_when(
-    !is.na(screen_result) == 1 & age_screen < 795 &
+    !is.na(screen_result) & age_screen < 795 &
       cohort_year1 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
   ),
   
   tested2_year2 = case_when(
-    !is.na(screen_result) == 1 & age_screen < 795 &
+    !is.na(screen_result) & age_screen < 795 &
       cohort_year2 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
   ),
   
-  tested2_not_assigned = if_else(tested2_year1 != 1 &
-                                  tested2_year2 != 1, 1, 0)
+  tested2_not_assigned = if_else(!is.na(tested2_year1) |
+                                  !is.na(tested2_year2) , as.numeric(NA), 1)
   )
   
 # additional : if man has been tested at any time
 invite_uptake <- invite_uptake %>%
-  mutate(tested_any_year1 = case_when(
-    cohort_year1 == 1 & teste ~ 1,
+  mutate(tested2_any_year1 = case_when(
+    !is.na(screen_result) & cohort_year1 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
   ),
   
-  tested_any_year2 = case_when(
-    !is.na(screen_result) == 1 & age_screen < 795 &
-      cohort_year2 == 1 ~ 1,
+  tested2_any_year2 = case_when(
+    !is.na(screen_result) & cohort_year2 == 1 ~ 1,
     TRUE ~ as.numeric(NA)
   ),
   
-  tested2_not_assigned = if_else(tested2_year1 != 1 &
-                                   tested2_year2 != 1, 1, 0)
+  tested2_any_not_assigned = if_else(!is.na(tested2_any_year1) |
+                                   !is.na(tested2_any_year2) , as.numeric(NA), 1)
   )
 
 # additional : if man has been tested before sep 1 of extract year
 #           don't have
+# This one seems kind of weird because it overwrites the previous one.
+# Going to leave it out for now but might need to come back.
+
 ## Coverage by simd.
 # all variables covered
 
@@ -321,5 +323,83 @@ invite_uptake <- invite_uptake %>%
 
 ## coverage
 
+breakdown_1_2a <- invite_uptake %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+
+scotland_1_2a <- breakdown_1_2a %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland")
+
+breakdown_1_2a <- bind_rows(breakdown_1_2a, scotland_1_2a)
+
+# create percentages
+breakdown_1_2a <- breakdown_1_2a %>%
+  mutate(
+    percent_year1 = (tested2_year1/cohort_year1)*100,
+    percent_year2 = (tested2_year2/cohort_year2)*100,
+    
+    percent_any_year1 = (tested2_any_year1/cohort_year1)*100,
+    percent_any_year2 = (tested2_any_year2/cohort_year2)*100
+  )
+
+# Output tables (tidy?)
+output_a_1_2a <- breakdown_1_2a %>%
+  select(hbres, cohort_year1, tested2_year1, percent_year1,
+         cohort_year2, tested2_year2, percent_year2)
+# Very slight differences presumably to do with slight differences in
+# date/age calculations
+
+output_b_1_2a <- breakdown_1_2a %>%
+  select(hbres, cohort_year1, tested2_any_year1, percent_any_year1,
+         cohort_year2, tested2_any_year2, percent_any_year2)
+# Yeah pretty sure it's a date thing since these numbers match
+# the previous output
+
+
 ## Coverage by simd
+breakdown_1_3a <- invite_uptake %>%
+  group_by(hbres, simd2020v2_sc_quintile) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+
+scotland_1_3a <- breakdown_1_3a %>%
+  group_by(simd2020v2_sc_quintile) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  mutate(hbres = "Scotland")
+
+breakdown_1_3a <- bind_rows(breakdown_1_3a, scotland_1_3a)
+
+# create percentages
+breakdown_1_3a <- breakdown_1_3a %>%
+  mutate(
+    percent_year1 = (tested2_year1/cohort_year1)*100,
+    percent_year2 = (tested2_year2/cohort_year2)*100,
+    
+    percent_any_year1 = (tested2_any_year1/cohort_year1)*100,
+    percent_any_year2 = (tested2_any_year2/cohort_year2)*100
+  )
+
+# Output tables (tidy?)
+output_a_1_3a <- breakdown_1_3a %>%
+  select(hbres, cohort_year1, tested2_year1, percent_year1,
+         cohort_year2, tested2_year2, percent_year2)
+
+
+output_b_1_3a <- breakdown_1_3a %>%
+  select(hbres, cohort_year1, tested2_any_year1, percent_any_year1,
+         cohort_year2, tested2_any_year2, percent_any_year2)
+
+
 
