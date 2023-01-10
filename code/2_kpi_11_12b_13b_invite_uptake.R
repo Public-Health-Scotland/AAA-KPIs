@@ -369,7 +369,8 @@ breakdown_1_3a <- invite_uptake %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
 
 
 scotland_1_3a <- breakdown_1_3a %>%
@@ -377,9 +378,15 @@ scotland_1_3a <- breakdown_1_3a %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")
+  mutate(hbres = "Scotland")%>%
+  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
 
-breakdown_1_3a <- bind_rows(breakdown_1_3a, scotland_1_3a)
+
+tot_1_3a <- breakdown_1_2a %>%
+  mutate(simd2020v2_sc_quintile = "Total")
+
+# bind together including non simd totals from previous kpi
+breakdown_1_3a <- bind_rows(breakdown_1_3a, scotland_1_3a, tot_1_3a)
 
 # create percentages
 breakdown_1_3a <- breakdown_1_3a %>%
@@ -393,13 +400,15 @@ breakdown_1_3a <- breakdown_1_3a %>%
 
 # Output tables (tidy?)
 output_a_1_3a <- breakdown_1_3a %>%
-  select(hbres, cohort_year1, tested2_year1, percent_year1,
-         cohort_year2, tested2_year2, percent_year2)
-
+  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, percent_year1,
+         cohort_year2, tested2_year2, percent_year2) %>%
+  arrange(factor(hbres, levels = "Scotland"), hbres)
+# Slight differences due to newer simd version
 
 output_b_1_3a <- breakdown_1_3a %>%
-  select(hbres, cohort_year1, tested2_any_year1, percent_any_year1,
-         cohort_year2, tested2_any_year2, percent_any_year2)
-
+  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_any_year1, percent_any_year1,
+         cohort_year2, tested2_any_year2, percent_any_year2) %>%
+  arrange(factor(hbres, levels = "Scotland"), hbres)
+# again slight differences
 
 
