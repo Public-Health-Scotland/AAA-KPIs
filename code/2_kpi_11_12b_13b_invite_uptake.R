@@ -1,9 +1,9 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-# 2_kpi_11_12b_13b_invite_uptake.R
+# 2_kpi_1_1-1_3_uptake_coverage.R
 # Angus Morton
 # 17/11/2022
 #
-# Produce KPIs 1.1, 1.2b and 1.3b
+# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a and 1.3b
 #
 # Written on RServer (R Version 3.6.1)
 #~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,8 +11,15 @@
 # KPI 1.1  : Percentage of eligible population who are sent an initial
 #            offer to screening before age 66
 
+# KPI 1.2a : Percentage eligible men tested before the age of 66 and
+#            3 months
+
 # KPI 1.2b : Percentage of men offered screening before age 66 who are
-#            tested before age 66 and 3 months 
+#            tested before age 66 and 3 months
+
+# KPI 1.3a : Percentage eligible men tested before the age of 66 and
+#            3 months by Scottish Index of Multiple Deprivation (SIMD)
+#            quintile
 
 # KPI 1.3b : Percentage of men offered screening before age 66 who are
 #            tested before age 66 and 3 months by Scottish Index of
@@ -22,8 +29,9 @@
 
 # Step 1 : Import packages and filepaths
 # Step 2 : Import data
-# Step 3 : 
-# Step x : Write out
+# Step 3 : Create derived variables
+# Step 4 : Create summary tables for each kpi
+# Step 5 : Write out
 
 
 ### Step 1 : Import packages and filepaths ----
@@ -63,12 +71,11 @@ invite_uptake <- read_rds(invite_uptake_fpath)
 ### Step 3 : Create derived variables ----
 
 ## for KPI 1.1
-# age_at_screen (they want age in months because 66 and 3 months is the
-# key age. Don't really like this as ambiguous what a month is)
+# age_at_screen (in months because 66 and 3 months is the key age)
 invite_uptake <- invite_uptake %>%
   mutate(age_screen = interval(dob, screen_date) %/% months(1))
 
-# age_at_offer (they want this in years because 66 is the key age)
+# age_at_offer (in years because 66 is the key age)
 invite_uptake <- invite_uptake %>%
   mutate(age_offer = interval(dob, date_first_offer_sent) %/% years(1))
 
@@ -134,6 +141,53 @@ invite_uptake <- invite_uptake %>%
   tested_not_assigned = if_else(tested_year1 != 1 &
                                  tested_year2 != 1, 1, 0)
   )
+
+
+## for KPI 1.2a
+# denominator : cohort who are eligible to be screened (already got)
+
+# numerator : if man has been tested and age screen < 795 months
+invite_uptake <- invite_uptake %>%
+  mutate(tested2_year1 = case_when(
+    !is.na(screen_result) & age_screen < 795 &
+      cohort_year1 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_year2 = case_when(
+    !is.na(screen_result) & age_screen < 795 &
+      cohort_year2 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_not_assigned = if_else(!is.na(tested2_year1) |
+                                   !is.na(tested2_year2) , as.numeric(NA), 1)
+  )
+
+# additional : if man has been tested at any time
+invite_uptake <- invite_uptake %>%
+  mutate(tested2_any_year1 = case_when(
+    !is.na(screen_result) & cohort_year1 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_any_year2 = case_when(
+    !is.na(screen_result) & cohort_year2 == 1 ~ 1,
+    TRUE ~ as.numeric(NA)
+  ),
+  
+  tested2_any_not_assigned = if_else(!is.na(tested2_any_year1) |
+                                       !is.na(tested2_any_year2) , as.numeric(NA), 1)
+  )
+
+# additional : if man has been tested before sep 1 of extract year
+#           don't have
+# This one seems kind of weird because it overwrites the previous one.
+# Going to leave it out for now but might need to come back.
+# Actually doesn't seem like it overwrites anything so could just come out?
+
+
+### Step 4 : Create summary tables for each kpi ----
 
 ### KPI 1.1 ----
 
@@ -264,64 +318,8 @@ output_1_3 <- breakdown_1_3 %>%
   mutate_all(~ifelse(is.nan(.), NA, .))
 
 
-# Not decided what needs saved out from this script yet. Will come back.
 
-
-# For now going to write the coverage stuff on the end of this script.
-# Might move to a seperate script after.
-
-
-### define variables
-
-### create derived variables
-## Coverage rate
-# denominator : cohort who are eligible to be screened
-#           already have
-# numerator : if man has been tested and age screen < 795 months
-invite_uptake <- invite_uptake %>%
-  mutate(tested2_year1 = case_when(
-    !is.na(screen_result) & age_screen < 795 &
-      cohort_year1 == 1 ~ 1,
-    TRUE ~ as.numeric(NA)
-  ),
-  
-  tested2_year2 = case_when(
-    !is.na(screen_result) & age_screen < 795 &
-      cohort_year2 == 1 ~ 1,
-    TRUE ~ as.numeric(NA)
-  ),
-  
-  tested2_not_assigned = if_else(!is.na(tested2_year1) |
-                                  !is.na(tested2_year2) , as.numeric(NA), 1)
-  )
-  
-# additional : if man has been tested at any time
-invite_uptake <- invite_uptake %>%
-  mutate(tested2_any_year1 = case_when(
-    !is.na(screen_result) & cohort_year1 == 1 ~ 1,
-    TRUE ~ as.numeric(NA)
-  ),
-  
-  tested2_any_year2 = case_when(
-    !is.na(screen_result) & cohort_year2 == 1 ~ 1,
-    TRUE ~ as.numeric(NA)
-  ),
-  
-  tested2_any_not_assigned = if_else(!is.na(tested2_any_year1) |
-                                   !is.na(tested2_any_year2) , as.numeric(NA), 1)
-  )
-
-# additional : if man has been tested before sep 1 of extract year
-#           don't have
-# This one seems kind of weird because it overwrites the previous one.
-# Going to leave it out for now but might need to come back.
-
-## Coverage by simd.
-# all variables covered
-
-### Create tables
-
-## coverage
+### KPI 1.2a ----
 
 breakdown_1_2a <- invite_uptake %>%
   group_by(hbres) %>%
@@ -362,6 +360,7 @@ output_b_1_2a <- breakdown_1_2a %>%
 # Yeah pretty sure it's a date thing since these numbers match
 # the previous output
 
+### KPI 1.3a ----
 
 ## Coverage by simd
 breakdown_1_3a <- invite_uptake %>%
