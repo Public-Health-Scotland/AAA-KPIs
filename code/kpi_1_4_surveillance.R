@@ -24,12 +24,12 @@ pacman::p_load(
   )
 
 # Define dates 
-
-month <- '202209' # this may not be needed
 prev_year <- "2019/20"
 current_year <- "2020/21"
 current_year_start <- "2020-03-01"
 next_year_start <- "2021-03-01"
+financial_year_due <- "2021/22"
+financial_quarters <- c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")
 
 # Define filepaths
 
@@ -247,7 +247,7 @@ final_follow_ups <- final_follow_ups %>%
   mutate(exclusion_flag_final = ifelse(attend ==1,0,exclusion_flag)) %>% 
   filter(exclusion_flag_final == 0) %>%
   mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_ac.x)+years(1)))) %>% 
-  filter(fy_due == "2021/22") %>% 
+  filter(fy_due == financial_year_due) %>% 
   arrange(upi_ac,financial_year_ac.x,fin_month_ac.x,date_start) %>%# updatd from
   group_by(upi_ac,financial_year_ac.x,fin_month_ac.x) %>% 
   slice(n()) %>% 
@@ -282,7 +282,7 @@ kpi_1.4a <- final_follow_ups %>%
   group_modify(~ adorn_totals(.x, where = "row")) %>% 
   ungroup() %>%
   mutate(pc = `sum(attend)` * 100 / `sum(cohort_ac.x)`) %>%
-  mutate(pc = round_half_up(pc, 2))
+  mutate(pc = round_half_up(pc, 1))
 
   
 View(kpi_1.4a)
@@ -300,7 +300,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   # slice(n()) %>% 
   # ungroup() %>% #12057
   
-  filter(fy_quarter %in% c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")) %>% # needs to be added to beginning of script
+  filter(fy_quarter %in% financial_quarters) %>% # needs to be added to beginning of script
   mutate(cohort = 1) #%>% # 1306 rows - matched
 
 
@@ -398,7 +398,7 @@ quarterly_final_follow_ups <- quarterly_combined_appointments %>%
   filter(exclusion_flag_final == 0) %>%
   mutate(fy_due_date = (as.POSIXct(date_screen_qc) %m+% months(3))) %>%
   mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_qc) %m+% months(3)))) %>%
-  filter(fy_due == "2021/22") %>% 
+  filter(fy_due == financial_year_due) %>% 
   # mutate(interval = difftime(date_screen_sc,date_screen_qc,units = "days")) %>%
   # filter(interval >= 0 | is.na(interval) &
   #          #interval <= 120 & # to match spss output
@@ -428,7 +428,7 @@ kpi_1.4b <- quarterly_final_follow_ups %>%
   group_modify(~ adorn_totals(.x, where = "row")) %>% 
   ungroup() %>%
   mutate(pc = `sum(attend)` * 100 / `sum(cohort_qc.x)`) %>%
-  mutate(pc = round_half_up(pc, 2))
+  mutate(pc = round_half_up(pc, 1))
 
 
 View(kpi_1.4b)
