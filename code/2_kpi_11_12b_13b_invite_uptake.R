@@ -30,8 +30,9 @@
 # Step 1 : Import packages and filepaths
 # Step 2 : Import data
 # Step 3 : Create derived variables
-# Step 4 : Create summary tables for each kpi
-# Step 5 : Write out
+# Step 4 : Save out basefiles for other scripts
+# Step 5 : Create summary tables for each kpi
+# Step 6 : Write out
 
 
 ### Step 1 : Import packages and filepaths ----
@@ -46,6 +47,9 @@ library(lubridate)
 invite_uptake_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
                               "temp/KPIs/KPI1.1 - KPI1.3/",
                               "inviteanduptake_initial.rds")
+
+output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
+                       "temp/KPIs/KPI1.1 - KPI1.3/")
 
 year1_start <- dmy("01-04-1955")
 year1_end <- dmy("31-03-1956")
@@ -186,8 +190,12 @@ invite_uptake <- invite_uptake %>%
 # Going to leave it out for now but might need to come back.
 # Actually doesn't seem like it overwrites anything so could just come out?
 
+### Step 4 : Save out basefiles for other scripts ----
 
-### Step 4 : Create summary tables for each kpi ----
+write_rds(invite_uptake, paste0(output_fpath, "coverage_basefile.rds"))
+
+
+### Step 5 : Create summary tables for each kpi ----
 
 ### KPI 1.1 ----
 
