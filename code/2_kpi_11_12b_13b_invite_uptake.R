@@ -57,15 +57,6 @@ year1_end <- dmy("31-03-1956")
 year2_start <- dmy("01-04-1956")
 year2_end <- dmy("31-03-1957")
 
-# Functions
-
-# pass a dataframe and 
-make_summary <- function(df, ...) {
-  
-  
-  summary
-}
-
 
 ### Step 2 : Import data ----
 
@@ -126,8 +117,6 @@ invite_uptake <- invite_uptake %>%
   ))
 
 ## for KPI 1.2b
-# assign year offer cohorts (already have this?)
-# offered before age 66 (done?)
 # tested before 795 months and offered before 66
 invite_uptake <- invite_uptake %>%
   mutate(tested_year1 = case_when(
@@ -148,8 +137,6 @@ invite_uptake <- invite_uptake %>%
 
 
 ## for KPI 1.2a
-# denominator : cohort who are eligible to be screened (already got)
-
 # numerator : if man has been tested and age screen < 795 months
 invite_uptake <- invite_uptake %>%
   mutate(tested2_year1 = case_when(
@@ -191,7 +178,10 @@ invite_uptake <- invite_uptake %>%
 # Actually doesn't seem like it overwrites anything so could just come out?
 
 ### Step 4 : Save out basefiles for other scripts ----
+# These files are the same. I think we only need one in future but
+# subsequent scripts currently need both names
 
+write_rds(invite_uptake, paste0(output_fpath, "coverage_basefile.rds"))
 write_rds(invite_uptake, paste0(output_fpath, "coverage_basefile.rds"))
 
 
@@ -229,7 +219,7 @@ breakdown_1_1 <- breakdown_1_1 %>%
     percent_any_year2 = (offer_any_year2/cohort_year2)*100
   )
 
-# Output tables (tidy?)
+# Output tables
 output_a_1_1 <- breakdown_1_1 %>%
   select(hbres, cohort_year1, offer_year1, percent_year1,
          cohort_year2, offer_year2, percent_year2)
@@ -265,7 +255,7 @@ breakdown_1_2 <- breakdown_1_2 %>%
     p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
   )
 
-# Output tables (tidy?)
+# Output tables
 output_1_2 <- breakdown_1_2 %>%
   select(hbres, offer_year1, tested_year1, percent_year1,
          offer_year2, tested_year2, percent_year2)
@@ -319,7 +309,7 @@ breakdown_1_3 <- breakdown_1_3 %>%
     p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
   )
 
-# Output tables (tidy?)
+# Output tables
 output_1_3 <- breakdown_1_3 %>%
   select(hbres, simd2020v2_sc_quintile, offer_year1, tested_year1,
          percent_year1, offer_year2, tested_year2, percent_year2) %>%
@@ -355,7 +345,7 @@ breakdown_1_2a <- breakdown_1_2a %>%
     percent_any_year2 = (tested2_any_year2/cohort_year2)*100
   )
 
-# Output tables (tidy?)
+# Output tables
 output_a_1_2a <- breakdown_1_2a %>%
   select(hbres, cohort_year1, tested2_year1, percent_year1,
          cohort_year2, tested2_year2, percent_year2)
@@ -405,7 +395,7 @@ breakdown_1_3a <- breakdown_1_3a %>%
     percent_any_year2 = (tested2_any_year2/cohort_year2)*100
   )
 
-# Output tables (tidy?)
+# Output tables
 output_a_1_3a <- breakdown_1_3a %>%
   select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, percent_year1,
          cohort_year2, tested2_year2, percent_year2) %>%
@@ -417,5 +407,7 @@ output_b_1_3a <- breakdown_1_3a %>%
          cohort_year2, tested2_any_year2, percent_any_year2) %>%
   arrange(factor(hbres, levels = "Scotland"), hbres)
 # again slight differences
+
+
 
 
