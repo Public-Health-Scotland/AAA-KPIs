@@ -28,8 +28,10 @@ pacman::p_load(
 # Define dates 
 prev_year <- "2019/20"
 current_year <- "2020/21"
+next_year <- "2021/22"
 current_year_start <- "2020-03-01"
 next_year_start <- "2021-03-01"
+cut_off_date <- "2022-03-31"
 financial_year_due <- "2021/22"
 financial_quarters <- c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")
 
