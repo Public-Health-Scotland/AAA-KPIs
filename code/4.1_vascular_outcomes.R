@@ -13,10 +13,6 @@
 # R version 3.6.1
 ##########################################################
 
-## Starting this as have been asked to show Vascular KPIs background information
-## by HB for AAA BCG meeting (24Oct2022). May have useful bits for further 
-## translating of SPSS gile, but started just to get HB info.
-
 
 #### 1: Housekeeping ####
 ## Packages
@@ -64,7 +60,7 @@ table(vasc$result_size)
 table(vasc$result_outcome, vasc$result_size)
 
 
-#### 2: Reformat data ####
+#### 3: Reformat data ####
 vasc %<>%
   # remove first mutate (as.character) and add 0s to single digits below after fixed in script 1
   mutate(result_outcome = as.character(result_outcome),
@@ -81,9 +77,10 @@ vasc %<>%
 # SPSS creates 'allresults' variable (== 00)
 # These are not recreated in R; not sure what they are for!
 
+### Create annual (financial year) summaries ----
 
-## Size >= 5.5cm ---
-## SPSS line 148
+## Size >= 5.5cm
+## Outcome type by result outcome
 greater <- vasc %>% 
   filter(result_size == 1) %>% 
   mutate(count = 1) %>% 
@@ -95,7 +92,23 @@ greater <- vasc %>%
   arrange(result_outcome) %>% 
   glimpse()
 
+
+## Outcome type by total result outcomes
 greater2 <- vasc %>% 
+  filter(result_size == 1,
+         outcome_type != 3) %>% 
+  mutate(count = 1) %>% 
+group_by(financial_year, outcome_type) %>%
+  summarize(cases = sum(count)) %>% 
+  ungroup() %>% 
+pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  mutate(result_size = 1, .before = outcome_type) %>% 
+  mutate(result_outcome = "Total", .after = outcome_type) %>% 
+  glimpse()
+
+
+## Totals: Outcome type by result outcome
+greater3 <- vasc %>% 
   filter(result_size == 1) %>% 
   mutate(count = 1) %>% 
   group_by(financial_year) %>%
@@ -107,6 +120,98 @@ greater2 <- vasc %>%
          result_outcome = "Total") %>% 
   relocate(result_size:result_outcome) %>% 
   glimpse()  
+
+
+## Combine into >=5.5cm df
+annual_great <- greater %>% 
+  rbind(greater2, greater3) %>% 
+  replace(is.na(.), 0) %>%
+  mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
+  glimpse()
+
+#write_rds(annual_great, paste0(wd_path, "/temp/4_vasc_sizeOutcomes_greater.rds"))  
+
+
+## Size < 5.5cm
+# Make sure to check which fin years produce results in the three
+# new dataframes!!
+# Remove and add new fin years to annual_less (combined) as needed
+
+## Outcome type by result outcome
+less <- vasc %>% 
+  filter(result_size == 2) %>% 
+  mutate(count = 1) %>% 
+  group_by(financial_year, outcome_type, result_outcome) %>%
+  summarize(cases = sum(count)) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  mutate(result_size = 2, .before = outcome_type) %>%
+  arrange(result_outcome) %>% 
+  glimpse()
+
+
+## Outcome type by total result outcomes
+less2 <- vasc %>% 
+  filter(result_size == 2,
+         outcome_type != 3) %>% 
+  mutate(count = 1) %>% 
+  group_by(financial_year, outcome_type) %>%
+  summarize(cases = sum(count)) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  mutate(result_size = 2, .before = outcome_type) %>% 
+  mutate(result_outcome = "Total", .after = outcome_type) %>% 
+  glimpse()
+
+
+## Totals: Outcome type by result outcome
+less3 <- vasc %>% 
+  filter(result_size == 2) %>% 
+  mutate(count = 1) %>% 
+  group_by(financial_year) %>%
+  summarize(cases = sum(count)) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  mutate(result_size = 2,
+         outcome_type = 99,
+         result_outcome = "Total") %>% 
+  relocate(result_size:result_outcome) %>% 
+  glimpse()  
+
+
+## Combine into <5.5cm df
+annual_less <- less %>% 
+  rbind(less2, less3) %>% 
+  mutate(`2012/13` = 0,
+         `2014/15` = 0,
+         `2016/17` = 0,
+         `2017/18` = 0,
+         `2019/20` = 0,
+         `2021/22` = 0) %>% 
+  select(result_size:result_outcome,
+         `2012/13`,
+         `2013/14`,
+         `2014/15`,
+         `2015/16`,
+         `2016/17`,
+         `2017/18`,
+         `2018/19`,
+         `2019/20`,
+         `2020/21`,
+         `2021/22`) %>% 
+  replace(is.na(.), 0) %>%
+  mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
+  glimpse()
+
+#write_rds(annual_less, paste0(wd_path, "/temp/4_vasc_sizeOutcomes_less.rds"))  
+
+## Combine annual totals
+annual <- rbind(annual_great, annual_less)
+
+write_rds(annual, paste0(wd_path, "/temp/4_vasc_sizeOutcomes.rds"))
+
+rm(greater, greater2, greater3, annual_great, 
+   less, less2, less3, annual_less, annual)
 
 
 ## GW requested for meeting 23Oct2022
@@ -133,12 +238,54 @@ greater2 <- vasc %>%
 #                                overwrite = TRUE)
 
 
+#### 4: Management Information ####
+
+### A: Vascular Tracker Update ----
+# Extract details of non-final outcomes and other final outcomes to provide 
+# to NSD. This information is then tied into the vascular referral tracker
+# to inform the MEG of their latest status.
+
+track <- vasc %>% 
+  filter(result_size == 1) %>% 
+  filter(outcome_type == 2 |
+           (result_outcome == "20" & date_screen > as.Date("2019-04-01"))) %>% 
+  select(outcome_type, financial_year, upi,
+         date_screen, hbres, result_outcome) %>% 
+  arrange(outcome_type, date_screen)
+
+track_noCHI <- track %>% 
+  select(-upi)
+
+write_rds(track, paste0(wd_path, "/temp/4_tracker_CHI.rds"))
+write_rds(track_noCHI, paste0(wd_path, "/temp/4_tracker_noCHI.rds"))
 
 
+### B: Deaths Pre-surgical Assessment ----
+# Extract information of patients who died before reaching their 
+# surgical assessment
+
+mort <- vasc %>% 
+  filter(result_outcome == "07") %>% 
+  mutate(screen_death = date_death - date_screen,
+         result_outcome = "Died before surgical assessment completed") %>% 
+  arrange(date_screen) %>% 
+  select(financial_year, upi, hbres, date_screen,
+         date_death, result_outcome, screen_death) %>% 
+  glimpse()
+
+write_rds(mort, paste0(wd_path, "/temp/4_mortalities_CHI.rds"))
 
 
-names(vasc)
-table(vasc$result_outcome)
+### C: CHIs for MEG Letters ----
+# Extract CHI numbers for relevant vascular referrals
+# THIS IS RUN AFTER MEG DISCUSSION!
 
+letter <- vasc %>%
+  filter(result_size == 1,
+         #approp for treatment: died within 30 days of surgery
+         result_outcome == "16") %>% 
+  filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
+           (financial_year == "2018/19" & result_outcome == "18"))
 
+write_rds(letter, paste0(wd_path, "/temp/4_letters_CHI.rds"))
 
