@@ -3,9 +3,8 @@
 # Calum Purdie
 # 17/01/2023
 # 
-# KPI 3.1 percentage of men with AAA >= 5.5cm seen within two weeks of screening
-# KPI 3.2 percentage of men with AAA >= 5.5cm deemed appropriate for 
-# intervention/operated on within 8 weeks of screening
+# KPI 4.1 - 30 day mortality rate following open elective surgery 
+# KPI 4.2 - 30 day mortality rate following EVAR elective surgery
 #
 # Written/run on R Studio Server
 # R version 3.6.1
@@ -128,7 +127,7 @@ open_surgery_totals <- open_surgery %>%
          surgeries = rollapply(procedures, 5, sum, align = "left", 
                                    fill = NA), 
          rolling_financial_year = paste0(financial_year, " - ", 
-                                         lead(financial_year, 5))) %>% 
+                                         lead(financial_year, 4))) %>% 
   filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
   select(rolling_financial_year, surgeries, deaths) %>%
   mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
@@ -140,4 +139,69 @@ write_xlsx(open_surgery_totals,
 
 
 
+### 4 KPI 4.2 ----
 
+# Keep evar surgery records
+
+kpi_4_2_data <- aaa_extract %>% 
+  filter(surg_method == "01")
+
+# Calculate days from surgery to death
+# Check number of days to death is consistent with result outcomes
+# Outcome 15 = survived 30 days, outcome 16 = died within 30 days of surgery
+
+kpi_4_2_data %>% 
+  mutate(surgery_to_death = time_length(date_surgery %--% date_death, 
+                                        "days")) %>% 
+  count(result_outcome, surgery_to_death)
+
+# Calculate evar surgeries by financial year
+# Group by financial_year and count procedures and sum where result_outcome is
+# "16" for deaths
+
+evar_surgery <- kpi_4_1_data %>%
+  group_by(financial_year) %>%
+  summarise(procedures = n(), 
+            deaths = sum(result_outcome == "16")) %>% 
+  ungroup()
+
+# Save in excel
+
+write.xlsx(evar_surgery, 
+           paste0(output_additional_path, "/4. evar surgeries by year.xlsx"))
+
+# Calculate deaths from evar surgeries by financial year and health board
+# Filter where result_outcome is "16" to get deaths
+# Group by financial_year and count procedures and sum where result_outcome is
+# "16" for deaths
+# Count financial_year and hb_screen and set name as deaths
+
+evar_surgery_deaths <- kpi_4_1_data %>%
+  filter(result_outcome == "16") %>%
+  count(financial_year, hb_screen, name = "deaths")
+
+# Save in excel
+
+write.xlsx(evar_surgery_deaths, 
+           paste0(output_additional_path, 
+                  "/5. 30-day deaths by hb and year - evar.xlsx"))
+
+# Calculate rolling total deaths from evar surgeries
+# Calculate five-year rolling deaths and surgeries and define rolling year
+# Remove rows where rolling_financial_year contains NA
+# Select columns and calculate percentage deaths
+
+evar_surgery_totals <- evar_surgery %>%
+  mutate(deaths = rollapply(deaths, 5, sum, align = "left", fill = NA), 
+         surgeries = rollapply(procedures, 5, sum, align = "left", 
+                               fill = NA), 
+         rolling_financial_year = paste0(financial_year, " - ", 
+                                         lead(financial_year, 4))) %>% 
+  filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
+  select(rolling_financial_year, surgeries, deaths) %>%
+  mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
+
+# Save in excel
+
+write_xlsx(evar_surgery_totals, 
+           paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
