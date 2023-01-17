@@ -49,7 +49,7 @@ output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
 ### Step 2 : Import and trim data ----
 
 aaa_extract <- read_rds(extract_fpath)
-aaa_exclusions <- read_rds(extract_fpath)
+aaa_exclusions <- read_rds(exclusions_fpath)
 
 
 # Only want initial screens so select if screen type is initial or QA initial
