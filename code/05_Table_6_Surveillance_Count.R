@@ -12,7 +12,7 @@
 library(here)
 
 ## Source housekeeping file
-source(here::here("Syntax", "00_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 ### 2 - Read in Extract ----
 
