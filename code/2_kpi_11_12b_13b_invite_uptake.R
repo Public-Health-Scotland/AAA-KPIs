@@ -68,7 +68,7 @@ invite_uptake <- read_rds(invite_uptake_fpath)
 ## for KPI 1.1
 # age_at_screen (in months because 66 and 3 months is the key age)
 invite_uptake <- invite_uptake %>%
-  mutate(age_screen = interval(dob, screen_date) %/% months(1))
+  mutate(age_screen = age_calculate(dob, screen_date, units = "months"))
 
 # age_at_offer (in years because 66 is the key age)
 invite_uptake <- invite_uptake %>%
@@ -181,7 +181,7 @@ invite_uptake <- invite_uptake %>%
 # These files are the same. I think we only need one in future but
 # subsequent scripts currently need both names
 
-write_rds(invite_uptake, paste0(output_fpath, "coverage_basefile.rds"))
+write_rds(invite_uptake, paste0(output_fpath, "inviteanduptake_initial.rds"))
 write_rds(invite_uptake, paste0(output_fpath, "coverage_basefile.rds"))
 
 
