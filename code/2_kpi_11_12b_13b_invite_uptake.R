@@ -349,14 +349,11 @@ breakdown_1_2a <- breakdown_1_2a %>%
 output_a_1_2a <- breakdown_1_2a %>%
   select(hbres, cohort_year1, tested2_year1, percent_year1,
          cohort_year2, tested2_year2, percent_year2)
-# Very slight differences presumably to do with slight differences in
-# date/age calculations
 
 output_b_1_2a <- breakdown_1_2a %>%
   select(hbres, cohort_year1, tested2_any_year1, percent_any_year1,
          cohort_year2, tested2_any_year2, percent_any_year2)
-# Yeah pretty sure it's a date thing since these numbers match
-# the previous output
+
 
 ### KPI 1.3a ----
 
