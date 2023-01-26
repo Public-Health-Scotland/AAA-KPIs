@@ -22,7 +22,8 @@ pacman::p_load(
   tidyr,
   arsenal,
   openxlsx,
-  here
+  here,
+  readr
 )
 
 # Define dates 
@@ -36,5 +37,7 @@ financial_year_due <- "2021/22"
 financial_quarters <- c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")
 
 # Define filepaths
+
+aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/"))
 
 aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/"))
