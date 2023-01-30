@@ -62,11 +62,13 @@ output_additional_path <- paste0("/PHI_conf/AAA/Topics/Screening/publications",
 # survived 30 days' or 'appropriate for surgery: died within 30 days of 
 # treatment' in line with as KPI definition document.
 # Final outcome pending is not included in this KPI denominator).
+# Calculate financial year for surgery date
 
 aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name)) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
          date_surgery <= cut_off_date, 
-         result_outcome %in% c("15", "16"))
+         result_outcome %in% c("15", "16")) %>% 
+  mutate(financial_year_surg = extract_fin_year(date_surgery))
 
 
 
@@ -91,7 +93,7 @@ kpi_4_1_data %>%
 # "16" for deaths
 
 open_surgery <- kpi_4_1_data %>%
-  group_by(financial_year) %>%
+  group_by(financial_year_surg) %>%
   summarise(procedures = n(), 
             deaths = sum(result_outcome == "16")) %>% 
   ungroup()
@@ -109,7 +111,7 @@ write.xlsx(open_surgery,
 
 open_surgery_deaths <- kpi_4_1_data %>%
   filter(result_outcome == "16") %>%
-  count(financial_year, hb_screen, name = "deaths")
+  count(financial_year_surg, hb_screen, name = "deaths")
 
 # Save in excel
 
@@ -126,8 +128,8 @@ open_surgery_totals <- open_surgery %>%
   mutate(deaths = rollapply(deaths, 5, sum, align = "left", fill = NA), 
          surgeries = rollapply(procedures, 5, sum, align = "left", 
                                    fill = NA), 
-         rolling_financial_year = paste0(financial_year, " - ", 
-                                         lead(financial_year, 4))) %>% 
+         rolling_financial_year = paste0(financial_year_surg, " - ", 
+                                         lead(financial_year_surg, 4))) %>% 
   filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
   select(rolling_financial_year, surgeries, deaths) %>%
   mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
@@ -159,8 +161,8 @@ kpi_4_2_data %>%
 # Group by financial_year and count procedures and sum where result_outcome is
 # "16" for deaths
 
-evar_surgery <- kpi_4_1_data %>%
-  group_by(financial_year) %>%
+evar_surgery <- kpi_4_2_data %>%
+  group_by(financial_year_surg) %>%
   summarise(procedures = n(), 
             deaths = sum(result_outcome == "16")) %>% 
   ungroup()
@@ -176,9 +178,9 @@ write.xlsx(evar_surgery,
 # "16" for deaths
 # Count financial_year and hb_screen and set name as deaths
 
-evar_surgery_deaths <- kpi_4_1_data %>%
+evar_surgery_deaths <- kpi_4_2_data %>%
   filter(result_outcome == "16") %>%
-  count(financial_year, hb_screen, name = "deaths")
+  count(financial_year_surg, hb_screen, name = "deaths")
 
 # Save in excel
 
@@ -195,8 +197,8 @@ evar_surgery_totals <- evar_surgery %>%
   mutate(deaths = rollapply(deaths, 5, sum, align = "left", fill = NA), 
          surgeries = rollapply(procedures, 5, sum, align = "left", 
                                fill = NA), 
-         rolling_financial_year = paste0(financial_year, " - ", 
-                                         lead(financial_year, 4))) %>% 
+         rolling_financial_year = paste0(financial_year_surg, " - ", 
+                                         lead(financial_year_surg, 4))) %>% 
   filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
   select(rolling_financial_year, surgeries, deaths) %>%
   mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
