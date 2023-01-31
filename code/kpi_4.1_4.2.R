@@ -98,11 +98,6 @@ open_surgery <- kpi_4_1_data %>%
             deaths = sum(result_outcome == "16")) %>% 
   ungroup()
 
-# Save in excel
-
-write.xlsx(open_surgery, 
-           paste0(output_additional_path, "/1. open surgeries by year.xlsx"))
-
 # Calculate deaths from open surgeries by financial year and health board
 # Filter where result_outcome is "16" to get deaths
 # Group by financial_year and count procedures and sum where result_outcome is
@@ -112,12 +107,6 @@ write.xlsx(open_surgery,
 open_surgery_deaths <- kpi_4_1_data %>%
   filter(result_outcome == "16") %>%
   count(financial_year_surg, hb_screen, name = "deaths")
-
-# Save in excel
-
-write.xlsx(open_surgery_deaths, 
-           paste0(output_additional_path, 
-                  "/2. 30-day deaths by hb and year - open.xlsx"))
 
 # Calculate rolling total deaths from open surgeries
 # Calculate five-year rolling deaths and surgeries and define rolling year
@@ -134,10 +123,7 @@ open_surgery_totals <- open_surgery %>%
   select(rolling_financial_year, surgeries, deaths) %>%
   mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
 
-# Save in excel
 
-write_xlsx(open_surgery_totals, 
-           paste0(output_additional_path, "/3. open rolling tot deaths.xlsx"))
 
 
 
@@ -167,11 +153,6 @@ evar_surgery <- kpi_4_2_data %>%
             deaths = sum(result_outcome == "16")) %>% 
   ungroup()
 
-# Save in excel
-
-write.xlsx(evar_surgery, 
-           paste0(output_additional_path, "/4. evar surgeries by year.xlsx"))
-
 # Calculate deaths from evar surgeries by financial year and health board
 # Filter where result_outcome is "16" to get deaths
 # Group by financial_year and count procedures and sum where result_outcome is
@@ -181,12 +162,6 @@ write.xlsx(evar_surgery,
 evar_surgery_deaths <- kpi_4_2_data %>%
   filter(result_outcome == "16") %>%
   count(financial_year_surg, hb_screen, name = "deaths")
-
-# Save in excel
-
-write.xlsx(evar_surgery_deaths, 
-           paste0(output_additional_path, 
-                  "/5. 30-day deaths by hb and year - evar.xlsx"))
 
 # Calculate rolling total deaths from evar surgeries
 # Calculate five-year rolling deaths and surgeries and define rolling year
@@ -203,7 +178,32 @@ evar_surgery_totals <- evar_surgery %>%
   select(rolling_financial_year, surgeries, deaths) %>%
   mutate(pc_deaths = round_half_up(deaths * 100 / surgeries, 1)) 
 
-# Save in excel
+
+
+### 5 Output ----
+
+# CP - SHOULD THESE BE RDS NOW?
+
+# Save KPI 4.1 output
+
+write.xlsx(open_surgery, 
+           paste0(output_additional_path, "/1. open surgeries by year.xlsx"))
+
+write.xlsx(open_surgery_deaths, 
+           paste0(output_additional_path, 
+                  "/2. 30-day deaths by hb and year - open.xlsx"))
+
+write_xlsx(open_surgery_totals, 
+           paste0(output_additional_path, "/3. open rolling tot deaths.xlsx"))
+
+# Save KPI 4.2 output
+
+write.xlsx(evar_surgery, 
+           paste0(output_additional_path, "/4. evar surgeries by year.xlsx"))
+
+write.xlsx(evar_surgery_deaths, 
+           paste0(output_additional_path, 
+                  "/5. 30-day deaths by hb and year - evar.xlsx"))
 
 write_xlsx(evar_surgery_totals, 
            paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
