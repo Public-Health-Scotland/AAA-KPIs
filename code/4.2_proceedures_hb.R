@@ -13,8 +13,8 @@
 # R version 3.6.1
 ##########################################################
 
-# Description - number of AAA procedures carried out after being referred
-# from screening programme, by NHS Board
+# Description: number of AAA procedures carried out after being referred
+# from screening programme, split by NHS Board
 
 
 #### 1: Housekeeping ####
@@ -44,20 +44,16 @@ output_years <- c("2019/20", "2020/21", "2021/22", "All years")
 
 
 ## Pathways
-wd_path <-paste0("/PHI_conf/AAA/Topics/Screening/KPI",
-                 "/", year, month)
+wd_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, month)
 
-extract_path <-paste0("/PHI_conf/AAA/Topics/Screening/extracts",
+extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts",
                       "/", year, month)
 
+template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
-#existing excel template to write to
-template <- "/PHI_conf/AAA/Topics/AAAScreening/Publications/AAA Screening Programme Statistics/202203XX/Output/20211123 MEG/4. Referral for assessment - Treatment & Outcomes.xlsx/"
-
-#location of excel tables
-table_output <- "/PHI_conf/AAA/Topics/AAAScreening/Publications/AAA Screening Programme Statistics/202203XX/Output/20211123 MEG/"
-
-
+# location of Excel tables
+table_output <- paste0("/PHI_conf/AAA/Topics/AAAScreening/Publications",
+                       "/AAA Screening Programme Statistics/202203XX/Output/20211123 MEG")
 
 
 #years for column titles in table
@@ -70,13 +66,16 @@ year1 <- 2019
 
 
 #read in AAA extract and ensure all names are in standard format
-data <- haven::read_spss(paste0(input, "aaa_extract_", extract, ".zsav")) %>%
-  clean_names() 
+extract <- readRDS(paste0(extract_path, "/output/aaa_extract_", 
+                          year, month, ".rds")) %>% 
+  glimpse()
 
 
 #select if the date of surgery is in the required time-period
-data <- data %>%
-  filter(surgery_date<=cut_off_date)
+extract %<>%
+  filter(date_surgery <= vas_cutoff,
+         !is.na(date_referral_true) & aaa_size >= 5.5 & 
+           surg_method %in% c("01", "02"))
 
 #select referrals with AAA >=5.5 cm who had surgery 
 #(nb there is a surgery recorded at AAA less than 5.5 which we don't want to include
@@ -85,7 +84,7 @@ data <- data %>%
   filter(!is.na(actual_referral_date) & largest_measurement>=5.5 & aaa_surg_method %in% c("01", "02"))
 
 #check
-fre(data$aaa_surg_method)
+table(extract$surg_method)
 #262 EVAR, 286 open
 
 #surgery method should only be recorded along result outcomes '15' (approp for surgery and 

@@ -19,8 +19,6 @@
 library(here)
 library(dplyr)
 library(magrittr)
-#library(stringr)
-#library(forcats)
 library(readr)
 library(tidylog)
 
@@ -75,7 +73,7 @@ vasc %<>%
 
 # SPSS creates 'alloutcomes' variable (== 6) 
 # SPSS creates 'allresults' variable (== 00)
-# These are not recreated in R; not sure what they are for!
+# These are not recreated in R as don't seem necessary
 
 ### Create annual (financial year) summaries ----
 
