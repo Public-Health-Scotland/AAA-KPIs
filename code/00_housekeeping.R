@@ -11,6 +11,11 @@
 
 # Import libraries
 
+# Install/open the PHSmethods package
+# install.packages("remotes")
+# library(remotes)
+# remotes::install_github("Public-Health-Scotland/phsmethods", upgrade = "never")
+
 if (!require("pacman")) install.packages("pacman")
 
 pacman::p_load(
@@ -23,7 +28,8 @@ pacman::p_load(
   arsenal,
   openxlsx,
   here,
-  readr
+  readr,
+  glue
 )
 
 # Define dates 
@@ -36,8 +42,12 @@ cut_off_date <- "2022-03-31"
 financial_year_due <- "2021/22"
 financial_quarters <- c("2020/21_4","2021/22_1","2021/22_2","2021/22_3")
 
-# Define filepaths
+# Define file paths
 
 aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/"))
 
 aaa_extracts_path <- (paste0("/PHI_conf/AAA/Topics/Screening/extracts/202209/output/"))
+
+coverage_basefile_path <- (paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/temp/KPIs/KPI1.1 - KPI1.3/"))
+
+gpd_lookups <- glue("/conf/linkage/output/lookups/Unicode")
