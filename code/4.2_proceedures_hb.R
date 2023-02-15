@@ -1,10 +1,10 @@
 ##########################################################
-# 4.1_vascular_outcomes.R
+# 4.2_proceedures_hb.R
 # Salomi Barkat & Karen Hotopp
 # 21/10/2022
 # Script 1 of ?
 # 
-# Translation of SPSS file ' AAA Procedures'
+# Translation of SPSS file 'AAA Procedures'
 # Part of Theme 4 for AAA KPIs
 # Takes the processed BOXI extracts and creates tables detailing
 # vascular surgery outcomes
@@ -23,12 +23,14 @@ library(here)
 library(dplyr)
 library(magrittr)
 library(readr)
+library(phsmethods)
 library(janitor)     ##for rounding 0.5 upwards
 #library(expss)       ##for spss equvialent functions
 #library(tidyr)       ##for reshaping data
 library(openxlsx)
 #library(writexl)     ##for saving excel files
-#library(XLConnect)   ##for writing to excel templates (currently using this instead of openxlsx as openxlsx is overwritting the formatting)
+#library(XLConnect)   ##for writing to excel templates (currently using this 
+#instead of openxlsx as openxlsx is overwritting the formatting)
 library(tidylog)
 
 
@@ -55,102 +57,116 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 table_output <- paste0("/PHI_conf/AAA/Topics/AAAScreening/Publications",
                        "/AAA Screening Programme Statistics/202203XX/Output/20211123 MEG")
 
-
+##!! Is this needed?? (redundant to output_years?)
 #years for column titles in table
 #fill in the first year to be shown, then other years will be automatically calculated from this
 year1 <- 2019
 
-########################################################################
-### 2 - Produce totals----
-########################################################################
 
-
-#read in AAA extract and ensure all names are in standard format
+#### 2: Format Data ####
 extract <- readRDS(paste0(extract_path, "/output/aaa_extract_", 
                           year, month, ".rds")) %>% 
+  #select(hbres, result_outcome, date_referral_true, date_surgery, fy_surgery, surg_method, ) %>%  
+  ## Add relevant variables, as don't need whole data set
   glimpse()
 
 
-#select if the date of surgery is in the required time-period
+## Set dates
 extract %<>%
   filter(date_surgery <= vas_cutoff,
+         # select referrals
          !is.na(date_referral_true) & aaa_size >= 5.5 & 
            surg_method %in% c("01", "02"))
 
-#select referrals with AAA >=5.5 cm who had surgery 
-#(nb there is a surgery recorded at AAA less than 5.5 which we don't want to include
-#and not including aaa_surg_method '03' abandoned procedure)
-data <- data %>%
-  filter(!is.na(actual_referral_date) & largest_measurement>=5.5 & aaa_surg_method %in% c("01", "02"))
+table(extract$surg_method, useNA = "ifany")
+# 296 EVAR, 335 open
 
-#check
-table(extract$surg_method)
-#262 EVAR, 286 open
 
-#surgery method should only be recorded along result outcomes '15' (approp for surgery and 
-#survived 30 days) or '16' (approp for surgery and died within 30 days) - check recordings
-data %>% tabyl(result_outcome, aaa_surg_method)
+####
+## Where surg_method has response, result_outcome should only have: 
+## 15 (approp for surgery and survived 30 days) or 
+## 16 (approp for surgery and died within 30 days)
+table(extract$result_outcome, extract$surg_method)
 
-#there is one EVAR recorded as other final outcome
-#It's a lothian resident who was eventually operated on in GG&C. Once the board of surgery field is 
-#added to vascular  module we will be asking board to change result outcome to 15 or 16 (and data will 
-#be collated by board of surgery rather than board of residence so it will be counted under GG&C)
+# Feb 2023
+#     01  02
+# 15 294 328
+# 16   1   7
+# 20   1   0
 
-#October 2021, there are also:
-#Other final outcome - 1 evar - looks like patient described above
+## One record has result_outcome == 20 (other final outcome)
+check <- extract[extract$result_outcome == "20",]
+## FY 2016/17
+## Lothian resident who was eventually operated on in GG&C. 
+## Once the board of surgery field is added to vascular module we will be 
+## asking board to change result outcome to 15 or 16 (and data will be 
+## collated by board of surgery rather than board of residence so it will be 
+## counted under GG&C)
+####
 
-#select result outcomes 15 and 16 only
-data <- data %>%
+
+## Appropriate for surgery records
+extract %<>%
   filter(result_outcome %in% c("15", "16"))
 
-#check
-fre(data$aaa_surg_method)
-#261 EVAR, 286 open (matches KPI 4.1/4.2 underlying numbers)
+table(extract$surg_method)
+# 295 EVAR, 335 open (matches KPI 4.1/4.2 additional numbers) 
+##!! How easy is it to automate this check?? Check against outputs from 
+##!! 2. 1, 3, 5, year mortality.sps (CP translating)
 
-#assign financial years to surgery dates
-data <- data %>%
-  mutate(yearsurg=(as.numeric(format(surgery_date, "%Y")) - (format(surgery_date, "%m") <= "03")))
 
-#check
-fre(data$yearsurg)
+##!! This section adds FY numbers for date_surgery (YEAR OF SURGERY)
+## TO BE MOVED TO QUARTERLY EXTRACTS PROCESS
+## Create financial year from surgery date
+extract %<>%
+  mutate(fy_surgery = extract_fin_year(date_surgery)) %>%
+  mutate(fy_surgery = forcats::fct_relevel(fy_surgery,
+                                           c("2012/13", "2013/14", "2014/15",
+                                             "2015/16", "2016/17", "2017/18",
+                                             "2018/19", "2019/20", "2020/21",
+                                             "2021/22"))) %>%
+  relocate(fy_surgery, .after=date_surgery) %>%
+  glimpse()
 
-#add second half of financial year and join into a single new variable to show year in format '20xx/xx'
-data <- data %>%
-  mutate(year2=yearsurg+1) %>%   #create second half of financial year
-  mutate(year3=paste0(yearsurg, "/", substr(year2, 3,4))) %>% #join first and second half of financial years
-  select(-year2, -yearsurg) %>% #remove years which are not required
-  rename(yearsurg=year3)  #rename to standard format
+table(extract$fy_surgery)
 
-#check all years have been assigned
-fre(data$yearsurg)
+
+#### 3: Create Tables ####
+test <- extract %>% 
+  select(hbres, result_outcome, date_referral_true, 
+         date_surgery, fy_surgery, surg_method) %>% 
+  group_by(hbres, fy_surgery, surg_method) %>% 
+  glimpse()
 
 
 #add variables to count overall totals
-data <- data %>%
+quarter <- extract %>%
   mutate(allyears="All years") %>%
   mutate(allsurg="All Types") %>%
   mutate(scotland="Scotland")
 
-#function to produce totals by various groups
-
-totals <- function(df, surg, year, geog) {
-  
-  data <- data %>%
-    group_by({{surg}}, {{year}}, {{geog}}) %>%
-    summarise(total=n()) %>%
-    rename(geography={{geog}}, surg_type={{surg}}, year={{year}})
-  
-}
-
-#run totals for each combination of surgery type/years/hb
-temp1 <- totals(year=yearsurg, surg=aaa_surg_method, geog=hb_res_name)
-temp2 <- totals(year=allyears, surg=aaa_surg_method, geog=hb_res_name)
-temp3 <- totals(year=allyears, surg=allsurg, geog=hb_res_name)
-temp4 <- totals(year=yearsurg, surg=allsurg, geog=hb_res_name)
-temp5 <- totals(year=yearsurg, surg=aaa_surg_method, geog=scotland)
-temp6 <- totals(year=allyears, surg=aaa_surg_method, geog=scotland)
-temp7 <- totals(year=allyears, surg=allsurg, geog=scotland)
-temp8 <- totals(year=yearsurg, surg=allsurg, geog=scotland)
+# #function to produce totals by various groups
+# totals <- function(df, surg, year, geog) {
+#   
+#   data <- data %>%
+#     group_by({{surg}}, {{year}}, {{geog}}) %>%
+#     summarise(total=n()) %>%
+#     rename(geography={{geog}}, surg_type={{surg}}, year={{year}})
+#   
+# }
+# 
+# #run totals for each combination of surgery type/years/hb
+# temp1 <- totals(df=quarter, year=fy_surgery, surg=surg_method, geog=hbres)
+# 
+# 
+# temp1 <- totals(year=yearsurg, surg=aaa_surg_method, geog=hb_res_name)
+# temp2 <- totals(year=allyears, surg=aaa_surg_method, geog=hb_res_name)
+# temp3 <- totals(year=allyears, surg=allsurg, geog=hb_res_name)
+# temp4 <- totals(year=yearsurg, surg=allsurg, geog=hb_res_name)
+# temp5 <- totals(year=yearsurg, surg=aaa_surg_method, geog=scotland)
+# temp6 <- totals(year=allyears, surg=aaa_surg_method, geog=scotland)
+# temp7 <- totals(year=allyears, surg=allsurg, geog=scotland)
+# temp8 <- totals(year=yearsurg, surg=allsurg, geog=scotland)
 
 
 #add together cumulative and individual totals
@@ -224,10 +240,3 @@ saveWorkbook(tables, paste0(table_output, "4. Referral for assessment - Treatmen
 
 
 ############end of script############
-
-
-
-
-
-
-
