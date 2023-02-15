@@ -12,6 +12,7 @@
 ### Step 1 : load packages and filepaths ----
 
 library(readr)
+library(haven)
 library(dplyr)
 library(tidylog)
 library(lubridate)
@@ -32,6 +33,9 @@ gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
 gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
                           "GP Practice History with dob selection - post 1_4_1952.csv")
 
+gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
+                          "National Reference Files/gpprac.sav")
+
 
 year1_start <- dmy("01-04-1955")
 year1_end <- dmy("31-03-1956")
@@ -49,6 +53,7 @@ coverage_basefile <- read_rds(paste0(output_fpath,
 gp_prac_a <- read_csv(gp_prac_a_fpath)
 gp_prac_b <- read_csv(gp_prac_b_fpath)
 
+gp_lookup <- read_sav(gp_lookup_fpath)
 
 ### Step 3 : ----
 
@@ -66,11 +71,61 @@ gp_prac <- mutate(gp_prac,
 gp_prac <- filter(gp_prac, valid == 1)
 
 
-coverage_basefile <- coverage_basefile %>%
+coverage_gp <- coverage_basefile %>%
   left_join(gp_prac, by = c("upi" = "Upinumber")) %>%
-  select(-c(`Area of Residence`, `Valid from`, `Valid to`, `valid`))
+  select(-c(`Area of Residence`, `Valid from`, `Valid to`, `valid`)) %>%
+  rename(practice_code = `Practice Code`)
 
-# Assign gp practices to health boards
+### Assign gp practices to health boards
+# The spss script has a big gp practice cypher
+# !! come back to check if this is the right thing
+# creates 'cypher' doesn't seem to be used
+# creates 'prac2' which is practice code without the leading HB letter
+# prac2 is used for joining on the reference file
+# creates 'prac3' which is prac2 unless patient is resident outside the
+# health board they're registered in
+# prac3 is used for aggregation
+
+# make gp_join
+coverage_gp <- coverage_gp %>%
+  mutate(gp_join = substr(practice_code, 2, 5))
+
+# flag for if an individual is registered inside/outside their hb of residence
+coverage_gp <- coverage_gp %>%
+  mutate(in_hb = case_when(
+    gp_join == 3139 ~ 1,
+    hbres == "Ayrshire & Arran" & between(gp_join, 8000, 8399) ~ 1,
+    hbres == "Borders" & between(gp_join, 1600, 1799) ~ 1,
+    hbres == "Fife" & between(gp_join, 2000, 2499) ~ 1,
+    hbres == "Lanarkshire" & 
+      (between(gp_join, 6000, 6599) |
+      gp_join %in% c(4626,4627,4653,4654,
+                     4900,4902,4905,4906,
+                     4911,4925,4943,4952,
+                     4964,4969,4970,4979)) ~ 1,
+    hbres == "Greater Glasgow & Clyde" &
+      (between(gp_join, 4000, 5499) |
+         between(gp_join, 8499, 8799)) &
+         !gp_join %in% c(4626,4627,4653,4654,
+                      4900,4902,4905,4906,
+                      4911,4925,4943,4952,
+                      4964,4969,4970,4979,
+                      8500,8511,8514,8515,
+                      8519) ~ 1,
+    hbres == "Highland" &
+      (between(gp_join, 5500, 5999) |
+         between(gp_join, 8400, 8498) |
+         gp_join %in% c(8500,8511,8514,8515,8519)) ~ 1,
+    hbres == "Grampian" & between(gp_join, 3000, 3799) ~ 1,
+    hbres == "Lothian" & between(gp_join, 7000, 7999) ~ 1,
+    hbres == "Orkney" & between(gp_join, 3800, 3899) ~ 1,
+    hbres == "Tayside" & between(gp_join, 1000, 1599) ~ 1,
+    hbres == "Forth Valley" & between(gp_join, 2500, 2999) ~ 1,
+    hbres == "Western Isles" & between(gp_join, 9000, 9099) ~ 1,
+    hbres == "Dumfries & Galloway" & between(gp_join, 1800, 1999) ~ 1,
+    hbres == "Shetland" & between(gp_join, 3900, 3999) ~ 1,
+    TRUE ~ 0
+  ))
 
 # Add in practice description using reference lookup file
 
