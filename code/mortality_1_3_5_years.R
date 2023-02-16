@@ -60,7 +60,7 @@ smra_con <- suppressWarnings(dbConnect(
 
 
 
-s### 2 Data Extraction ----
+### 2 Data Extraction ----
 
 # Read in latest extract
 # Keep where they were referred to vascular, had a large aneurysm, date_surgery 
@@ -160,9 +160,9 @@ mortality_scotland <- mortality %>%
   group_by(surg_method) %>% 
   summarise(across(c(mort_1_year, mort_3_year, mort_5_year, 
                      surg_1_year, surg_3_year, surg_5_year), sum)) %>% 
-  mutate(year_1_rate = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
-         year_3_rate = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
-         year_5_rate = round_half_up(mort_5_year * 100 / surg_5_year, 1))
+  mutate(rate_1_year = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
+         rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
+         rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1))
 
 # Group by surg_method and hbres
 # Sum mortality and surgery within 1, 3, 5 years
