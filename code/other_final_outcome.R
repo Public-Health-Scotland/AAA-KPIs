@@ -31,11 +31,6 @@ library(tidylog)
 year <- 2022
 month <- "09"
 
-cut_off_date <- as.Date("2022-03-31")
-cut_off_date_1 <- cut_off_date - years(1)
-cut_off_date_3 <- cut_off_date - years(3)
-cut_off_date_5 <- cut_off_date - years(5)
-
 # Define extract name
 
 extract_name <- paste0("aaa_extract_", year, month, ".rds")
