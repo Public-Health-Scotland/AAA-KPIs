@@ -54,6 +54,11 @@ vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_", year, month, ".rds
 table(vasc$screen_result)
 #  01  02 
 # 880   1
+## Who has negative screen_result?
+neg <- vasc[vasc$screen_result == "02",]
+neg$aaa_size
+# 2.9
+
 table(vasc$result_size)
 #   1   2 
 # 876   5
@@ -77,8 +82,9 @@ table(vasc$result_outcome, vasc$result_size)
 
 
 #### 3: Reformat data ####
+# Divide result_outcome into 'referrals with a final outcome' and 'referrals 
+# with a non-final outcome' 
 vasc %<>%
-  # outcome_type !!ADD DESCRIPTION!!
   mutate(outcome_type = case_when(result_outcome %in% 
                                     c('01','02','03','04','05','06','07','08',
                                       '11','12','13','15','16','20', '21') ~ 1,
@@ -91,6 +97,7 @@ vasc %<>%
 # SPSS creates 'alloutcomes' variable (== 6) 
 # SPSS creates 'allresults' variable (== 00)
 # These are not recreated in R as don't seem necessary
+
 
 ### Create annual (financial year) summaries ----
 
@@ -297,9 +304,10 @@ write_rds(mort, paste0(wd_path, "/temp/4_mortalities_CHI.rds"))
 
 letter <- vasc %>%
   filter(result_size == 1,
-         #approp for treatment: died within 30 days of surgery
-         result_outcome == "16") %>% 
-  filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
+         # approp for treatment: died within 30 days of surgery
+         result_outcome == "16") #%>% 
+## Look over this again... this filter can't be correct!  
+filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
            (financial_year == "2018/19" & result_outcome == "18"))
 
 write_rds(letter, paste0(wd_path, "/temp/4_letters_CHI.rds"))
