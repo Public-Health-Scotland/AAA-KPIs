@@ -41,10 +41,10 @@ extract_path <-paste0("/PHI_conf/AAA/Topics/Screening/extracts",
 
 
 #### 2: Call in data ####
-vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_202209.rds")) %>% 
+vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_", year, month, ".rds")) %>% 
   # only want referrals to vascular
   filter(!is.na(date_referral_true),
-         # remove "referred in error: appt w vascular not required
+         # remove "referred in error: appt w vascular not required"
          result_outcome != "02") %>%  
   filter(date_screen <= vas_cutoff) %>% 
   # categorize largest measurement into two bins
@@ -55,14 +55,31 @@ table(vasc$screen_result)
 #  01  02 
 # 880   1
 table(vasc$result_size)
+#   1   2 
+# 876   5
 table(vasc$result_outcome, vasc$result_size)
+#      1   2
+# 03   1   0
+# 06  17   1
+# 07   7   0
+# 08 128   0
+# 09   2   0
+# 10   8   0
+# 11  11   0
+# 12   2   0
+# 13   1   0
+# 15 644   3
+# 16   8   0
+# 17   6   0
+# 18  13   0
+# 19   3   0
+# 20  25   1
 
 
 #### 3: Reformat data ####
 vasc %<>%
-  # remove first mutate (as.character) and add 0s to single digits below after fixed in script 1
-  mutate(result_outcome = as.character(result_outcome),
-         outcome_type = case_when(result_outcome %in% 
+  # outcome_type !!ADD DESCRIPTION!!
+  mutate(outcome_type = case_when(result_outcome %in% 
                                     c('01','02','03','04','05','06','07','08',
                                       '11','12','13','15','16','20', '21') ~ 1,
                                   result_outcome %in% c('09','10','14','17',
