@@ -6,8 +6,13 @@
 # 
 # Translation of SPSS file '1. Vascular outcomes recorded.sps'
 # Part of Theme 4 for AAA KPIs
+# Tab: Vascular KPIs background
 # Takes the processed BOXI extracts and creates tables detailing
-# vascular surgery outcomes
+# vascular surgery outcomes:
+# - AAA size outcomes
+# - Vascular tracker update
+# - Deaths pre-surgical assessment
+# - MEG letters
 # 
 # Written/run on R Studio Server
 # R version 3.6.1
@@ -42,6 +47,8 @@ extract_path <-paste0("/PHI_conf/AAA/Topics/Screening/extracts",
 
 #### 2: Call in data ####
 vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_", year, month, ".rds")) %>% 
+  select(financial_year, hbres, hb_screen, date_screen, screen_result,
+         largest_measure, aaa_size, date_referral_true, result_outcome) %>% 
   # only want referrals to vascular
   filter(!is.na(date_referral_true),
          # remove "referred in error: appt w vascular not required"
@@ -96,12 +103,20 @@ vasc %<>%
 
 # SPSS creates 'alloutcomes' variable (== 6) 
 # SPSS creates 'allresults' variable (== 00)
-# These are not recreated in R as don't seem necessary
+# These are not recreated in R as aren't necessary
+
+## Investigate result_outcome
+table(vasc$result_outcome, useNA = "ifany")
+# 03  06  07  08  09  10  11  12  13  15  16  17  18  19  20 
+#  1  18   7 128   2   8  11   2   1 647   8   6  13   3  26
+# Note: level 14 is missing; will need to be added in manually to 
+# greater & annual_less (created below) to make sure it is
+# included in the vascular referrals outcome table
 
 
 ### Create annual (financial year) summaries ----
 
-## Size >= 5.5cm
+## Size >= 5.5cm ----
 ## Outcome type by result outcome
 greater <- vasc %>% 
   filter(result_size == 1) %>% 
@@ -110,6 +125,8 @@ greater <- vasc %>%
   summarize(cases = sum(count)) %>% 
   ungroup() %>% 
   pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  # add in missing result_outcome, as determined in table above
+  add_row(outcome_type = 2, result_outcome ="14") %>% 
   mutate(result_size = 1, .before = outcome_type) %>% 
   arrange(result_outcome) %>% 
   glimpse()
@@ -120,10 +137,10 @@ greater2 <- vasc %>%
   filter(result_size == 1,
          outcome_type != 3) %>% 
   mutate(count = 1) %>% 
-group_by(financial_year, outcome_type) %>%
+  group_by(financial_year, outcome_type) %>%
   summarize(cases = sum(count)) %>% 
   ungroup() %>% 
-pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  pivot_wider(names_from = financial_year, values_from = cases) %>% 
   mutate(result_size = 1, .before = outcome_type) %>% 
   mutate(result_outcome = "Total", .after = outcome_type) %>% 
   glimpse()
@@ -151,13 +168,22 @@ annual_great <- greater %>%
   mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
   glimpse()
 
-#write_rds(annual_great, paste0(wd_path, "/temp/4_vasc_sizeOutcomes_greater.rds"))  
+
+## Referrals with no outcome recorded ----
+# This should be 0 records, but need to keep track and add to final table
+no_outcome <- vasc %>%
+  filter(outcome_type == 3)
+# If 0, manually add record of 0 to annual_greater
+annual_great %<>% 
+  add_row(result_size = 1, outcome_type = 3, 
+          result_outcome = "No outcome recorded") %>%
+  replace(is.na(.), 0)
 
 
-## Size < 5.5cm
-# Make sure to check which fin years produce results in the three
+## Size < 5.5cm ----
+# Make sure to check which financial years produce results in the three
 # new dataframes!!
-# Remove and add new fin years to annual_less (combined) as needed
+# Add new fin years to annual_less (combined df) as needed
 
 ## Outcome type by result outcome
 less <- vasc %>% 
@@ -167,6 +193,8 @@ less <- vasc %>%
   summarize(cases = sum(count)) %>% 
   ungroup() %>% 
   pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  # add in missing result_outcome, as determined in table above
+  add_row(outcome_type = 2, result_outcome ="14") %>% 
   mutate(result_size = 2, .before = outcome_type) %>%
   arrange(result_outcome) %>% 
   glimpse()
@@ -181,6 +209,9 @@ less2 <- vasc %>%
   summarize(cases = sum(count)) %>% 
   ungroup() %>% 
   pivot_wider(names_from = financial_year, values_from = cases) %>% 
+  # add in missing result_outcome, as determined in table above
+  # (result_outcome = "14" is the only outcome_type = 2 in small AAAs)
+  add_row(outcome_type = 2) %>% 
   mutate(result_size = 2, .before = outcome_type) %>% 
   mutate(result_outcome = "Total", .after = outcome_type) %>% 
   glimpse()
@@ -225,15 +256,67 @@ annual_less <- less %>%
   mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
   glimpse()
 
-#write_rds(annual_less, paste0(wd_path, "/temp/4_vasc_sizeOutcomes_less.rds"))  
 
-## Combine annual totals
-annual <- rbind(annual_great, annual_less)
+## Combine annual totals ----
+annual <- rbind(annual_great, annual_less) %>% 
+  # Relabel for easier reading
+  mutate(result_size = case_when(result_size == 1 ~ "Greater or equal to 5.5cm",
+                                 result_size == 2 ~ "Less than 5.5cm"), 
+         outcome_type = case_when(outcome_type == 1 ~ "Referral with final outcome",
+                                  outcome_type == 2 ~ "Referral with non-final outcome",
+                                  outcome_type == 3 ~ "No outcome recorded",
+                                  outcome_type == 99 ~ "All referrals"),
+         result_outcome = case_when(result_outcome == "03" ~ "DNA outpatient service: Self-discharge",
+                                    result_outcome == "06" ~ "Referred in error: As determined by vascular service",
+                                    result_outcome == "07" ~ "Died before surgical assessment completed",
+                                    result_outcome == "08" ~ "Unfit for surgery",
+                                    result_outcome == "09" ~ "Refer to another specialty",
+                                    result_outcome == "10" ~ "Awaiting further AAA growth",
+                                    result_outcome == "11" ~ "Appropriate for Surgery: Patient declined surgery",
+                                    result_outcome == "12" ~ "Appropriate for Surgery: Died before treatment",
+                                    result_outcome == "13" ~ "Appropriate for Surgery: Self-discharge",
+                                    result_outcome == "14" ~ "Appropriate for Surgery: Patient deferred surgery",
+                                    result_outcome == "15" ~ "Appropriate for Surgery: AAA repaired and survived 30 days",
+                                    result_outcome == "16" ~ "Appropriate for Surgery: Died within 30 days of treatment",
+                                    result_outcome == "17" ~ "Appropriate for Surgery: Final outcome pending",
+                                    result_outcome == "18" ~ "Ongoing assessment by vascular",
+                                    result_outcome == "19" ~ "Final outcome pending",
+                                    result_outcome == "20" ~ "Other final outcome",
+                                    TRUE ~ result_outcome)) %>%
+  # Relevel according to table presentation
+  mutate(result_size = fct_relevel(result_size, c("Greater or equal to 5.5cm",
+                                                  "Less than 5.5cm")),
+         outcome_type = fct_relevel(outcome_type, c("All referrals",
+                                                    "Referral with final outcome",
+                                                    "Referral with non-final outcome",
+                                                    "No outcome recorded")),
+         # is there not a way to just move a fector to the top level??
+         result_outcome = fct_relevel(result_outcome, c("Total",
+                                                        "DNA outpatient service: Self-discharge",
+                                                        "Referred in error: As determined by vascular service",
+                                                        "Died before surgical assessment completed",
+                                                        "Unfit for surgery",
+                                                        "Refer to another specialty",
+                                                        "Awaiting further AAA growth",
+                                                        "Appropriate for Surgery: Patient declined surgery",
+                                                        "Appropriate for Surgery: Died before treatment",
+                                                        "Appropriate for Surgery: Self-discharge",
+                                                        "Appropriate for Surgery: Patient deferred surgery",
+                                                        "Appropriate for Surgery: AAA repaired and survived 30 days",
+                                                        "Appropriate for Surgery: Died within 30 days of treatment",
+                                                        "Appropriate for Surgery: Final outcome pending",
+                                                        "Ongoing assessment by vascular",
+                                                        "Final outcome pending",
+                                                        "Other final outcome"
+         ))) %>% 
+  arrange(result_size, outcome_type, result_outcome)
+# Note: result_outcome == "Appropriate for Surgery: Patient deferred surgery" (14)
+# not recognized level, meaning there are no records. Manually added in above
 
 write_rds(annual, paste0(wd_path, "/temp/4_vasc_sizeOutcomes.rds"))
 
 rm(greater, greater2, greater3, annual_great, 
-   less, less2, less3, annual_less, annual)
+   less, less2, less3, annual_less, annual, neg, no_outcome)
 
 
 ## GW requested for meeting 23Oct2022
@@ -303,12 +386,24 @@ write_rds(mort, paste0(wd_path, "/temp/4_mortalities_CHI.rds"))
 # THIS IS RUN AFTER MEG DISCUSSION!
 
 letter <- vasc %>%
-  filter(result_size == 1,
-         # approp for treatment: died within 30 days of surgery
-         result_outcome == "16") #%>% 
-## Look over this again... this filter can't be correct!  
-filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
-           (financial_year == "2018/19" & result_outcome == "18"))
+  filter(result_size == 1)
+
+##!! Ask MEG what is actually needed in letters 
+
+# # From SPSS:
+# # Died before surgical assessment completed.
+# filter(result_outcome == "07") #%>% 
+# # Appropriate for treatment: died within 30 days of surgery
+# filter(result_outcome == "16") #%>% 
+# # Non-final outcome in any time period (outcome_type = 2) or 
+# # Other final outcome (result outcome = 20) in latest year.
+# filter(outcome_type = 2) | (financial_year == "2021/22" & result_outcome == "20")
+# 
+# # Nov2020 MEG: chi numbers needed for:
+# # (a) Other final outcome (result outcome = 20) in 2018/2019 and 2019/20
+# # (b) Ongoing assessment by vascular (result outcome=18 ) in 2018/19.
+# filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
+#   (financial_year == "2018/19" & result_outcome == "18"))
 
 write_rds(letter, paste0(wd_path, "/temp/4_letters_CHI.rds"))
 

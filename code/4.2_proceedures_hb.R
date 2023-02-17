@@ -6,15 +6,13 @@
 # 
 # Translation of SPSS file 'AAA Procedures'
 # Part of Theme 4 for AAA KPIs
-# Takes the processed BOXI extracts and creates tables detailing
-# vascular surgery outcomes
+# Tab: AAA Repairs
+# Takes the processed BOXI extract and creates tables detailing
+# vascular surgery (AAA repair surgery) outcomes
 # 
 # Written/run on R Studio Server
 # R version 3.6.1
 ##########################################################
-
-# Description: number of AAA procedures carried out after being referred
-# from screening programme, split by NHS Board
 
 
 #### 1: Housekeeping ####
@@ -24,13 +22,8 @@ library(dplyr)
 library(magrittr)
 library(readr)
 library(phsmethods)
-library(janitor)     ##for rounding 0.5 upwards
-#library(expss)       ##for spss equvialent functions
-#library(tidyr)       ##for reshaping data
-library(openxlsx)
-#library(writexl)     ##for saving excel files
-#library(XLConnect)   ##for writing to excel templates (currently using this 
-#instead of openxlsx as openxlsx is overwritting the formatting)
+library(forcats)
+library(tidyr)
 library(tidylog)
 
 
@@ -42,7 +35,7 @@ year <- 2022
 month <- "09"
 vas_cutoff <- "2022-03-31"
 # most recent three years
-output_years <- c("2019/20", "2020/21", "2021/22", "All years")
+output_years <- c("2019/20", "2020/21", "2021/22")
 
 
 ## Pathways
@@ -51,23 +44,13 @@ wd_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, month)
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts",
                       "/", year, month)
 
-template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
-
-# location of Excel tables
-table_output <- paste0("/PHI_conf/AAA/Topics/AAAScreening/Publications",
-                       "/AAA Screening Programme Statistics/202203XX/Output/20211123 MEG")
-
-##!! Is this needed?? (redundant to output_years?)
-#years for column titles in table
-#fill in the first year to be shown, then other years will be automatically calculated from this
-year1 <- 2019
-
 
 #### 2: Format Data ####
 extract <- readRDS(paste0(extract_path, "/output/aaa_extract_", 
                           year, month, ".rds")) %>% 
-  #select(hbres, result_outcome, date_referral_true, date_surgery, fy_surgery, surg_method, ) %>%  
-  ## Add relevant variables, as don't need whole data set
+  select(hbres, aaa_size, date_referral_true, result_outcome,
+         date_surgery, fy_surgery, surg_method) %>%
+  # Add relevant variables, as don't need whole data set
   glimpse()
 
 
@@ -96,14 +79,15 @@ table(extract$result_outcome, extract$surg_method)
 
 ## One record has result_outcome == 20 (other final outcome)
 check <- extract[extract$result_outcome == "20",]
+# View(check)
 ## FY 2016/17
 ## Lothian resident who was eventually operated on in GG&C. 
 ## Once the board of surgery field is added to vascular module we will be 
 ## asking board to change result outcome to 15 or 16 (and data will be 
 ## collated by board of surgery rather than board of residence so it will be 
 ## counted under GG&C)
+rm(check)
 ####
-
 
 ## Appropriate for surgery records
 extract %<>%
@@ -115,128 +99,113 @@ table(extract$surg_method)
 ##!! 2. 1, 3, 5, year mortality.sps (CP translating)
 
 
-##!! This section adds FY numbers for date_surgery (YEAR OF SURGERY)
-## TO BE MOVED TO QUARTERLY EXTRACTS PROCESS
-## Create financial year from surgery date
-extract %<>%
-  mutate(fy_surgery = extract_fin_year(date_surgery)) %>%
-  mutate(fy_surgery = forcats::fct_relevel(fy_surgery,
-                                           c("2012/13", "2013/14", "2014/15",
-                                             "2015/16", "2016/17", "2017/18",
-                                             "2018/19", "2019/20", "2020/21",
-                                             "2021/22"))) %>%
-  relocate(fy_surgery, .after=date_surgery) %>%
-  glimpse()
-
-table(extract$fy_surgery)
-
-
 #### 3: Create Tables ####
-test <- extract %>% 
-  select(hbres, result_outcome, date_referral_true, 
-         date_surgery, fy_surgery, surg_method) %>% 
+## Tables to show number of AAA repairs for Scotland and HBs by
+## financial years and surgery method
+# Surgery method -- Health boards
+method <- extract %>% 
   group_by(hbres, fy_surgery, surg_method) %>% 
+  count(surg_method) %>% 
+  ungroup()
+
+# Surgery method -- Scotland
+method_scot <- extract %>% 
+  group_by(fy_surgery, surg_method) %>% 
+  count(surg_method) %>% 
+  ungroup() %>% 
+  mutate(hbres = "Scotland", .before = fy_surgery)
+
+# Surgery method -- Combine
+method <- rbind(method_scot, method)
+
+
+# Total repairs -- Health boards
+repair <- extract %>% 
+  group_by(hbres, fy_surgery) %>% 
+  count(hbres) %>% 
+  ungroup() %>% 
+  mutate(surg_method = "03", .after = fy_surgery)
+
+# Total repairs -- Scotland
+repair_scot <- extract %>% 
+  group_by(fy_surgery) %>% 
+  count(fy_surgery) %>% 
+  ungroup() %>% 
+  mutate(hbres = "Scotland", .before = fy_surgery) %>% 
+  mutate(surg_method = "03", .after = fy_surgery)
+
+# Total repairs -- Combine
+repair <- rbind(repair_scot, repair)
+
+rm(method_scot, repair_scot)
+
+
+## Reformat surgery methods tables
+## Table of all years from the beginning of the programme ---
+repairs_all <- rbind(method, repair) %>% 
+  mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders", 
+                                      "Dumfries & Galloway", "Fife", "Forth Valley",
+                                      "Grampian", "Greater Glasgow & Clyde", 
+                                      "Highland", "Lanarkshire", "Lothian", 
+                                      "Orkney", "Shetland", "Tayside", 
+                                      "Western Isles")),
+         surg_method = case_when(surg_method == "01" ~ "EVAR",
+                                 surg_method == "02" ~ "Open",
+                                 surg_method == "03" ~ "Total AAA repairs"),
+         surg_method = fct_relevel(surg_method, c("Open", "EVAR",
+                                                  "Total AAA repairs"))) %>% 
+  arrange(hbres, fy_surgery, surg_method) %>% 
   glimpse()
+  
+# Cummulative totals
+cumm <- repairs_all %>% 
+  group_by(hbres, surg_method) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+mutate(fy_surgery = "Cummulative", .after = hbres)
+
+# Reshape data
+repairs_hist <- rbind(repairs_all, cumm) %>% 
+  pivot_wider(names_from = c(fy_surgery, surg_method), 
+              values_from = n, values_fill = 0)
 
 
-#add variables to count overall totals
-quarter <- extract %>%
-  mutate(allyears="All years") %>%
-  mutate(allsurg="All Types") %>%
-  mutate(scotland="Scotland")
+## Table of current 3-year period ---
+repairs_current <- repairs_all %>% 
+  filter(fy_surgery %in% output_years) %>% 
+  # check if all 14 HBs + Scotland are represented
+  # Orkney missing, as no recent AAA surgerys performed
+  add_row(hbres = "Orkney", fy_surgery = "2021/22",
+          surg_method = "Total AAA repairs", n =0) %>% 
+  # manually adding in hbres level seems to "unlevel" the variable...
+  mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders", 
+                                      "Dumfries & Galloway", "Fife", "Forth Valley",
+                                      "Grampian", "Greater Glasgow & Clyde", 
+                                      "Highland", "Lanarkshire", "Lothian", 
+                                      "Orkney", "Shetland", "Tayside", 
+                                      "Western Isles")))
+         
+table(repairs_current$hbres)
+# Any HBs with 0 need to be manually entered in previous step!
 
-# #function to produce totals by various groups
-# totals <- function(df, surg, year, geog) {
-#   
-#   data <- data %>%
-#     group_by({{surg}}, {{year}}, {{geog}}) %>%
-#     summarise(total=n()) %>%
-#     rename(geography={{geog}}, surg_type={{surg}}, year={{year}})
-#   
-# }
-# 
-# #run totals for each combination of surgery type/years/hb
-# temp1 <- totals(df=quarter, year=fy_surgery, surg=surg_method, geog=hbres)
-# 
-# 
-# temp1 <- totals(year=yearsurg, surg=aaa_surg_method, geog=hb_res_name)
-# temp2 <- totals(year=allyears, surg=aaa_surg_method, geog=hb_res_name)
-# temp3 <- totals(year=allyears, surg=allsurg, geog=hb_res_name)
-# temp4 <- totals(year=yearsurg, surg=allsurg, geog=hb_res_name)
-# temp5 <- totals(year=yearsurg, surg=aaa_surg_method, geog=scotland)
-# temp6 <- totals(year=allyears, surg=aaa_surg_method, geog=scotland)
-# temp7 <- totals(year=allyears, surg=allsurg, geog=scotland)
-# temp8 <- totals(year=yearsurg, surg=allsurg, geog=scotland)
+# Cummulative totals
+cumm <- repairs_current %>% 
+  group_by(hbres, surg_method) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(fy_surgery = "Cummulative", .after = hbres)
 
-
-#add together cumulative and individual totals
-combined <- bind_rows(temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8)
-
-#remove datasets which are no longer required
-rm(temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8)
-
-#rename procedures so that it is clear which is which ahead of next step
-combined <- combined %>%
-  mutate(surg_type=case_when(
-    surg_type == "01" ~  "EVAR",
-    surg_type == "02" ~ "Open", 
-    surg_type == "03" ~ "Abandoned",
-    TRUE ~ as.character(surg_type)
-  ))
-
-#reshape data to format required
-combined <- combined %>%
-  pivot_wider(names_from = c(year, surg_type), values_from = total, values_fill = 0)
-
-#sort in order of hbs (rename scotland to get it to show at the top)
-combined <- combined %>%
-  mutate(geography=ifelse(geography=="Scotland", "aa_Scotland", geography)) %>%
-  arrange(geography) %>%
-  mutate(geography=ifelse(geography=="aa_Scotland", "Scotland", geography))
+# Reshape data
+repairs_current <- rbind(repairs_current, cumm) %>% 
+  pivot_wider(names_from = c(fy_surgery, surg_method), 
+              values_from = n, values_fill = 0) %>% 
+  arrange(hbres)
 
 
-#save file with all years of data
-write_xlsx(combined, paste0(output, "AAA repair numbers by type.xlsx"))
+### Save files
+## Current
+saveRDS(repairs_current, paste0("/temp/4_AAA_repairs_current.rds"))
 
+## Historical
+saveRDS(repairs_hist, paste0("/temp/4_AAA_repairs_historic.rds"))
 
-#select years to show in table
-combined <- combined %>%
-  select(geography, contains(years_to_show))
-
-#reorder columns so that open appears before evar for each year
-combined <- combined %>%
-  select(1,3,2,4,6,5,7,9,8,10,12,11,13)
-
-
-########################################################################
-### 3 - Write to excel----
-########################################################################
-
-#load in template containing excel tables
-tables <- loadWorkbook(template)
-setStyleAction(tables,XLC$"STYLE_ACTION.NONE") #preserve existing formatting
-
-
-#write data to relevant cells in table
-writeWorksheet(tables, combined, "AAA Repairs", startRow=7, startCol=2, header=FALSE)
-
-
-#update years in table column titles
-#year 1
-writeWorksheet(tables, paste0("Year ending 31 March ", year1), "AAA Repairs", startRow=5, startCol=3, header=FALSE)
-
-#year 2
-writeWorksheet(tables, paste0("Year ending 31 March ", (year1)+1), "AAA Repairs", startRow=5, startCol=6, header=FALSE)
-
-#year 3
-writeWorksheet(tables, paste0("Year ending 31 March ", (year1)+2), "AAA Repairs", startRow=5, startCol=9, header=FALSE)
-
-#cumulative
-writeWorksheet(tables, paste0("Cumulative total from implementation to 31 March ", (year1)+2), "AAA Repairs", startRow=5, startCol=12, header=FALSE)
-
-
-#save
-saveWorkbook(tables, paste0(table_output, "4. Referral for assessment - Treatment & Outcomes.xlsx"))
-
-
-############end of script############
