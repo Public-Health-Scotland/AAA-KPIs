@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 02a_KP1_3a_Additional_Coverage_by_NHS_Board_SIMD.R
+# 02a_KP1_3a_b_Additional_Coverage_by_NHS_Board_SIMD.R
 # Eibhlin O'Sullivan
 # Jan 2022
 # Takes processed extract and creates summary of patients
@@ -31,6 +31,7 @@ coverage_by_NHS_Board_SIMD <- coverage_basefile %>%
   select(-c(pc8:simd2020v2_hb2019_decile,simd2020v2_hscp2019_decile:simd2020v2_crime_rank))
 
 rm(coverage_basefile)
+
 ### KPI 1.3 ----
 
 ## Coverage by simd
