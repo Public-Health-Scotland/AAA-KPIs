@@ -41,6 +41,8 @@ prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
                              "Practice/",
                              "Temp All Boards output_coverage 2021.zsav")
 
+gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/")
+
 
 year1_start <- dmy("01-04-1955")
 year1_end <- dmy("31-03-1956")
@@ -199,6 +201,10 @@ output_1_2a <- breakdown_1_2a %>%
   select(hbres, gp_hb, gp_desc,
          cohort_year2, tested2_year2, percent_year2) %>%
   arrange(hbres, gp_hb)
+
+# output for next year
+write_rds(output_1_2a, paste0(gp_output_fpath,
+                              "All Boards output_coverage 2122.rds"))
 
 
 # bring in previous year's data
