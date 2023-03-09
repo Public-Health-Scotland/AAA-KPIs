@@ -25,6 +25,7 @@ library(here)
 library(dplyr)
 library(magrittr)
 library(readr)
+library(forcats)
 library(tidylog)
 
 
@@ -46,9 +47,12 @@ extract_path <-paste0("/PHI_conf/AAA/Topics/Screening/extracts",
 
 
 #### 2: Call in data ####
-vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_", year, month, ".rds")) %>% 
-  select(financial_year, hbres, hb_screen, date_screen, screen_result,
-         largest_measure, aaa_size, date_referral_true, result_outcome) %>% 
+vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_", 
+                        year, month, ".rds")) %>% 
+  select(financial_year, upi, hbres, hb_screen, 
+         date_screen, screen_result, largest_measure, 
+         aaa_size, date_referral_true, 
+         result_outcome, date_death) %>% 
   # only want referrals to vascular
   filter(!is.na(date_referral_true),
          # remove "referred in error: appt w vascular not required"
@@ -290,7 +294,7 @@ annual <- rbind(annual_great, annual_less) %>%
                                                     "Referral with final outcome",
                                                     "Referral with non-final outcome",
                                                     "No outcome recorded")),
-         # is there not a way to just move a fector to the top level??
+         # is there not a way to just move a factor to the top level??
          result_outcome = fct_relevel(result_outcome, c("Total",
                                                         "DNA outpatient service: Self-discharge",
                                                         "Referred in error: As determined by vascular service",
