@@ -105,6 +105,13 @@ vasc %<>%
                                   TRUE ~ 4)) %>% 
   glimpse()
 
+# value labels outcome_type
+# 1 'Referrals with a final outcome'
+# 2 'Referrals with a non-final outcome'
+# 3 'No Outcome recorded'
+# 4 'Outcome code not categorized by syntax'.
+
+
 # SPSS creates 'alloutcomes' variable (== 6) 
 # SPSS creates 'allresults' variable (== 00)
 # These are not recreated in R as aren't necessary

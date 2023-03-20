@@ -2,7 +2,7 @@
 # 4.2_proceedures_hb.R
 # Salomi Barkat & Karen Hotopp
 # 21/10/2022
-# Script 1 of ?
+# Script 2 of ?
 # 
 # Translation of SPSS file 'AAA Procedures'
 # Part of Theme 4 for AAA KPIs
@@ -204,8 +204,8 @@ repairs_current <- rbind(repairs_current, cumm) %>%
 
 ### Save files
 ## Current
-saveRDS(repairs_current, paste0("/temp/4_AAA_repairs_current.rds"))
+saveRDS(repairs_current, paste0(wd_path, "/temp/4_AAA_repairs_current.rds"))
 
 ## Historical
-saveRDS(repairs_hist, paste0("/temp/4_AAA_repairs_historic.rds"))
+saveRDS(repairs_hist, paste0(wd_path, "/temp/4_AAA_repairs_historic.rds"))
 
