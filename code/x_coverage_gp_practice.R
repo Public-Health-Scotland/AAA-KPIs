@@ -247,6 +247,7 @@ output_2year <- output_1_2a %>%
   arrange(hbres, sortorder, gp_hb) %>%
   select(-sortorder)
 
+output_2year$p_FY2020_21[is.na(output_2year$p_FY2020_21)] = NaN
 
 wb <- createWorkbook()
 addWorksheet(wb, "data")
