@@ -36,10 +36,11 @@ gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
 gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
                           "National Reference Files/gpprac.sav")
 
+
 prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
                              "Completed/20220301/Temp/Management Information/",
                              "Practice/",
-                             "Temp All Boards output_coverage 2021.zsav")
+                             "Temp All Boards output_coverage 2021.rds")
 
 gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/")
 
@@ -63,9 +64,7 @@ gp_prac_b <- read_csv(gp_prac_b_fpath)
 gp_lookup <- read_sav(gp_lookup_fpath) %>%
   select(praccode, add1)
 
-prev_gp_data <- read_sav(prev_gp_data_fpath)
-
-#prev_gp_data <- read_rds(prev_gp_data_fpath)
+prev_gp_data <- read_rds(prev_gp_data_fpath)
 
 ### Step 3 : ----
 
