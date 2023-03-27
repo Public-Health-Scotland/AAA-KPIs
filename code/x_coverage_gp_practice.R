@@ -8,7 +8,7 @@
 # Written on RServer (R Version 3.6.1)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-### Step 1 : load packages and filepaths ----
+### Step 1 : load packages ----
 
 library(readr)
 library(haven)
@@ -19,14 +19,12 @@ library(openxlsx)
 
 # Function
 
+# Function creates new gp variables (gp_hb and gp_desc) for use in 
+# making the output.
+
 # The spss script has a big gp practice if/else statement
+# for assigning gp practice codes to health boards.
 # !! come back to check if this is the right thing
-# creates 'cypher' doesn't seem to be used
-# creates 'prac2' which is practice code without the leading HB letter
-# prac2 is used for joining on the reference file
-# creates 'prac3' which is prac2 unless patient is resident outside the
-# health board they're registered in
-# prac3 is used for aggregation
 
 make_gp_vars <- function(df, gp_lookup) {
   
@@ -89,19 +87,15 @@ make_gp_vars <- function(df, gp_lookup) {
   
 }
 
+
+### Step x : Update variables and file paths ----
 # This should be the only step which needs edited each time
 
-invite_uptake_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
-                              "temp/KPIs/KPI1.1 - KPI1.3/",
-                              "inviteanduptake_initial.rds")
+kpi_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
+                         "temp/KPIs/KPI1.1 - KPI1.3/")
 
-output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
-                       "temp/KPIs/KPI1.1 - KPI1.3/")
-
-# AAA extract (needed for self referral data)
 extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
                         "202209/output/aaa_extract_202209.rds")
-
 
 gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
                           "GP Practice History with dob selection - prior to 1_4_1952.csv")
@@ -111,7 +105,6 @@ gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
 
 gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
                           "National Reference Files/gpprac.sav")
-
 
 prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
                              "Completed/20220301/Temp/Management Information/",
@@ -130,12 +123,11 @@ year2_end <- dmy("31-03-1957")
 
 ### Step 2 : Import data ----
 
-coverage_basefile <- read_rds(paste0(output_fpath,
+coverage_basefile <- read_rds(paste0(kpi_data_fpath,
                                      "coverage_basefile.rds"))
 
 gp_prac_a <- read_csv(gp_prac_a_fpath)
 gp_prac_b <- read_csv(gp_prac_b_fpath)
-
 
 gp_lookup <- read_sav(gp_lookup_fpath) %>%
   select(gp_join = praccode,
@@ -145,7 +137,8 @@ gp_lookup <- read_sav(gp_lookup_fpath) %>%
 
 prev_gp_data <- read_rds(prev_gp_data_fpath)
 
-### Step 3 : Add GP registration episodes ----
+
+### Step 3 : Add GP registration episodes to coverage data ----
 
 gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
 
@@ -160,19 +153,21 @@ gp_prac <- mutate(gp_prac,
 
 gp_prac <- filter(gp_prac, valid == 1)
 
-
 coverage_gp <- coverage_basefile %>%
   left_join(gp_prac, by = c("upi" = "Upinumber")) %>%
   select(-c(`Area of Residence`, `Valid from`, `Valid to`, `valid`)) %>%
   rename(practice_code = `Practice Code`)
 
+
 ### Step 4 : Assign gp practices to health boards ---
 
-# make gp_join
+# make practice code variable for joining
 coverage_gp <- coverage_gp %>%
   mutate(gp_join = substr(practice_code, 2, 5))
 
+# add gp_hb and gp_desc
 coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
+
 
 ### Step x : Calculate KPI 1.2a by GP ----
 
@@ -225,6 +220,24 @@ prev_gp_data <- prev_gp_data %>%
     prac3 == "0" ~ "Unknown Practice",
     TRUE ~ prac3
   ))
+
+
+
+####
+
+prev_gp_data <- prev_gp_data %>%
+  mutate(prac3 = case_when(
+    prac3 == "" ~ hbresname,
+    prac3 == "0" ~ "Unknown Practice",
+    TRUE ~ prac3
+  ))
+
+
+prev_gp_data <- prev_gp_data %>%
+  rename(hbres = hbresname,
+         gp_hb = prac3)
+
+####
 
 # now join to most recent year
 output_2year <- output_1_2a %>%
