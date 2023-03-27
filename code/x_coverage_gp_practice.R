@@ -3,7 +3,8 @@
 # Angus Morton
 # 01/02/2023
 #
-# Coverage and uptake rates by gp practice
+# Find coverage rates and number of self-referrals
+# by gp practice
 #
 # Written on RServer (R Version 3.6.1)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +89,7 @@ make_gp_vars <- function(df, gp_lookup) {
 }
 
 
-### Step x : Update variables and file paths ----
+### Step 2 : Update variables and file paths ----
 # This should be the only step which needs edited each time
 
 kpi_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
@@ -109,19 +110,16 @@ gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
 prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
                              "Completed/20220301/Temp/Management Information/",
                              "Practice/",
-                             "Temp All Boards output_coverage 2021.rds")
+                             "gp_coverage_2021.rds")
 
-gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/")
+gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+                          "gp_coverage_2122.rds")
 
-
-year1_start <- dmy("01-04-1955")
-year1_end <- dmy("31-03-1956")
-
-year2_start <- dmy("01-04-1956")
-year2_end <- dmy("31-03-1957")
+fy_start <- "01-04-2021"
+fy_end <- "31-03-2022"
 
 
-### Step 2 : Import data ----
+### Step 3 : Import data ----
 
 coverage_basefile <- read_rds(paste0(kpi_data_fpath,
                                      "coverage_basefile.rds"))
@@ -169,7 +167,7 @@ coverage_gp <- coverage_gp %>%
 coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
 
 
-### Step x : Calculate KPI 1.2a by GP ----
+### Step 5 : Calculate KPI 1.2a by GP ----
 
 # calculate KPI 1.2a (coverage)
 breakdown_1_2a <- coverage_gp %>%
@@ -205,59 +203,22 @@ output_1_2a <- breakdown_1_2a %>%
   arrange(hbres, gp_hb)
 
 ## Save output for next year
-write_rds(output_1_2a, paste0(gp_output_fpath,
-                              "All Boards output_coverage 2122.rds"))
+write_rds(output_1_2a, gp_output_fpath)
 
 
-### Step x : Create KPI 1.2a GP output ----
+### Step 6 : Create KPI 1.2a GP output ----
 
 # bring in previous year's data
 # update practice names using most recent lookup to avoid duplication
 prev_gp_data <- prev_gp_data %>%
-  left_join(gp_lookup, by = c("prac3" = "gp_join")) %>%
-  mutate(prac3 = case_when(
-    prac3 == "" ~ hbresname,
-    prac3 == "0" ~ "Unknown Practice",
-    TRUE ~ prac3
-  ))
+  left_join(gp_lookup, by = c("gp_hb" = "gp_join"))
 
-
-
-####
-
-prev_gp_data <- prev_gp_data %>%
-  mutate(prac3 = case_when(
-    prac3 == "" ~ hbresname,
-    prac3 == "0" ~ "Unknown Practice",
-    TRUE ~ prac3
-  ))
-
-
-prev_gp_data <- prev_gp_data %>%
-  rename(hbres = hbresname,
-         gp_hb = prac3)
-
-####
-
-# now join to most recent year
-output_2year <- output_1_2a %>%
-  full_join(prev_gp_data, by = c("hbres" = "hbresname",
-                                 "gp_hb" = "prac3",
-                                 "gp_desc" = "gp_desc")) %>%
-  select(hbres, gp_hb, gp_desc, FY2020_21_cohort, FY2020_21_tested, p_FY2020_21,
-         cohort_year1, tested2_year1, percent_year1) %>%
-  arrange(hbres, gp_hb)
-
-# save out
-# Format to be like the old file. This step can be taken out once the macro
-# is replaced with an R script
+# Format to be like the old file. This step can be changed when the macro
+# gets converted to R
 output_2year <- output_1_2a %>%
   mutate(gp_desc = if_else(gp_desc == "Practice outside hb area", as.character(NA), gp_desc)) %>%
-  full_join(prev_gp_data, by = c("hbres" = "hbresname",
-                                 "gp_hb" = "prac3",
-                                 "gp_desc" = "gp_desc")) %>%
-  select(hbres, gp_hb, gp_desc, FY2020_21_cohort, FY2020_21_tested, p_FY2020_21,
-         cohort_year1, tested2_year1, percent_year1) %>%
+  full_join(prev_gp_data, by = c("hbres", "gp_hb", "gp_desc")) %>%
+  select(1,2,3,8,9,10,4,5,6) %>%
   mutate(sortorder = case_when(
     hbres == gp_hb ~ 1,
     gp_hb == "Unknown Practice" ~ 3,
@@ -267,25 +228,31 @@ output_2year <- output_1_2a %>%
   arrange(hbres, sortorder, gp_hb) %>%
   select(-sortorder)
 
-output_2year$p_FY2020_21[is.na(output_2year$p_FY2020_21)] = NaN
+# change 'NA's to 'NaN's for the macro.
+# (This will say it's done nothing but it has)
+output_2year <- output_2year %>%
+  mutate(across(4:9, replace_na, NaN))
 
+# Write to excel
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", output_2year)
-saveWorkbook(wb, paste0(output_fpath, "gp_practice_all_boards.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, paste0(kpi_data_fpath, "gp_practice_all_boards.xlsx"), overwrite = TRUE)
 
 
-### Step x : Self referrals ----
+### Step 7 : Self referrals ----
 
 extract <- read_rds(extract_fpath)
 
 # Select screen dates from relevant financial year
 extract_slim <- extract %>%
-  filter(date_screen >= dmy("01-04-2021"),
-         date_screen <= dmy("31-03-2022"))
+  filter(date_screen >= dmy(fy_start),
+         date_screen <= dmy(fy_end))
 
-# filter to self referrals and some other filtering
-# patelig = 03, screen_type 01 or 03, screen_result 01, 02, or 04
+# trim
+# patelig : Self referrals
+# screen_type : initial or initial QA
+# screen_result : exclude technical fails and external results
 extract_slim <- extract_slim %>%
   filter(pat_elig == "03" &
            screen_type %in% c("01","03") &
@@ -301,12 +268,6 @@ extract_gp <- extract_gp %>%
 extract_gp <- make_gp_vars(extract_gp, gp_lookup)
 
 # aggregate to get totals
-# need totals by health board
-# need totals by practice
-# Just count all records included for each (it's been filtered to just SRs)
-
-# old columns
-# HBResName, prac3, practicedesc, FY2020_21
 
 self_ref_gp <- extract_gp %>%
   group_by(gp_hb, gp_desc, hbres) %>%
@@ -336,4 +297,4 @@ self_ref_gp <- self_ref_gp %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
-saveWorkbook(wb, paste0(output_fpath, "sr_all_boards.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, paste0(kpi_data_fpath, "sr_all_boards.xlsx"), overwrite = TRUE)
