@@ -1,0 +1,300 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# x_coverage_gp_practice.R
+# Angus Morton
+# 01/02/2023
+#
+# Find coverage rates and number of self-referrals
+# by gp practice
+#
+# Written on RServer (R Version 3.6.1)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Step 1 : load packages ----
+
+library(readr)
+library(haven)
+library(dplyr)
+library(tidylog)
+library(lubridate)
+library(openxlsx)
+
+# Function
+
+# Function creates new gp variables (gp_hb and gp_desc) for use in 
+# making the output.
+
+# The spss script has a big gp practice if/else statement
+# for assigning gp practice codes to health boards.
+# !! come back to check if this is the right thing
+
+make_gp_vars <- function(df, gp_lookup) {
+  
+  
+  # flag for if an individual is registered inside/outside their hb of residence
+  dat <- df %>%
+    mutate(in_hb = case_when(
+      gp_join == 3139 ~ 1,
+      hbres == "Ayrshire & Arran" & between(gp_join, 8000, 8399) ~ 1,
+      hbres == "Borders" & between(gp_join, 1600, 1799) ~ 1,
+      hbres == "Fife" & between(gp_join, 2000, 2499) ~ 1,
+      hbres == "Lanarkshire" & 
+        (between(gp_join, 6000, 6599) |
+           gp_join %in% c(4626,4627,4653,4654,
+                          4900,4902,4905,4906,
+                          4911,4925,4943,4952,
+                          4964,4969,4970,4979)) ~ 1,
+      hbres == "Greater Glasgow & Clyde" &
+        (between(gp_join, 4000, 5499) |
+           between(gp_join, 8499, 8799)) &
+        !gp_join %in% c(4626,4627,4653,4654,
+                        4900,4902,4905,4906,
+                        4911,4925,4943,4952,
+                        4964,4969,4970,4979,
+                        8500,8511,8514,8515,
+                        8519) ~ 1,
+      hbres == "Highland" &
+        (between(gp_join, 5500, 5999) |
+           between(gp_join, 8400, 8498) |
+           gp_join %in% c(8500,8511,8514,8515,8519)) ~ 1,
+      hbres == "Grampian" & between(gp_join, 3000, 3799) ~ 1,
+      hbres == "Lothian" & between(gp_join, 7000, 7999) ~ 1,
+      hbres == "Orkney" & between(gp_join, 3800, 3899) ~ 1,
+      hbres == "Tayside" & between(gp_join, 1000, 1599) ~ 1,
+      hbres == "Forth Valley" & between(gp_join, 2500, 2999) ~ 1,
+      hbres == "Western Isles" & between(gp_join, 9000, 9099) ~ 1,
+      hbres == "Dumfries & Galloway" & between(gp_join, 1800, 1999) ~ 1,
+      hbres == "Shetland" & between(gp_join, 3900, 3999) ~ 1,
+      is.na(gp_join) ~ 1,
+      TRUE ~ 0
+    ))
+  
+  # create a variable for practice code if registered in health board
+  dat <- dat %>%
+    mutate(gp_hb = case_when(
+      in_hb == 0 ~ "Practice outside hb area",
+      TRUE ~ gp_join
+    ))
+  
+  # Join on gp lookup to get names
+  dat <- dat %>%
+    left_join(gp_lookup, by = "gp_join")
+  
+  # Create gp description for output
+  dat <- dat %>%
+    mutate(gp_desc = if_else(gp_hb == "Practice outside hb area",
+                             "Practice outside hb area", gp_desc))
+  
+  dat
+  
+}
+
+
+### Step 2 : Update variables and file paths ----
+# This should be the only step which needs edited each time
+
+kpi_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
+                         "temp/KPIs/KPI1.1 - KPI1.3/")
+
+extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
+                        "202209/output/aaa_extract_202209.rds")
+
+gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+                          "GP Practice History with dob selection - prior to 1_4_1952.csv")
+
+gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+                          "GP Practice History with dob selection - post 1_4_1952.csv")
+
+gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
+                          "National Reference Files/gpprac.sav")
+
+prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
+                             "Completed/20220301/Temp/Management Information/",
+                             "Practice/",
+                             "gp_coverage_2021.rds")
+
+gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+                          "gp_coverage_2122.rds")
+
+fy_start <- "01-04-2021"
+fy_end <- "31-03-2022"
+
+
+### Step 3 : Import data ----
+
+coverage_basefile <- read_rds(paste0(kpi_data_fpath,
+                                     "coverage_basefile.rds"))
+
+gp_prac_a <- read_csv(gp_prac_a_fpath)
+gp_prac_b <- read_csv(gp_prac_b_fpath)
+
+gp_lookup <- read_sav(gp_lookup_fpath) %>%
+  select(gp_join = praccode,
+         gp_desc = add1) %>%
+  mutate(gp_join = substr(gp_join, 1, 4)) %>%
+  filter(!(gp_join == 9999 & gp_desc == "PATIENTS REGISTERED WITH A GP"))
+
+prev_gp_data <- read_rds(prev_gp_data_fpath)
+
+
+### Step 3 : Add GP registration episodes to coverage data ----
+
+gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
+
+# Flag gp practice that was relevant at the end of the financial year
+gp_prac <- mutate(gp_prac,
+                  valid = case_when(
+                    `Valid from` < dmy("01-04-2022") & `Valid to` > dmy("01-04-2022") ~ 1,
+                    `Valid from` < dmy("01-04-2022") & is.na(`Valid to`) ~ 1,
+                    is.na(`Valid from`) & `Valid to` > dmy("01-04-2022") ~ 1,
+                    TRUE ~ 0)
+)
+
+gp_prac <- filter(gp_prac, valid == 1)
+
+coverage_gp <- coverage_basefile %>%
+  left_join(gp_prac, by = c("upi" = "Upinumber")) %>%
+  select(-c(`Area of Residence`, `Valid from`, `Valid to`, `valid`)) %>%
+  rename(practice_code = `Practice Code`)
+
+
+### Step 4 : Assign gp practices to health boards ---
+
+# make practice code variable for joining
+coverage_gp <- coverage_gp %>%
+  mutate(gp_join = substr(practice_code, 2, 5))
+
+# add gp_hb and gp_desc
+coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
+
+
+### Step 5 : Calculate KPI 1.2a by GP ----
+
+# calculate KPI 1.2a (coverage)
+breakdown_1_2a <- coverage_gp %>%
+  group_by(gp_hb, gp_desc, hbres) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(gp_hb = if_else(is.na(gp_hb), "Unknown Practice", gp_hb))
+
+hb_1_2a <- coverage_gp %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(gp_hb = hbres)
+
+breakdown_1_2a <- bind_rows(breakdown_1_2a, hb_1_2a)
+
+# create percentages
+breakdown_1_2a <- breakdown_1_2a %>%
+  mutate(
+    percent_year1 = (tested2_year1/cohort_year1)*100,
+    
+    percent_any_year1 = (tested2_any_year1/cohort_year1)*100
+  )
+
+# Output tables
+output_1_2a <- breakdown_1_2a %>%
+  select(hbres, gp_hb, gp_desc,
+         cohort_year1, tested2_year1, percent_year1) %>%
+  arrange(hbres, gp_hb)
+
+## Save output for next year
+write_rds(output_1_2a, gp_output_fpath)
+
+
+### Step 6 : Create KPI 1.2a GP output ----
+
+# bring in previous year's data
+# update practice names using most recent lookup to avoid duplication
+prev_gp_data <- prev_gp_data %>%
+  left_join(gp_lookup, by = c("gp_hb" = "gp_join"))
+
+# Format to be like the old file. This step can be changed when the macro
+# gets converted to R
+output_2year <- output_1_2a %>%
+  mutate(gp_desc = if_else(gp_desc == "Practice outside hb area", as.character(NA), gp_desc)) %>%
+  full_join(prev_gp_data, by = c("hbres", "gp_hb", "gp_desc")) %>%
+  select(1,2,3,8,9,10,4,5,6) %>%
+  mutate(sortorder = case_when(
+    hbres == gp_hb ~ 1,
+    gp_hb == "Unknown Practice" ~ 3,
+    gp_hb == "Practice outside hb area" ~ 4,
+    TRUE ~ 2
+  )) %>%
+  arrange(hbres, sortorder, gp_hb) %>%
+  select(-sortorder)
+
+# change 'NA's to 'NaN's for the macro.
+# (This will say it's done nothing but it has)
+output_2year <- output_2year %>%
+  mutate(across(4:9, replace_na, NaN))
+
+# Write to excel
+wb <- createWorkbook()
+addWorksheet(wb, "data")
+writeData(wb, sheet = "data", output_2year)
+saveWorkbook(wb, paste0(kpi_data_fpath, "gp_practice_all_boards.xlsx"), overwrite = TRUE)
+
+
+### Step 7 : Self referrals ----
+
+extract <- read_rds(extract_fpath)
+
+# Select screen dates from relevant financial year
+extract_slim <- extract %>%
+  filter(date_screen >= dmy(fy_start),
+         date_screen <= dmy(fy_end))
+
+# trim
+# patelig : Self referrals
+# screen_type : initial or initial QA
+# screen_result : exclude technical fails and external results
+extract_slim <- extract_slim %>%
+  filter(pat_elig == "03" &
+           screen_type %in% c("01","03") &
+           screen_result %in% c("01","02","04"))
+
+# join on AAA GP practice file
+extract_gp <- extract_slim %>%
+  left_join(gp_prac, by = c("upi"="Upinumber"))
+
+extract_gp <- extract_gp %>%
+  mutate(gp_join = substr(practice_code, 2, 5))
+
+extract_gp <- make_gp_vars(extract_gp, gp_lookup)
+
+# aggregate to get totals
+
+self_ref_gp <- extract_gp %>%
+  group_by(gp_hb, gp_desc, hbres) %>%
+  summarise(individuals = n()) %>%
+  ungroup() %>%
+  select(hbres, gp_hb, gp_desc, individuals)
+
+self_ref_hb <- extract_gp %>%
+  group_by(hbres) %>%
+  summarise(individuals = n()) %>%
+  ungroup() %>%
+  mutate(gp_hb = hbres) %>%
+  select(hbres, gp_hb, individuals)
+
+self_ref_gp <- self_ref_gp %>%
+  bind_rows(self_ref_hb)
+
+self_ref_gp <- self_ref_gp %>%
+  mutate(sortorder = case_when(
+    hbres == gp_hb ~ 1,
+    TRUE ~ 2
+  )) %>%
+  arrange(hbres, sortorder) %>%
+  select(-sortorder)
+
+# save out
+wb <- createWorkbook()
+addWorksheet(wb, "data")
+writeData(wb, sheet = "data", self_ref_gp)
+saveWorkbook(wb, paste0(kpi_data_fpath, "sr_all_boards.xlsx"), overwrite = TRUE)
