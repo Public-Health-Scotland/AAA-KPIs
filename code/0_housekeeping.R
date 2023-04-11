@@ -30,6 +30,14 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 cutoff_date <- dmy("31-03-1958")  ## How is this defined??
 
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## 2_2_kpi_1_1-1_3_uptake_coverage.R
+year1_start <- dmy("01-04-1956")
+year1_end <- dmy("31-03-1957")
+
+year2_start <- dmy("01-04-1957")
+year2_end <- dmy("31-03-1958")
+
 
 
 
