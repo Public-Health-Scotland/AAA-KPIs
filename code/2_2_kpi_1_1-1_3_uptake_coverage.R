@@ -162,7 +162,6 @@ write_rds(invite_uptake, paste0(temp_path, "/1_coverage_basefile.rds"))
 
 
 ### Step 5 : Summary tables ----
-
 ### KPI 1.1 ----
 # trim date (select men born from 1 April 1948)
 # keeps data for eligible cohorts for men turning age 66 from 2014/15
@@ -182,9 +181,7 @@ scotland_1_1 <- breakdown_1_1 %>%
   ) %>%
   mutate(hbres = "Scotland")
 
-breakdown_1_1 <- bind_rows(breakdown_1_1, scotland_1_1)
-
-rm(scotland_1_1)
+breakdown_1_1 <- bind_rows(scotland_1_1, breakdown_1_1)
 
 # create percentages
 breakdown_1_1 <- breakdown_1_1 %>%
@@ -197,34 +194,35 @@ breakdown_1_1 <- breakdown_1_1 %>%
   )
 
 # Output tables
-output_a_1_1 <- breakdown_1_1 %>%
-  select(hbres, cohort_year1, offer_year1, percent_year1,
-         cohort_year2, offer_year2, percent_year2)
+output_1_1 <- breakdown_1_1 %>%
+  select(hbres, cohort_year1, offer_year1, percent_year1, offer_any_year1, 
+         percent_any_year1, cohort_year2, offer_year2, percent_year2,
+         offer_any_year2, percent_any_year2) #These last 2 only used in fall MEG
 
-output_b_1_1 <- breakdown_1_1 %>%
-  select(hbres, cohort_year1, offer_any_year1, percent_any_year1,
-         cohort_year2, offer_any_year2, percent_any_year2)
+# Save
+write_rds(output_1_1, paste0(temp_path, "/KPI_1_1.rds"))
+
+rm(invite_uptake_1_1, scotland_1_1, breakdown_1_1)
 
 
 ### KPI 1.2b ----
-
-breakdown_1_2 <- invite_uptake %>%
+breakdown_1_2b <- invite_uptake %>%
   group_by(hbres) %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup()
 
-scotland_1_2 <- breakdown_1_2 %>%
+scotland_1_2b <- breakdown_1_2b %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")
+  mutate(hbres = "Scotland", .before = cohort_year1)
 
-breakdown_1_2 <- bind_rows(breakdown_1_2, scotland_1_2)
+breakdown_1_2b <- bind_rows(scotland_1_2b, breakdown_1_2b)
 
 # create percentages
-breakdown_1_2 <- breakdown_1_2 %>%
+breakdown_1_2b <- breakdown_1_2b %>%
   mutate(
     percent_year1 = (tested_year1/offer_year1)*100,
     percent_year2 = (tested_year2/offer_year2)*100,
@@ -233,52 +231,56 @@ breakdown_1_2 <- breakdown_1_2 %>%
   )
 
 # Output tables
-output_1_2 <- breakdown_1_2 %>%
+output_1_2b <- breakdown_1_2b %>%
   select(hbres, offer_year1, tested_year1, percent_year1,
          offer_year2, tested_year2, percent_year2)
 
+# Save
+write_rds(output_1_2b, paste0(temp_path, "/KPI_1_2b.rds"))
+
+rm(scotland_1_2b, breakdown_1_2b)
+
 
 ### KPI 1.3b ----
-
-breakdown_1_3 <- invite_uptake %>%
+breakdown_1_3b <- invite_uptake %>%
   group_by(hbres, simd2020v2_sc_quintile) %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup()
 
-breakdown_1_3_tot <- invite_uptake %>%
+breakdown_1_3b_tot <- invite_uptake %>%
   group_by(hbres) %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup() %>%
-  mutate(simd2020v2_sc_quintile = 0)
+  mutate(simd2020v2_sc_quintile = 0, .after = hbres)
 
-scotland_1_3 <- breakdown_1_3 %>%
+scotland_1_3b <- breakdown_1_3b %>%
   group_by(simd2020v2_sc_quintile) %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")
+  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile)
 
-scotland_1_3_tot <- breakdown_1_3 %>%
+scotland_1_3b_tot <- breakdown_1_3b %>%
   summarise(
     across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland") %>%
-  mutate(simd2020v2_sc_quintile = 0)
+  mutate(hbres = "Scotland", .before = cohort_year1) %>%
+  mutate(simd2020v2_sc_quintile = 0, .after = hbres)
 
-breakdown_1_3 <- bind_rows(breakdown_1_3, breakdown_1_3_tot) %>%
+breakdown_1_3b <- bind_rows(breakdown_1_3b_tot, breakdown_1_3b) %>%
   arrange(hbres)
 
-scotland_1_3 <- bind_rows(scotland_1_3, scotland_1_3_tot)
+scotland_1_3b <- bind_rows(scotland_1_3b_tot, scotland_1_3b)
 
-breakdown_1_3 <- bind_rows(scotland_1_3, breakdown_1_3) %>%
+breakdown_1_3b <- bind_rows(scotland_1_3b, breakdown_1_3b) %>%
   select(hbres, everything())
 
 # create percentages
-breakdown_1_3 <- breakdown_1_3 %>%
+breakdown_1_3b <- breakdown_1_3b %>%
   mutate(
     percent_year1 = (tested_year1/offer_year1)*100,
     percent_year2 = (tested_year2/offer_year2)*100,
@@ -287,15 +289,18 @@ breakdown_1_3 <- breakdown_1_3 %>%
   )
 
 # Output tables
-output_1_3 <- breakdown_1_3 %>%
+output_1_3b <- breakdown_1_3b %>%
   select(hbres, simd2020v2_sc_quintile, offer_year1, tested_year1,
          percent_year1, offer_year2, tested_year2, percent_year2) %>%
   mutate_all(~ifelse(is.nan(.), NA, .))
 
+# Save
+write_rds(output_1_3b, paste0(temp_path, "/KPI_1_3b.rds"))
+
+rm(scotland_1_3b, scotland_1_3b_tot, breakdown_1_3b, breakdown_1_3b_tot)
 
 
 ### KPI 1.2a ----
-
 breakdown_1_2a <- invite_uptake %>%
   group_by(hbres) %>%
   summarise(
@@ -303,14 +308,13 @@ breakdown_1_2a <- invite_uptake %>%
   ) %>%
   ungroup()
 
-
 scotland_1_2a <- breakdown_1_2a %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")
+  mutate(hbres = "Scotland", .before = cohort_year1)
 
-breakdown_1_2a <- bind_rows(breakdown_1_2a, scotland_1_2a)
+breakdown_1_2a <- bind_rows(scotland_1_2a, breakdown_1_2a)
 
 # create percentages
 breakdown_1_2a <- breakdown_1_2a %>%
@@ -323,19 +327,32 @@ breakdown_1_2a <- breakdown_1_2a %>%
   )
 
 # Output tables
-output_a_1_2a <- breakdown_1_2a %>%
-  select(hbres, cohort_year1, tested2_year1, percent_year1,
-         cohort_year2, tested2_year2, percent_year2)
+output_1_2a <- breakdown_1_2a %>%
+  select(hbres, cohort_year1, tested2_year1, percent_year1, tested2_any_year1, 
+         percent_any_year1, cohort_year2, tested2_year2, percent_year2, 
+         tested2_any_year2, percent_any_year2) #These last 2 only used in fall MEG
 
-output_b_1_2a <- breakdown_1_2a %>%
-  select(hbres, cohort_year1, tested2_any_year1, percent_any_year1,
-         cohort_year2, tested2_any_year2, percent_any_year2)
+# Save
+write_rds(output_1_2a, paste0(temp_path, "/KPI_1_2a.rds"))
+
+rm(scotland_1_2a)
 
 
 ### KPI 1.3a ----
-
 ## Coverage by simd
-breakdown_1_3a <- invite_uptake %>%
+####
+## Note that data going into KPI 1.3a Additional tab on MEG report is by 
+## HB-level SIMD, so need to create new variable
+## MOVE THIS TO PREVIOUS SCRIPT!!!
+hb_simd <- read_rds(paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
+                  "/postcode_2022_2_simd2020v2.rds")) |>
+  select(pc8, simd2020v2_hb2019_quintile)
+
+test <- left_join(invite_uptake, hb_simd, by = c("postcode" = "pc8")) |>
+  relocate(simd2020v2_hb2019_quintile, .before = hbres)
+####
+
+breakdown_1_3a <- test |> #invite_uptake %>%
   group_by(hbres, simd2020v2_sc_quintile) %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
@@ -343,20 +360,18 @@ breakdown_1_3a <- invite_uptake %>%
   ungroup() %>%
   mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
 
-
 scotland_1_3a <- breakdown_1_3a %>%
   group_by(simd2020v2_sc_quintile) %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")%>%
+  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile)%>%
   mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
 
-
 tot_1_3a <- breakdown_1_2a %>%
-  mutate(simd2020v2_sc_quintile = "Total")
+  mutate(simd2020v2_sc_quintile = "Total", .after = hbres)
 
-# bind together including non simd totals from previous kpi
+# bind together including non-simd totals from previous kpi
 breakdown_1_3a <- bind_rows(breakdown_1_3a, scotland_1_3a, tot_1_3a)
 
 # create percentages
@@ -371,15 +386,20 @@ breakdown_1_3a <- breakdown_1_3a %>%
 
 # Output tables
 output_a_1_3a <- breakdown_1_3a %>%
-  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, percent_year1,
-         cohort_year2, tested2_year2, percent_year2) %>%
+  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, 
+         percent_year1, cohort_year2, tested2_year2, percent_year2) %>%
   arrange(factor(hbres, levels = "Scotland"), hbres)
 # Slight differences due to newer simd version
 
 output_b_1_3a <- breakdown_1_3a %>%
-  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_any_year1, percent_any_year1,
+  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_any_year1, 
+         percent_any_year1,
          cohort_year2, tested2_any_year2, percent_any_year2) %>%
   arrange(factor(hbres, levels = "Scotland"), hbres)
 # again slight differences
 
+# Save
+write_rds(output_1_3a, paste0(temp_path, "/KPI_1_3a.rds"))
+
+rm(scotland_1_2a)
 
