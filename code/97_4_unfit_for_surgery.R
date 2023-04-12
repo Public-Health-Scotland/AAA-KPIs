@@ -139,7 +139,7 @@ unfit_fy <- rbind(unfit_hb, unfit_scot) %>%
   select(hbres, ends_with("13"), ends_with("14"), ends_with("15"),
          ends_with("16"), ends_with("17"), ends_with("18"),
          ends_with("19"), ends_with("20"), ends_with("21"),
-         ends_with("22")) %>% # will need to add additional years as we go...
+         ends_with("22"), ends_with("23")) %>% # will need to add additional years as we go...
   mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
                              "Dumfries & Galloway", "Fife", "Forth Valley",
                              "Grampian", "Greater Glasgow & Clyde",

@@ -28,10 +28,10 @@ library(tidylog)
 
 # Define date values
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
-cut_off_date <- as.Date("2022-03-31")
+cut_off_date <- as.Date("2023-03-31")
 cut_off_date_1 <- cut_off_date - years(1)
 cut_off_date_3 <- cut_off_date - years(3)
 cut_off_date_5 <- cut_off_date - years(5)
@@ -45,7 +45,8 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
                         month, "/output")
 
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/temp/4. RTO/")
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
+                      month,"/temp/4. RTO/")
 
 # Connect to SMRA tables using odbc connection
 # The suppressWarnings function prevents your password from appearing in the
@@ -274,25 +275,25 @@ all_deaths <- bind_rows(aaa_related_deaths, non_aaa_related_deaths)
 
 # Save mortality output
 
-write_xlsx(mortality_scotland, 
+write.xlsx(mortality_scotland, 
            paste0(output_path, "unfit_for_surgery_mortality_scotland.xlsx"))
 
-write_xlsx(mortality_hb, 
+write.xlsx(mortality_hb, 
            paste0(output_path, "unfit_for_surgery_mortality_hb.xlsx"))
 
 # Save cause of death output
 
-write_xlsx(cause_of_death, 
+write.xlsx(cause_of_death, 
            paste0(output_path, "unfit_for_surgery_causes_of_death.xlsx"))
 
-write_xlsx(cause_of_death_fy, 
+write.xlsx(cause_of_death_fy, 
            paste0(output_path, "unfit_for_surgery_causes_of_death_by_year.xlsx"))
 
-write_xlsx(aaa_related_deaths, 
+write.xlsx(aaa_related_deaths, 
            paste0(output_path, "aaa_related_deaths_by_cause.xlsx"))
 
-write_xlsx(non_aaa_related_deaths, 
+write.xlsx(non_aaa_related_deaths, 
            paste0(output_path, "non_aaa_related_deaths_by_cause.xlsx"))
 
-write_xlsx(all_deaths, 
+write.xlsx(all_deaths, 
            paste0(output_path, "all_deaths_by_cause.xlsx"))
