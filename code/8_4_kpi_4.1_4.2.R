@@ -205,5 +205,5 @@ write.xlsx(evar_surgery_deaths,
            paste0(output_additional_path, 
                   "/5. 30-day deaths by hb and year - evar.xlsx"))
 
-write_xlsx(evar_surgery_totals, 
+write.xlsx(evar_surgery_totals, 
            paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
