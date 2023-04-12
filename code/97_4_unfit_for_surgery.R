@@ -28,14 +28,14 @@ rm(list = ls())
 
 
 ## Values
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
 # Set cut off date as end of latest financial year.
 # Where an interim update is being provided for the MEG (for instance, in March)
 # the final output tables will need to include a footnote to indicate that it 
 # represents a partial financial year (e.g. 1 April to end of February).
-vas_cutoff <- "2022-03-31"
+vas_cutoff <- "2023-03-31"
 
 
 ## Pathways
@@ -59,6 +59,7 @@ extract <- readRDS(paste0(extract_path, "/output/aaa_extract_",
 
 table(extract$screen_result)
 # 01 (positive) = 898; 02 (negative) = 7   Sept 2022
+# 01 (positive) = 1012; 02 (negative) = 7   Mar 2023
 
 table(extract$result_outcome, extract$size_dichot)
 
@@ -110,6 +111,7 @@ unfit_surgery <- extract %>%
 
 table(unfit_surgery$unfit)
 # 128 patients unfit  Sept 2022
+# 143 patients unfit  Mar 203
 
 
 ### Patients unfit for surgery by FY ----
@@ -184,3 +186,4 @@ unfit_cum <- rbind(unfit_hb, unfit_scot) %>%
 unfit_programme <- left_join(unfit_fy, unfit_cum)
 
 write_rds(unfit_programme, paste0(wd_path, "/temp/4_AAA_unfit_for_surgery.rds"))
+write.xlsx(unfit_programme, paste0(wd_path, "/temp/4_AAA_unfit_for_surgery.xlsx"))
