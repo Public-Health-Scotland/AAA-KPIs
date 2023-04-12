@@ -449,3 +449,10 @@ letter <- vasc %>%
 
 write_rds(letter, paste0(wd_path, "/temp/4_letters_CHI.rds"))
 
+### 4 Save Output ----
+
+# Save output
+
+write.xlsx(annual, 
+           paste0(wd_path, "/temp/", "4_vasc_sizeOutcomes.xlsx"))
+
