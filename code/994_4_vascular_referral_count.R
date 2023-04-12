@@ -27,13 +27,13 @@ library(tidylog)
 
 # Define date values
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
-cut_off_date <- as.Date("2022-03-31")
-year_one <- "2019/20"
-year_two <- "2020/21"
-year_three <- "2021/22"
+cut_off_date <- as.Date("2023-03-31")
+year_one <- "2020/21"
+year_two <- "2021/22"
+year_three <- "2022/23"
 
 # Define extract name
 
@@ -44,7 +44,8 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
                         month, "/output")
 
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/temp/4. RTO/")
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
+                      month, "/temp/")
 
 
 
@@ -121,5 +122,5 @@ vascular_referral_count <- aaa_extract %>%
 
 # Save output
 
-write_xlsx(vascular_referral_count, 
+write.xlsx(vascular_referral_count, 
            paste0(output_path, "Table 7 Vascular Referral Source.xlsx"))
