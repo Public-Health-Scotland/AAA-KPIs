@@ -69,6 +69,11 @@ last_date <- "2023-04-01"
 ##   Example: when current_year = 2021/22, last_date = 2023-04-01
 ###
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## 5_2_Supplementary_Surveillance.R
+# Define dates
+next_year <- "2022/23"
+cut_off_date <- "2023-03-31"
 
 
 

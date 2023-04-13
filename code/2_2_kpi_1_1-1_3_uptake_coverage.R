@@ -49,7 +49,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, extract_path, cutoff_date)
+rm(exclusions_path, extract_path, gpd_lookups, cutoff_date,
+   prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date)
 
 
 ### Step 2 : Import data ----
