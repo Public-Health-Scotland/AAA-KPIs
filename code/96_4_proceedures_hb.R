@@ -31,11 +31,11 @@ rm(list = ls())
 
 
 ## Values
-year <- 2022
-month <- "09"
-vas_cutoff <- "2022-03-31"
+year <- 2023
+month <- "03"
+vas_cutoff <- "2023-03-31"
 # most recent three years
-output_years <- c("2019/20", "2020/21", "2021/22")
+output_years <- c("2020/21", "2021/22", "2022/23")
 
 
 ## Pathways
@@ -205,7 +205,9 @@ repairs_current <- rbind(repairs_current, cumm) %>%
 ### Save files
 ## Current
 saveRDS(repairs_current, paste0(wd_path, "/temp/4_AAA_repairs_current.rds"))
+write.xlsx(repairs_current, paste0(wd_path, "/temp/4_AAA_repairs_current.xlsx"))
 
 ## Historical
 saveRDS(repairs_hist, paste0(wd_path, "/temp/4_AAA_repairs_historic.rds"))
+write.xlsx(repairs_hist, paste0(wd_path, "/temp/4_AAA_repairs_historic.xlsx"))
 

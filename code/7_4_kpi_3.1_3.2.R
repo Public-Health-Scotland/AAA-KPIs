@@ -24,17 +24,18 @@ library(lubridate)
 library(phsmethods)
 library(janitor)
 library(tidylog)
+library(openxlsx)
 
 # Define date values
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
-year_one <- "2019/20"
-year_two <- "2020/21"
-year_three <- "2021/22"
-cut_off_date <- as.Date("2022-03-31")
-meg_month <- "Nov"
+year_one <- "2020/21"
+year_two <- "2021/22"
+year_three <- "2022/23"
+cut_off_date <- as.Date("2023-03-31")
+meg_month <- "May"
 
 # Define extract name
 
@@ -44,6 +45,10 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 
 extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
                         month, "/output")
+
+# Define output paths
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
+                       month, "/temp/")
 
 
 
@@ -144,7 +149,7 @@ kpi_3_1_output <- kpi_3_1 %>%
   select(hbres, starts_with("2012/13"), starts_with("2013/14"), 
          starts_with("2014/15"), starts_with("2015/16"), starts_with("2016/17"), 
          starts_with("2017/18"), starts_with("2018/19"), starts_with("2019/20"), 
-         starts_with("2020/21"), starts_with("2021/22"), 
+         starts_with("2020/21"), starts_with("2021/22"), starts_with("2022/23"),
          cum_referrals, cum_seen, pc_cum_seen) %>% 
   arrange(hbres != "Scotland")
 
@@ -260,7 +265,7 @@ kpi_3_2_output <- kpi_3_2 %>%
   select(hbres, starts_with("2012/13"), starts_with("2013/14"), 
          starts_with("2014/15"), starts_with("2015/16"), starts_with("2016/17"), 
          starts_with("2017/18"), starts_with("2018/19"), starts_with("2019/20"), 
-         starts_with("2020/21"), starts_with("2021/22"), 
+         starts_with("2020/21"), starts_with("2021/22"), starts_with("2022/23"),
          cum_approp, cum_surgery, pc_cum_surgery) %>% 
   arrange(hbres != "Scotland")
 
@@ -278,4 +283,40 @@ rm(kpi_3_2_data, kpi_3_2_hb_totals, kpi_3_2_scot_totals, kpi_3_2, aaa_extract)
 
 ### 5 Output ----
 
-# Decide where to save output
+# Create workbook
+
+wb <- createWorkbook()
+
+# Define a header style for workbook
+
+hs <- createStyle(halign = "center", valign = "center", 
+                  textDecoration = "bold", border = "TopBottomLeftRight")
+
+## 5.1 - Create tab KPI1.4a --
+
+addWorksheet(wb, sheetName = "KPI3.1", gridLines = FALSE)
+
+# Add Titles
+writeData(wb, sheet = "KPI3.1", paste0("KPI 3.1: Percentage of men with AAA ≥ 5.5cm seen by vascular specialist within two weeks of screening"),
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "KPI3.1", kpi_3_1_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
+
+setColWidths(wb, sheet = "KPI3.1", cols = 1:16, widths = "auto")
+
+## 5.2 - Create tab KPI1.4b --
+
+addWorksheet(wb, sheetName = "KPI3.2", gridLines = FALSE)
+
+# Add Titles
+writeData(wb, sheet = "KPI3.2", paste0("KPI 3.2: Percentage of men with AAA ≥ 5.5cm deemed appropriate for intervention who were operated on by vascular specialist within eight weeks of screenin"),
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "KPI3.2", kpi_3_2_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
+
+setColWidths(wb, sheet = "KPI3.2", cols = 1:16, widths = "auto")
+
+## 5.3 - Save Workbook --
+
+saveWorkbook(wb, file = (paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
+                                month, "/temp/","kpi3_1__3_2.xlsx")) ,overwrite = TRUE)

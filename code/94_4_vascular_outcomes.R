@@ -33,9 +33,9 @@ rm(list = ls())
 
 
 ## Values
-year <- 2022
-month <- "09"
-vas_cutoff <- "2022-03-31"
+year <- 2023
+month <- "03"
+vas_cutoff <- "2023-03-31"
 
 
 ## Pathways
@@ -65,14 +65,21 @@ vasc <- read_rds(paste0(extract_path, "/output/aaa_extract_",
 table(vasc$screen_result)
 #  01  02 
 # 880   1
+
+# 01 - 962, 02 - 01, Mar 2023
+
 ## Who has negative screen_result?
 neg <- vasc[vasc$screen_result == "02",]
 neg$aaa_size
 # 2.9
+# 2.9, Mar 2023
 
 table(vasc$result_size)
 #   1   2 
 # 876   5
+
+# 01 - 957, 02 - 6, Mar 2023
+
 table(vasc$result_outcome, vasc$result_size)
 #      1   2
 # 03   1   0
@@ -90,6 +97,25 @@ table(vasc$result_outcome, vasc$result_size)
 # 18  13   0
 # 19   3   0
 # 20  25   1
+
+#      1   2
+# 01   1   0
+# 03   1   0
+# 06  17   2
+# 07   9   0
+# 08 143   0
+# 09   3   0
+# 10  11   0
+# 11  12   0
+# 12   3   0
+# 13   1   0
+# 14   2   0
+# 15 679   3
+# 16   9   0
+# 17   8   0
+# 18  29   0
+# 19   1   0
+# 20  28   1, Mar 2023
 
 
 #### 3: Reformat data ####
@@ -123,6 +149,9 @@ table(vasc$result_outcome, useNA = "ifany")
 # Note: level 14 is missing; will need to be added in manually to 
 # greater & annual_less (created below) to make sure it is
 # included in the vascular referrals outcome table
+
+# 01  03  06  07  08  09  10  11  12  13  14  15  16  17  18  19  20 
+# 1   1  19   9 143   3  11  12   3   1   2 682   9   8  29   1  29, Mar 2023
 
 
 ### Create annual (financial year) summaries ----
@@ -176,7 +205,7 @@ greater3 <- vasc %>%
 annual_great <- greater %>% 
   rbind(greater2, greater3) %>% 
   replace(is.na(.), 0) %>%
-  mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
+  mutate(cummulative = rowSums(across(`2012/13`:`2022/23`))) %>% 
   glimpse()
 
 
@@ -251,7 +280,8 @@ annual_less <- less %>%
          `2016/17` = 0,
          `2017/18` = 0,
          `2019/20` = 0,
-         `2021/22` = 0) %>% 
+         `2021/22` = 0,
+         `2022/23` = 0) %>% 
   select(result_size:result_outcome,
          `2012/13`,
          `2013/14`,
@@ -262,9 +292,10 @@ annual_less <- less %>%
          `2018/19`,
          `2019/20`,
          `2020/21`,
-         `2021/22`) %>% 
+         `2021/22`,
+         `2022/23`) %>% 
   replace(is.na(.), 0) %>%
-  mutate(cummulative = rowSums(across(`2012/13`:`2021/22`))) %>% 
+  mutate(cummulative = rowSums(across(`2012/13`:`2022/23`))) %>% 
   glimpse()
 
 
@@ -417,4 +448,11 @@ letter <- vasc %>%
 #   (financial_year == "2018/19" & result_outcome == "18"))
 
 write_rds(letter, paste0(wd_path, "/temp/4_letters_CHI.rds"))
+
+### 4 Save Output ----
+
+# Save output
+
+write.xlsx(annual, 
+           paste0(wd_path, "/temp/", "4_vasc_sizeOutcomes.xlsx"))
 

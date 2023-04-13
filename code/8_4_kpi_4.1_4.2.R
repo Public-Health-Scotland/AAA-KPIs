@@ -27,13 +27,13 @@ library(tidylog)
 
 # Define date values
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
 # year_one <- "2019/20"
 # year_two <- "2020/21"
 # year_three <- "2021/22"
-cut_off_date <- as.Date("2022-03-31")
+cut_off_date <- as.Date("2023-03-31")
 
 # Define extract name
 
@@ -44,10 +44,10 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
                         month, "/output")
 
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/publications",
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI",
                       "/202303/temp/KPIs/KPI3.1 - KPI4.2/")
 
-output_additional_path <- paste0("/PHI_conf/AAA/Topics/Screening/publications",
+output_additional_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI",
                                  "/202303/temp/Additional Tables for KPIs")
 
 
@@ -193,7 +193,7 @@ write.xlsx(open_surgery_deaths,
            paste0(output_additional_path, 
                   "/2. 30-day deaths by hb and year - open.xlsx"))
 
-write_xlsx(open_surgery_totals, 
+write.xlsx(open_surgery_totals, 
            paste0(output_additional_path, "/3. open rolling tot deaths.xlsx"))
 
 # Save KPI 4.2 output
@@ -205,5 +205,5 @@ write.xlsx(evar_surgery_deaths,
            paste0(output_additional_path, 
                   "/5. 30-day deaths by hb and year - evar.xlsx"))
 
-write_xlsx(evar_surgery_totals, 
+write.xlsx(evar_surgery_totals, 
            paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
