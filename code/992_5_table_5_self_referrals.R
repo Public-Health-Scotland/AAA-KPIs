@@ -5,8 +5,8 @@
 # 
 # Extracts self referrals data from latest extract and calculates output
 # 
-# Written/run on R Studio Server
-# R version 3.6.1
+# Written/run on Posit Workbench
+# R version 4.1.2
 ###############################################################################
 
 
@@ -27,13 +27,15 @@ library(tidylog)
 
 # Define date values
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
-year_one <- "2019/20"
-year_two <- "2020/21"
-year_three <- "2021/22"
-cut_off_date <- as.Date("2022-03-31")
+# Define years
+
+year_one <- "2020/21"
+year_two <- "2021/22"
+year_three <- "2022/23"
+cut_off_date <- as.Date("2023-03-31")
 
 # Define extract name
 
@@ -41,11 +43,12 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 
 # Define file paths
 
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
+extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", year, 
                         month, "/output")
 
-temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
-                    month, "/temp/5. Results for eligible")
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, month, 
+                      "/output/5. Results for Eligible Cohort & Self Referrals", 
+                      "_", year, month, ".xlsx")
 
 # Functions
 
@@ -147,8 +150,22 @@ output <- bind_rows(individual_years, all_years) %>%
               values_from = c(tested, positive, rate), 
               names_glue = "{year_screen}_{.value}") %>% 
   select(hbres, starts_with(year_one), starts_with(year_two), 
-         starts_with(year_three), starts_with("Other"), 
-         starts_with("Cumulative")) %>% 
+         starts_with(year_three), starts_with("Cumulative")) %>% 
   arrange(hbres != "Scotland")
 
-saveRDS(output, paste0(temp_path, "/table_5_self_referrals.rds"))
+
+
+### 4 Output ----
+
+# Load bowel template
+
+bowel_template <- loadWorkbook(output_path)
+
+# Add output to workbook
+
+writeData(bowel_template, sheet = "Self-referral results", output, 
+          startCol = 1, startRow = 8, colNames = F)
+
+# Save workbook
+
+saveWorkbook(bowel_template, output_path, overwrite = TRUE)

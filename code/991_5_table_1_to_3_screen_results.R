@@ -6,8 +6,8 @@
 # Processes extract and generates tables 1 to 3 for results for eligible cohort 
 # and self-referrals
 # 
-# Written/run on R Studio Server
-# R version 3.6.1
+# Written/run on Posit Workbench
+# R version 4.1.2
 ###############################################################################
 
 ### 1 Housekeeping ----
@@ -21,27 +21,28 @@ library(stringr)
 library(readr)
 library(janitor)
 library(phsmethods)
+library(openxlsx)
 library(tidylog)
 
 # Define date values for filepath
 
-year <- 2022
-month <- "09"
+year <- 2023
+month <- "03"
 
 # Define dob cut-offs for each year
 
-dob_one_start <- as.Date("1953-04-01")
-dob_one_end <- as.Date("1954-03-31")
-dob_two_start <- as.Date("1954-04-01")
-dob_two_end <- as.Date("1955-03-31")
-dob_three_start <- as.Date("1955-04-01")
-dob_three_end <- as.Date("1956-03-31")
+dob_one_start <- as.Date("1954-04-01")
+dob_one_end <- as.Date("1955-03-31")
+dob_two_start <- as.Date("1955-04-01")
+dob_two_end <- as.Date("1956-03-31")
+dob_three_start <- as.Date("1956-04-01")
+dob_three_end <- as.Date("1957-03-31")
 
 # Define years
 
-year_one <- "2019/20"
-year_two <- "2020/21"
-year_three <- "2021/22"
+year_one <- "2020/21"
+year_two <- "2021/22"
+year_three <- "2022/23"
 
 # Define extract name
 
@@ -49,8 +50,12 @@ extract_name <- paste0("aaa_extract_", year, month, ".rds")
 
 # Define file paths
 
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
+extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", year, 
                         month, "/output")
+
+output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, month, 
+                      "/output/5. Results for Eligible Cohort & Self Referrals", 
+                      "_", year, month, ".xlsx")
 
 # Functions
 
@@ -92,7 +97,7 @@ calculate_totals <- function(data, row_var, col_var){
   # Calculate cumulative totals
   # Group by row_var and col_var and summarise total n
   # Add on a column for year_screen and set all values as Cumulative
-
+  
   cumulative_totals <- counts %>%
     group_by({{row_var}}, {{col_var}}) %>%
     summarise(n = sum(n)) %>%
@@ -124,7 +129,7 @@ aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
 
 aaa_filtered <- aaa_extract %>% 
   filter(screen_type %in% c("01", "03") & 
-         screen_result %in% c("01", "02", "04"))
+           screen_result %in% c("01", "02", "04"))
 
 aaa_filtered %>% count(aaa_size_group)
 
@@ -137,7 +142,7 @@ aaa_filtered <- aaa_filtered %>%
 # Aggregate to one record per UPI
 # Initial screens with a result of non-visualisation, positive, negative 
 # (including those with immediate recall) are included in this file so take the 
-# last scrn result based on the screen date.
+# last screen result based on the screen date.
 
 last_results_initial_screens_output <- aaa_filtered %>% 
   arrange(upi, date_screen) %>% 
@@ -180,7 +185,7 @@ fo_lr_initial_screens <- first_offer_initial_screens %>%
 
 fo_lr_initial_screens %>% count(screen_result)
 
-# Tidy enviroment
+# Tidy environment
 
 rm(aaa_extract, first_offer_initial_screens, 
    last_results_initial_screens_output)
@@ -190,11 +195,10 @@ rm(aaa_extract, first_offer_initial_screens,
 ### 4 Join on Invite and Uptake Data ----
 
 # Read in invite and uptake data
-# UPDATE TO RDS WHEN AVAILABLE
 
 invite_and_uptake <- read_rds(paste0("/PHI_conf/AAA/Topics/Screening/KPI/", 
-                                     "202209/temp/KPIs/KPI1.1 - KPI1.3/", 
-                                     "inviteanduptake_initial.rds")) %>% 
+                                     year, month, "/temp/", 
+                                     "1_inviteanduptake_initial.rds")) %>% 
   select(upi, ca2019, simd2020v2_sc_quintile, hbres, dob_eligibility, dob)
 
 # Join invite_and_uptake and fo_lr_initial_screens
@@ -205,7 +209,7 @@ invite_and_uptake <- read_rds(paste0("/PHI_conf/AAA/Topics/Screening/KPI/",
 combined_output <- invite_and_uptake %>% 
   left_join(fo_lr_initial_screens) %>% 
   mutate(result_type = if_else(screen_result == "01" & followup_recom != "05", 
-                                 "positive", "negative"), 
+                               "positive", "negative"), 
          year_screen = case_when(dob >= dob_one_start & 
                                    dob <= dob_one_end ~ year_one, 
                                  dob >= dob_two_start & 
@@ -260,7 +264,7 @@ table_one <- calculate_totals(table_one_data, hbres, result_type) %>%
 # Define table_two_data by keeping posititve results and removing blank years
 
 table_two_data <- combined_output %>% 
- filter(result_type == "positive" & !is.na(year_screen))
+  filter(result_type == "positive" & !is.na(year_screen))
 
 table_two_data %>% count(aaa_size_group)
 
@@ -332,11 +336,25 @@ table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile,
 
 ### 8 Output ----
 
-# Need to save output somewhere
-# Ask on hackday where is best
+# Load bowel template
 
-write_rds(table_one, filepath)
+bowel_template <- loadWorkbook(output_path)
 
-write_rds(table_two, filepath)
+# Add table one to workbook
 
-write_rds(table_three, filepath)
+writeData(bowel_template, sheet = "Eligible cohort results", table_one, 
+          startCol = 1, startRow = 8, colNames = F)
+
+# Add table two to workbook
+
+writeData(bowel_template, sheet = "Eligible cohort AAA size", table_two, 
+          startCol = 1, startRow = 9, colNames = F)
+
+# Add table three to workbook
+
+writeData(bowel_template, sheet = "Positive Results by Deprivation", table_three, 
+          startCol = 1, startRow = 8, colNames = F)
+
+# Save workbook
+
+saveWorkbook(bowel_template, output_path, overwrite = TRUE)
