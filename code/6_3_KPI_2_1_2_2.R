@@ -40,9 +40,9 @@ coverage_basefile_loc <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/temp/
                                 "KPIs/KPI1.1 - KPI1.3/coverage_basefile.rds")
 
 # Dates of first and last financial year
-start_date <- "2019-04-01"
+start_date <- "2022-04-01" #"2019-04-01"
 
-end_date <- "2022-03-31"
+end_date <- "2023-03-31" #"2022-03-31"
 
 #### Step 2: Read in and process data ----
 
@@ -235,6 +235,7 @@ coverage_basefile <- coverage_basefile %>%
     age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
     age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
     age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
+    age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
     TRUE ~ "66 in a different year"))
 
 extract_sup_4 <- extract %>%
@@ -290,6 +291,7 @@ non_vis_match <- coverage_basefile %>%
       age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
       age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
       age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
+      age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
       TRUE ~ "66 in a different year"
     )) %>%
   filter(fin_year_66 != "66 in a different year")
@@ -439,7 +441,7 @@ sup_tab_4_sr <- bind_cols(extract_sr, extract_sup_4_sr)
 qa_standard <- extract %>%
   filter(!(screen_result %in% c('05','06')),
          audit_result == '02',
-         financial_year  %in% c("2019/20", "2020/21", "2021/22")) %>%
+         financial_year  %in% c("2019/20", "2020/21", "2021/22", "2022/23")) %>%
   # GC - add to issues
   mutate(
     
@@ -589,7 +591,8 @@ summary_detail_text <- detail %>%
     # GC - this not perfect as years will have to be changed manually
     x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
     x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1)
+    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
+    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
   )
 
 summary_text <- detail %>%
@@ -606,7 +609,8 @@ summary_text <- detail %>%
     # GC - this not perfect as years will have to be changed manually
     x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
     x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1)
+    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
+    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
   )
 
 
@@ -638,7 +642,9 @@ qa_std_not_met_detail <- bind_rows(summary_text, summary_detail_text) %>%
     x2020_21_n = x2020_21,
     x2020_21_p,
     x2021_22_n = x2021_22,
-    x2021_22_p
+    x2021_22_p,
+    x2022_23_n = x2022_23,
+    x2022_23_p,
   )
 
 ### Step 3i: MI Batch QA standard not met health board ----
