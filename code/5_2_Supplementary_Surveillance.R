@@ -8,6 +8,12 @@
 # R version 3.6.1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+library(magrittr)
+library(dplyr)
+library(phsmethods)
+library(tidyr)
+library(tidylog)
+
 ################################################################################
 #### PART 1 ####
 ## Table 6 (Surveillance: number of men tested)
@@ -197,8 +203,15 @@ dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
                                 pat_inelig == "02" ~ "Opted Out Surveillance")) %>% 
   rename(`Exclusion Type` = pat_inelig)
 
+## One person is on annual surveillance (since 2018), missed 2 screening 
+## appointments in 2021/22, but was recaptured by surveillance in 2022/23.
+## This means that the published number of non-responders for 2021/22 is 14, but
+## this now shows as 13 for 2023 spring out.
+
+
 
 ### Potentially to be moved to an Excel-writing script??
+# library(openxlsx)
 # ### 3 - Write to Excel ----
 # 
 # # Create workbook
