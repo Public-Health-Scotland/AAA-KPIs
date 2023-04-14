@@ -3,9 +3,10 @@
 # Angus Morton
 # 17/11/2022
 #
-# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a and 1.3b
+# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a, 1.3b, 1.3a additional and 1.3b additional
 #
 # Written on RServer (R Version 3.6.1)
+# Revised/Run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # KPI 1.1  : Percentage of eligible population who are sent an initial
@@ -26,7 +27,6 @@
 #            Multiple Deprivation (SIMD) quintile
 
 
-
 # Step 1 : Import packages and filepaths
 # Step 2 : Import data
 # Step 3 : Create derived variables
@@ -36,12 +36,12 @@
 
 
 ### Step 1 : Import packages and filepaths ----
-
 library(readr)
 library(dplyr)
 library(lubridate)
 library(phsmethods)
 library(tidylog)
+library(glue)
 
 rm(list = ls())
 gc()
@@ -49,7 +49,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, extract_path, cutoff_date)
+rm(exclusions_path, extract_path, gpd_lookups, cutoff_date,
+   prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date)
 
 
 ### Step 2 : Import data ----
@@ -163,13 +165,11 @@ write_rds(invite_uptake, paste0(temp_path, "/1_coverage_basefile.rds"))
 
 ### Step 5 : Summary tables ----
 ### KPI 1.1 ----
-# trim date (select men born from 1 April 1948)
-# keeps data for eligible cohorts for men turning age 66 from 2014/15
-invite_uptake_1_1 <- invite_uptake %>%
-  filter(dob >= dmy("01-04-1948"))
-
 # create health board breakdown
-breakdown_1_1 <- invite_uptake_1_1 %>%
+breakdown_1_1 <- invite_uptake %>%
+  # trim date (select men born from 1 April 1948)
+  # keeps data for eligible cohorts for men turning age 66 from 2014/15
+  filter(dob >= dmy("01-04-1948")) %>%
   group_by(hbres) %>%
   summarise(across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
   ) %>%
@@ -333,32 +333,23 @@ output_1_2a <- breakdown_1_2a %>%
          tested2_any_year2, percent_any_year2) #These last 2 only used in fall MEG
 
 # Save
-write_rds(output_1_2a, paste0(temp_path, "/KPI_1_2a.rds"))
+#write_rds(output_1_2a, paste0(temp_path, "/KPI_1_2a.rds"))
 
 rm(scotland_1_2a)
 
 
 ### KPI 1.3a ----
-## Coverage by simd
-####
-## Note that data going into KPI 1.3a Additional tab on MEG report is by 
-## HB-level SIMD, so need to create new variable
-## MOVE THIS TO PREVIOUS SCRIPT!!!
-hb_simd <- read_rds(paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
-                  "/postcode_2022_2_simd2020v2.rds")) |>
-  select(pc8, simd2020v2_hb2019_quintile)
-
-test <- left_join(invite_uptake, hb_simd, by = c("postcode" = "pc8")) |>
-  relocate(simd2020v2_hb2019_quintile, .before = hbres)
-####
-
-breakdown_1_3a <- test |> #invite_uptake %>%
+## Coverage by Scotland-level SIMD
+breakdown_1_3a <- invite_uptake %>%
   group_by(hbres, simd2020v2_sc_quintile) %>%
   summarise(
     across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup() %>%
-  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
+  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile)) %>% 
+  mutate(simd2020v2_sc_quintile = 
+           case_when(is.na(simd2020v2_sc_quintile) ~ "Unknown",
+                     !is.na(simd2020v2_sc_quintile) ~ simd2020v2_sc_quintile))
 
 scotland_1_3a <- breakdown_1_3a %>%
   group_by(simd2020v2_sc_quintile) %>%
@@ -385,21 +376,114 @@ breakdown_1_3a <- breakdown_1_3a %>%
   )
 
 # Output tables
-output_a_1_3a <- breakdown_1_3a %>%
+output_1_3a <- breakdown_1_3a %>%
   select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, 
-         percent_year1, cohort_year2, tested2_year2, percent_year2) %>%
+         percent_year1, tested2_any_year1, percent_any_year1,
+         cohort_year2, tested2_year2, percent_year2, tested2_any_year2, 
+         percent_any_year2) %>%
+  arrange(factor(simd2020v2_sc_quintile, levels = "Total"), 
+          simd2020v2_sc_quintile)%>%
   arrange(factor(hbres, levels = "Scotland"), hbres)
 # Slight differences due to newer simd version
 
-output_b_1_3a <- breakdown_1_3a %>%
-  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_any_year1, 
-         percent_any_year1,
-         cohort_year2, tested2_any_year2, percent_any_year2) %>%
-  arrange(factor(hbres, levels = "Scotland"), hbres)
-# again slight differences
+# Save
+#write_rds(output_1_3a, paste0(temp_path, "/KPI_1_3a.rds"))
+
+rm(scotland_1_3a, breakdown_1_2a, breakdown_1_3a, tot_1_3a)
+
+
+### KPI 1.3 Additional ----
+## Coverage by HB-level SIMD
+# Import SIMD file
+# NEEDS updating to current file!
+pc_simd <- readRDS(glue("{gpd_lookups}/Deprivation/",
+                        "postcode_2022_2_simd2020v2.rds")) |>
+  select(pc8, simd2020v2_hb2019_quintile)
+
+### Join Files ----
+coverage_by_NHS_Board_SIMD <- invite_uptake %>% 
+  left_join(pc_simd, by = c("postcode" = "pc8")) |>
+  relocate(simd2020v2_hb2019_quintile, .before = hbres)
+
+rm(pc_simd)
+
+
+## Coverage by simd
+breakdown_1_3_add <- coverage_by_NHS_Board_SIMD %>%
+  group_by(hbres, simd2020v2_hb2019_quintile) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(simd2020v2_hb2019_quintile = as.character(simd2020v2_hb2019_quintile)) %>% 
+  mutate(simd2020v2_hb2019_quintile = 
+           case_when(is.na(simd2020v2_hb2019_quintile) ~ "Unknown",
+                     !is.na(simd2020v2_hb2019_quintile) ~ simd2020v2_hb2019_quintile))
+
+breakdown_1_3_tot_add <- coverage_by_NHS_Board_SIMD %>%
+  group_by(hbres) %>%
+  summarise(
+    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+  ) %>%
+  ungroup() %>% 
+  mutate(simd2020v2_hb2019_quintile = "Total", .after = hbres)
+
+
+# bind together including non-simd totals from previous kpi
+breakdown_1_3_add <- bind_rows(breakdown_1_3_tot_add, breakdown_1_3_add) %>% 
+  arrange(hbres)
+
+
+### KPI 1.3a ----
+# create percentages
+breakdown_1_3a_add <- breakdown_1_3_add %>%
+  mutate(
+    percent_year1 = (tested2_year1/cohort_year1)*100,
+    percent_year2 = (tested2_year2/cohort_year2)*100,
+    
+    percent_any_year1 = (tested2_any_year1/cohort_year1)*100,
+    percent_any_year2 = (tested2_any_year2/cohort_year2)*100
+  )
+
+# Output tables
+output_1_3a_add <- breakdown_1_3a_add %>%
+  select(hbres, simd2020v2_hb2019_quintile, cohort_year1, tested2_year1, percent_year1,
+         cohort_year2, tested2_year2, percent_year2)
 
 # Save
-write_rds(output_1_3a, paste0(temp_path, "/KPI_1_3a.rds"))
+#write_rds(output_1_3a_add, paste0(temp_path, "/KPI_1_3a_add.rds"))
 
-rm(scotland_1_2a)
+rm(breakdown_1_3a_add, breakdown_1_3_tot_add)
+
+
+### KPI 1.3b ----
+## Only needed for autumn MEG
+# create percentages
+breakdown_1_3b_add <- breakdown_1_3_add %>%
+  mutate(
+    percent_year1 = (tested_year1/offer_year1)*100,
+    percent_year2 = (tested_year2/offer_year2)*100,
+    
+    p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
+  )
+
+# Output tables
+output_1_3b_add <- breakdown_1_3b_add %>%
+  select(hbres, simd2020v2_hb2019_quintile, offer_year1, tested_year1,
+         percent_year1, offer_year2, tested_year2, percent_year2) %>%
+  mutate_all(~ifelse(is.nan(.), NA, .))
+
+# Save
+#write_rds(output_1_3b_add, paste0(temp_path, "/KPI_1_3b_add.rds"))
+
+rm(breakdown_1_3b_add)
+
+
+### Rewrite all as .csv files so can copy/paste into Excel file
+write_csv(output_1_1, paste0(temp_path, "/KPI_1_1.csv"))
+write_csv(output_1_2a, paste0(temp_path, "/KPI_1_2a.csv"))
+write_csv(output_1_2b, paste0(temp_path, "/KPI_1_2b.csv"))
+write_csv(output_1_3a, paste0(temp_path, "/KPI_1_3a.csv"))
+write_csv(output_1_3a_add, paste0(temp_path, "/KPI_1_3a_add.csv"))
+write_csv(output_1_3b, paste0(temp_path, "/KPI_1_3b.csv"))
 

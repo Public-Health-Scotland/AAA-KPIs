@@ -37,6 +37,11 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
+rm(gpd_lookups, 
+   year1_start, year1_end, year2_start, year2_end,
+   prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date)
+
 
 ### Step 2: Import data ----
 
