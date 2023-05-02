@@ -8,6 +8,11 @@
 # Revised/Run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# There are three scripts for kpi 1.4A to be run together:
+# 1) 3_2_kpi_1_4_surveillance.R - This script
+# 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery
+# 3) 4_2_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV
+
 ### 1 - Housekeeping ----
 
 # Import libraries
@@ -21,8 +26,10 @@ pacman::p_load(
   lubridate,
   janitor,
   tidyr,
-  arsenal
+  arsenal,
+  glue
   )
+
 
 rm(list = ls())
 gc()
@@ -416,17 +423,9 @@ kpi_1.4b <- template %>% left_join(kpi_1.4b,
 
 View(kpi_1.4b)
 
+# Write out KPI tables
 
-### Combine KPIs for output
-kpi_1.4a %<>%
-  rename(cohort_ac = `sum(cohort_ac)`,
-         attend_ac = `sum(attend)`,
-         p_ac = pc)
+saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
+saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
 
-kpi_1.4b %<>%
-  rename(cohort_qc = `sum(cohort_qc)`,
-         attend_qc = `sum(attend)`,
-         p_qc = pc)
 
-kpi_1.4 <- left_join(kpi_1.4a, kpi_1.4b, by = c("fy_due", "hbres"))
-saveRDS(kpi_1.4, paste0(temp_path, "/kpi_1_4.rds"))

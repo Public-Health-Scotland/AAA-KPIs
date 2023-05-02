@@ -8,6 +8,11 @@
 # Revised/Run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# There are three scripts for kpi 1.4A to be run together:
+# 1) 3_2_kpi_1_4_surveillance.R 
+# 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery - This script
+# 3) 4_2_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV
+
 ### 1 - Housekeeping ----
 
 # install.packages("pacman")
@@ -424,54 +429,8 @@ kpi_1.4b_assess <- template %>%
 
 View(kpi_1.4b_assess)
 
+# Write out kpi tables
 
-### Combine KPIs for output
-kpi_1.4a_assess %<>%
-  rename(cohort_ac_assess = `sum(cohort_ac)`,
-         attend_ac_assess = `sum(attend)`,
-         p_ac_assess = pc)
-
-kpi_1.4b_assess %<>%
-  rename(cohort_qc_assess = `sum(cohort_qc)`,
-         attend_qc_assess = `sum(attend)`,
-         p_qc_assess = pc)
-
-kpi_1.4_assess <- left_join(kpi_1.4a_assess, kpi_1.4b_assess, 
-                            by = c("fy_due", "hbres"))
-saveRDS(kpi_1.4_assess, paste0(temp_path, "/kpi_1_4_assess.rds"))
-
-
-
-################################################################################
-################################################################################
-### Write data out to CSV file to copy/paste into MEG report
-## This script (4_2_kpi_1_4_surveillance_assess_recovery.R) can probably be
-## deleted once it is decided that AAA has recovered from COVID-19 and this 
-## no longer needs to be tracked. 
-## When that happens, move the below code to the main surveillance script
-## (3_2_kpi_1_4_surveillance.R) (removing _assess variables)
-
-rm(list = ls())
-gc()
-
-# Name objects
-yymm <- 202303
-temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/temp")
-
-# Read in data
-kpi_14 <- readRDS(paste0(temp_path, "/kpi_1_4.rds"))
-kpi_14_assess <- readRDS(paste0(temp_path, "/kpi_1_4_assess.rds"))
-
-
-### Reformat KPI outputs ----
-# Combine and reorganize 
-kpi_14 <- left_join(kpi_14, kpi_14_assess, 
-                    by = c("fy_due", "hbres")) |>
-  select(fy_due, hbres, cohort_ac, attend_ac, p_ac, attend_ac_assess, 
-         p_ac_assess, cohort_qc, attend_qc, p_qc, attend_qc_assess, 
-         p_qc_assess) |>
-  glimpse()
-
-## Save file
-write.csv(kpi_14, paste0(temp_path, "/kpi_1_4.csv"))
+saveRDS(kpi_1.4a_assess, paste0(temp_path, "/kpi_1_4a_assess.rds"))
+saveRDS(kpi_1.4b_assess, paste0(temp_path, "/kpi_1_4b_assess.rds"))
 
