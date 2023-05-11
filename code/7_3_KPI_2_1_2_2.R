@@ -32,17 +32,17 @@ library(tidylog)
 library(phsmethods)
 
 # Extract file location
-extract_loc <- paste0('/PHI_conf/AAA/Topics/Screening/extracts/202209/output/',
-                      'aaa_extract_202209.rds')
+extract_loc <- paste0('/PHI_conf/AAA/Topics/Screening/extracts/202303/output/',
+                      'aaa_extract_202303.rds')
 
 # Cover base file location
-coverage_basefile_loc <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/temp/",
-                                "KPIs/KPI1.1 - KPI1.3/coverage_basefile.rds")
+coverage_basefile_loc <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202303/temp/",
+                                "1_coverage_basefile.rds")
 
 # Dates of first and last financial year
-start_date <- "2019-04-01"
+start_date <- "2022-04-01" #"2019-04-01"
 
-end_date <- "2022-03-31"
+end_date <- "2023-03-31" #"2022-03-31"
 
 #### Step 2: Read in and process data ----
 
@@ -227,6 +227,82 @@ kpi_2_2_add <- bind_rows(kpi_2_2_add_scotland, kpi_2_2_add_hb) %>%
                               standard_not_met_n, standard_not_met_p),
               names_vary = 'slowest')
 
+### Step 3?: KPI 2.2 additional (b)
+
+extract_audit_b <- extract %>%
+  filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
+         audit_flag == '01') %>%
+  mutate(
+    fin_year = extract_fin_year(date_screen),
+    audit_n = if_else(audit_flag == '01', 1, 0),
+    fail_im_recall_n = if_else(audit_result == '02' & 
+                                 audit_outcome == '01', 1, 0),
+    no_audit_result_n = case_when(
+      is.na(audit_result) ~ 1,
+      !audit_result %in% c("01", "02") ~ 1,
+      TRUE ~ 0),
+    standard_met_n = if_else(
+      audit_result == '01', 1, 0),
+    imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
+    recall_cc_n = case_when(audit_outcome == '02' ~ 1, TRUE ~ 0),
+    no_recall_sat_interim_n = case_when(audit_outcome == '03' ~ 1, TRUE ~ 0),
+    no_recall_refer_vasc_n = case_when(audit_outcome == '04' ~ 1, TRUE ~ 0),
+    no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
+                                     is.na(audit_outcome) ~ 0, TRUE ~ 0)
+  )
+
+kpi_2_2_add_b_hb <- extract_audit_b %>%
+  group_by(fin_year, hb_screen) %>%
+  summarise(
+    audit_n = sum(audit_n),
+    standard_met_n = sum(standard_met_n),
+    standard_not_met_n = (audit_n - standard_met_n),
+    standard_not_met_n = sum(standard_not_met_n),
+    imm_recall_n = sum(imm_recall_n),
+    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
+    recall_cc_n = sum(recall_cc_n),
+    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
+    no_recall_sat_interim_n = sum(no_recall_sat_interim_n),
+    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
+    no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
+    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
+    no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
+    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1)
+    ) %>%
+  ungroup()
+
+kpi_2_2_add_b_scotland <- extract_audit_b %>%
+  group_by(fin_year) %>%
+  summarise(
+    no_audit_result_n = sum(no_audit_result_n),
+    audit_n = sum(audit_n),
+    standard_met_n = sum(standard_met_n),
+    standard_not_met_n = audit_n - standard_met_n,
+    imm_recall_n = sum(imm_recall_n),
+    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
+    recall_cc_n = sum(recall_cc_n),
+    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
+    no_recall_sat_interim_n = sum(no_recall_sat_interim_n),
+    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
+    no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
+    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
+    no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
+    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1)
+  ) %>%
+  ungroup() %>%
+  mutate(hb_screen = "Scotland")
+
+kpi_2_2_add_b <- bind_rows(kpi_2_2_add_b_scotland, kpi_2_2_add_b_hb) %>%
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+  arrange(fin_year, hb_screen) %>%
+  pivot_wider(names_from = fin_year,
+              values_from = c(audit_n, standard_not_met_n, imm_recall_n, imm_recall_p,
+                              recall_cc_n, recall_cc_p, recall_cc_n,
+                              recall_cc_p, no_recall_sat_interim_n, no_recall_sat_interim_p,
+                              no_recall_refer_vasc_n, no_recall_refer_vasc_p, no_recall_sec_opin_n,
+                              no_recall_sec_opin_p),
+              names_vary = 'slowest')
+    
 ### Step 3e: Supplementary table 4 ----
 
 coverage_basefile <- coverage_basefile %>%
@@ -235,6 +311,7 @@ coverage_basefile <- coverage_basefile %>%
     age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
     age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
     age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
+    age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
     TRUE ~ "66 in a different year"))
 
 extract_sup_4 <- extract %>%
@@ -290,6 +367,7 @@ non_vis_match <- coverage_basefile %>%
       age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
       age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
       age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
+      age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
       TRUE ~ "66 in a different year"
     )) %>%
   filter(fin_year_66 != "66 in a different year")
@@ -439,7 +517,7 @@ sup_tab_4_sr <- bind_cols(extract_sr, extract_sup_4_sr)
 qa_standard <- extract %>%
   filter(!(screen_result %in% c('05','06')),
          audit_result == '02',
-         financial_year  %in% c("2019/20", "2020/21", "2021/22")) %>%
+         financial_year  %in% c("2019/20", "2020/21", "2021/22", "2022/23")) %>%
   # GC - add to issues
   mutate(
     
@@ -589,7 +667,8 @@ summary_detail_text <- detail %>%
     # GC - this not perfect as years will have to be changed manually
     x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
     x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1)
+    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
+    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
   )
 
 summary_text <- detail %>%
@@ -606,7 +685,8 @@ summary_text <- detail %>%
     # GC - this not perfect as years will have to be changed manually
     x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
     x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1)
+    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
+    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
   )
 
 
@@ -638,7 +718,9 @@ qa_std_not_met_detail <- bind_rows(summary_text, summary_detail_text) %>%
     x2020_21_n = x2020_21,
     x2020_21_p,
     x2021_22_n = x2021_22,
-    x2021_22_p
+    x2021_22_p,
+    x2022_23_n = x2022_23,
+    x2022_23_p,
   )
 
 ### Step 3i: MI Batch QA standard not met health board ----
