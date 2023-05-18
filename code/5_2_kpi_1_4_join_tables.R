@@ -10,7 +10,7 @@
 # There are three scripts for kpi 1.4A to be run together:
 # 1) 3_2_kpi_1_4_surveillance.R 
 # 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery
-# 3) 4_2_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV - This script
+# 3) 5_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV - This script
 
 ### 1 - Housekeeping ----
 
@@ -58,7 +58,7 @@ kpi1.4a_final <- kpi_1.4a %>%
   select(-`sum(cohort_ac).y`) %>%
   glimpse()
 
-## KPI 1.4a --
+## KPI 1.4b --
 
 kpi1.4b_final <- kpi_1.4b %>%
   left_join(kpi_14b_assess, by = c("fy_due", "hbres")) %>% 

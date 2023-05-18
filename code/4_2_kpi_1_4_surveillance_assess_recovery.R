@@ -11,7 +11,7 @@
 # There are three scripts for kpi 1.4A to be run together:
 # 1) 3_2_kpi_1_4_surveillance.R 
 # 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery - This script
-# 3) 4_2_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV
+# 3) 5_2_kpi_1_4_join_tables.R - Joins the output of 1 and 2 into the report format and outputs a CSV
 
 ### 1 - Housekeeping ----
 
