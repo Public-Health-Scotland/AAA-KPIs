@@ -5,7 +5,8 @@
 # Define housekeeping variables used by subsequent scripts
 # Written/run on R Studio Server
 # R version 3.6.1
-# Revised/Run on Posit PWB (R version 4.1.2)
+# Revised/Run on Posit WB
+# R version 4.1.2
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # There are three scripts for kpi 1.4A to be run together:
@@ -37,8 +38,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(gpd_lookups, cutoff_date, last_date,
-   year1_start, year1_end, year2_start, year2_end)
+rm(gpd_lookups, cutoff_date, year1_start, 
+   year1_end, year2_start, year2_end)
 
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
@@ -66,21 +67,11 @@ aaa_exclusions %>% nrow()
 # 143,256 rows 2023/03
 
 # add financial_year, quarter and month
-aaa_exclusions%<>%
-  select(upi,pat_inelig,date_start,date_end) %>% 
-  mutate(financial_year = extract_fin_year(as.Date(date_start)),# possibly can be removed once aaa_extract is updated
-         month = format(as.Date(date_start, format = "%Y-%m-%d"),"%m"),
-         financial_quarter = case_when(month %in% c('04','05','06') ~ 1,
-                                       month %in% c('07','08','09') ~ 2,
-                                       month %in% c('10','11','12') ~ 3,
-                                       month %in% c('01','02','03') ~ 4),# possibly can be removed once aaa_extract is updated
-         fin_month = case_when(month %in% c('04','05','06','07','08','09',
-                                            '10','11','12') ~ as.numeric(month)-3,
-                               month == '03' ~ 12,
-                               month == '02' ~ 11,
-                               month == '01' ~ 10)) %>%
-  select(-month) %>% 
+aaa_exclusions %<>%
+  select(upi, pat_inelig, date_start, date_end) %>% 
+  arrange(upi, date_start, date_end) %>% 
   glimpse()
+
 
 ## 3.2 - Check and filter extract to create cohort base ----
 
@@ -88,23 +79,26 @@ aaa_exclusions%<>%
 # create fin_month fields
 # select relevant columns
 aaa_extract %<>% 
-  
-  mutate(largest_measure = replace(largest_measure,is.na(largest_measure),0)) %>% 
-  mutate(month = format(as.Date(date_screen, format = "%Y-%m-%d"),"%m"),
+  mutate(largest_measure = replace(largest_measure, is.na(largest_measure), 0)) %>% 
+  mutate(month = format(as.Date(date_screen, format = "%Y-%m-%d"), "%m"),
         fin_month = case_when(month %in% c('04','05','06','07','08','09',
                                            '10','11','12') ~ as.numeric(month)-3,
                               month == '03' ~ 12,
                               month == '02' ~ 11,
                               month == '01' ~ 10)) %>%
   select(-month) %>% 
-  select(-c(chi,dob:practice_name,ca2019:location_code,apl_measure,
-            apt_measure,date_referral:audit_batch_outcome )) %>% 
+  select(-c(chi, dob:practice_name, ca2019:location_code, apl_measure,
+            apt_measure, date_referral:date_seen_outpatient, 
+            first_outcome:audit_batch_outcome )) %>% # eligibility_period:dob_eligibility needed?
+  arrange(upi, date_screen) %>% 
   glimpse()
 
 # 523,774 rows sept 2022
 # 551,027 rows 2023/03
 
-# filter if screen result is positive, negative or non-visualisation
+# filter if screen result is positive, negative or non-visualisation and 
+# screen_type is surveillance
+# in SPSS, this creates KPI1.4_numerator.zsav
 screened_cohort <- aaa_extract %>% 
   mutate(screen_flag = ifelse(screen_result %in% c("01","02","04") &
                            (screen_type %in% c("02","04")), 1, 0)) 
@@ -116,7 +110,6 @@ screened_cohort %>%
 
 # 18,647 1's, 505,127 0's sept 2022
 # 20,020 1's, 531,007 0's 2023/03
-
 
 # remove records
 screened_cohort %<>%
@@ -133,17 +126,21 @@ screened_cohort%<>%
   select(-screen_flag) %>% 
   glimpse()
 
-# add sc for annual cohort to identify more easily when joining
+# add sc for current screening cohort to identify more easily when joining
 colnames(screened_cohort) <- paste(colnames(screened_cohort),"sc",sep="_")
 
+
+### 4 - 12 Month Surveillance Uptake ----
+# Create a cohort object for 12-month surveillance, which includes
+# all screening results with recommendation to follow up in 12 months
+
+###
 # Check all records with screen_result 01 or 03 (positive or tech failure): 
 # must have a value for followup_recom
 # Previous records with this issue have aged out of the extract 
 # but we should still check that this does not crop up.
 View(aaa_extract %>% tabyl(screen_result, followup_recom))
-
-
-### 4 - 12 Month Surveillance Uptake ----
+###
 
 # Remove any records with no valid financial year
 # Create a list of all screening results with a recommendation to follow up 
@@ -160,9 +157,9 @@ annual_surveillance_cohort <- aaa_extract %>%
   
 # add ac for annual cohort to identify more easily when joining
 colnames(annual_surveillance_cohort) <- paste(colnames(
-  annual_surveillance_cohort),"ac",sep="_")
+  annual_surveillance_cohort),"ac", sep="_")
 
-# Get follow up appointments: join aaa extract to annual_surveillance_cohort
+# Get follow up appointments: join current cohort to annual_surveillance_cohort
 # Calculate difference between appointments in days
 # Filter follow up appointments date screen is before screened cohort date screen
 # Filter days between 0 and 408 days (1 year 6 weeks)
@@ -170,31 +167,31 @@ colnames(annual_surveillance_cohort) <- paste(colnames(
 
 follow_up_appointments <- screened_cohort %>% 
   left_join(annual_surveillance_cohort, by = c("upi_sc"="upi_ac")) %>%
-  mutate(interval = difftime(date_screen_sc,date_screen_ac,units = "days")) %>% 
+  mutate(interval = difftime(date_screen_sc, date_screen_ac, units = "days")) %>% 
   filter(date_screen_sc > date_screen_ac & 
            interval >= 0 & 
            interval <= 408 &
            !is.na(fin_month_ac))  %>% 
-  arrange(upi_sc,financial_year_ac,fin_month_ac,desc(date_screen_sc)) %>% 
-  group_by(upi_sc,financial_year_ac,fin_month_ac) %>% 
+  arrange(upi_sc, financial_year_ac, fin_month_ac, desc(date_screen_sc)) %>% 
+  group_by(upi_sc, financial_year_ac, fin_month_ac) %>% 
   slice(n()) %>% 
   ungroup() %>% 
   rename(upi = upi_sc)
 
 
 # Match exclusions to cohort
-# calculate interval and only keep those within 408 days of the surveillance 
+# calculate interval and only keep those within 408 days of the surveillance
 # cohort date
 # keep one record per month
 exclusions_appointments <- aaa_exclusions %>% 
   left_join(annual_surveillance_cohort, by = c("upi"="upi_ac")) %>% 
-  mutate(interval = difftime(date_start,date_screen_ac,units = "days")) %>% 
+  mutate(interval = difftime(date_start, date_screen_ac, units = "days")) %>% 
   filter(date_start >= date_screen_ac & 
            interval >= 0 & 
            interval <= 408 &
            !is.na(fin_month_ac))%>%
-  arrange(upi,financial_year_ac,fin_month_ac,date_start) %>% 
-  group_by(upi,financial_year_ac,fin_month_ac) %>% 
+  arrange(upi, financial_year_ac, fin_month_ac, date_start) %>% 
+  group_by(upi, financial_year_ac, fin_month_ac) %>% 
   slice(n()) %>% 
   ungroup()
 # 261 rows 2022/09
@@ -233,12 +230,12 @@ final_follow_ups <- final_follow_ups %>%
                                                     '15','16','17','18','19','21', 
                                                     '22', '25', '26') &
                                   is.na(date_end))|
-                                   pat_inelig %in% c('03','05'),1,0)) %>%
-  mutate(exclusion_flag_final = ifelse(attend ==1,0,exclusion_flag)) %>% 
+                                   pat_inelig %in% c('03','05'), 1, 0)) %>%
+  mutate(exclusion_flag_final = ifelse(attend ==1, 0, exclusion_flag)) %>% 
   filter(exclusion_flag_final == 0) %>%
-  mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_ac.x)+ years(1)))) %>% 
+  mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_ac.x) + years(1)))) %>% 
   filter(fy_due == financial_year_due) %>% 
-  arrange(upi_ac, financial_year_ac.x, fin_month_ac.x, date_start) %>%# updatd from
+  arrange(upi_ac, financial_year_ac.x, fin_month_ac.x, date_start) %>%
   group_by(upi_ac, financial_year_ac.x, fin_month_ac.x) %>% 
   slice(n()) %>% 
   ungroup() %>% 
@@ -275,12 +272,14 @@ View(final_follow_ups %>% get_dupes(upi_ac))
 # Create variable for Scotland
 final_follow_ups %<>% 
   mutate(hbres_final = (case_when(!is.na(date_screen_sc) ~ hbres_sc,
-                                      is.na(date_screen_sc) ~ hbres_ac)))
+                                      is.na(date_screen_sc) ~ hbres_ac))) |> 
+  filter(date_screen_sc < as.Date(last_date))
+
 
 # number of cohort and attendance by hbres
 kpi_1.4a <- final_follow_ups %>% 
-  group_by(fy_due,hbres_final) %>% 
-  summarise(sum(cohort_ac),sum(attend)) %>% 
+  group_by(fy_due, hbres_final) %>% 
+  summarise(sum(cohort_ac), sum(attend)) %>% 
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() %>% 
   mutate(pc = `sum(attend)` * 100 / `sum(cohort_ac)`) %>%

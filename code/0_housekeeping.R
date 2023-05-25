@@ -49,7 +49,7 @@ current_year_start <- "2021-03-01" # 1st March of prev_year (date extract pulled
 next_year_start <- "2022-03-01" # 1st March of current_year (date extract pulled)
 financial_year_due <- "2022/23" # current data being analyzed
 financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
-last_date <- "2023-04-01"
+last_date <- "2023-03-01" # current extract
 
 ###
 ## Data year runs from 1Mar to 28/29Feb for surveillance
