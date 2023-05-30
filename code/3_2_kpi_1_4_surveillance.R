@@ -422,9 +422,9 @@ kpi_1.4b <- template %>% left_join(kpi_1.4b,
 
 View(kpi_1.4b)
 
-# Write out KPI tables
-
-saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
-saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
+# # Write out KPI tables
+# 
+# saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
+# saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
 
 
