@@ -44,7 +44,7 @@ year2_end <- dmy("31-03-1958")
 ## 3_2_kpi_1_4_surveillance.R
 # Define dates
 prev_year <- "2020/21" # year preceding current_year
-current_year <- "2021/22" # last year of full data (previous to current analysis) 
+current_year <- "2021/22" # last year of full data (previous to current analysis)
 current_year_start <- "2021-03-01" # 1st March of prev_year (date extract pulled)
 next_year_start <- "2022-03-01" # 1st March of current_year (date extract pulled)
 financial_year_due <- "2022/23" # current data being analyzed

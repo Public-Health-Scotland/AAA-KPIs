@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 5_2_Supplementary_Surveillance.R
+# 6_2_Supplementary_Surveillance.R
 # Eibhlin O'Sullivan
 # Jan 2022
 # Part 1: Supplementary tables - Table 6 (Surveillance: number of men tested)
@@ -8,11 +8,24 @@
 # R version 3.6.1
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-library(magrittr)
-library(dplyr)
-library(phsmethods)
-library(tidyr)
-library(tidylog)
+
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load(
+  dplyr,
+  magrittr,
+  phsmethods,
+  lubridate,
+  janitor,
+  tidyr,
+  arsenal,
+  openxlsx,
+  here,
+  glue,
+  tidylog
+)
+
+
 
 ################################################################################
 #### PART 1 ####
@@ -59,19 +72,21 @@ surveillance_summary <- aaa_extract %>%
 # Check for records without a follow up recommendation
 # there have been no records for several runs so the fix has not been moved from SPSS
 surveillance_summary %>% tabyl(screen_result, followup_recom)
-table(surveillance_summary$followup_recom)
+table(surveillance_summary$followup_recom, useNA = "ifany")
 
 # for run based on 1 March 2018 extract there were 3 records w/out a follow-up recommendation.
 # for run based on 1 March 2019 extract there were 0 records w/out a follow-up recommendation.
 # for run based on 1 March 2020 extract there were 0 records w/out a follow-up recommendation.
 # for run based on 9 April 2021 extract there were 0 records w/out a follow-up recommendation.
 # for run based on 1 Sept 2021 extract there were 0 records w/out a follow-up recommendation.
-# for run based on 14 September 2022 extract there were 0 records without a follow-up recommendation
+# for run based on 14 Sept 2022 extract there were 0 records w/out a follow-up recommendation
+# for run based on 1 March 2023 extract there were 0 records w/o a follow-up recommendation
 
 
 ## 3.1 - Determine Surveillance Type ----
 
-# Get the type of surveillance from the previous appointment in the patients record
+# Find surveillance type from the previous appointment in each patients' records
+# followup_recom:
 # '01' '3 Months'
 # '02' '12 Months'
 # '03' 'Discharge'
@@ -81,7 +96,6 @@ table(surveillance_summary$followup_recom)
 
 # surveillance_summary$surveillance_type <- lag(surveillance_summary$followup_recom, n=1)
 
-# Get the type of surveillance from the previous appointment in the patients record.
 surveillance_summary %<>%
   mutate(upi1 = lag(upi, n = 1), 
           fr1 = lag(followup_recom, n = 1),
@@ -89,32 +103,52 @@ surveillance_summary %<>%
   select(-c(upi1, fr1))
   
 # check number of records per surveillance  
-table(surveillance_summary$surveillance_type)
+table(surveillance_summary$surveillance_type, useNA = "ifany")
 
 View(surveillance_summary %>% get_dupes(upi))
 
-# select only those with 12 month or vascular referral
+# select only surveillance or QA surveillance screens
 surveillance_summary %<>%
   filter(screen_type %in% c("02" ,"04"))
+# NB: SPSS: "after running above code, record 1 discarded" Not sure what this means...
   
 # check number of records per surveillance  
-table(surveillance_summary$surveillance_type)
+table(surveillance_summary$surveillance_type, useNA = "ifany")
 surveillance_summary %>% nrow()
 
-# If the surveillance type is blank/immediate recall and the eligibility is 
-# from previous cohort and follow up is not referred to vascular, use the 
+# surveillance_type:
+# '01' '3 Months'
+# '02' '12 Months'
+# '03' 'Discharge'
+# '04' 'Refer to Vascular'
+# '05' 'Immediate recall'
+# '06' 'No further recall'.
+
+
+# Highland local AAA Screening Programme ----
+# A small number of men were on the pre-existing NHS Highland programme on 
+# surveillance; these individuals will have an initial record on the national 
+# programme of surveillance.
+# If the surveillance_type is blank/immediate recall and pat_elig is 
+# from previous programme and follow up is not referred to vascular, use the 
 # current followup_recom 
+# surveillance_summary %<>%
+#   mutate(surveillance_type = if_else(((is.na(surveillance_type) 
+#                                        | surveillance_type == "05") &
+#                                         followup_recom == "01" & followup_recom != "02"),
+#                                      followup_recom, surveillance_type))
 surveillance_summary %<>%
   mutate(surveillance_type = if_else(((is.na(surveillance_type) 
                                        | surveillance_type == "05") &
-                                  followup_recom == "01" & followup_recom != "02"),
+                                        pat_elig == "02" & followup_recom != "04"),
                                   followup_recom, surveillance_type))
 
 # check number of records per surveillance  
-table(surveillance_summary$surveillance_type)
+table(surveillance_summary$surveillance_type, useNA = "ifany")
+
 
 # If the surveillance is still blank or immediate recall AND the followup_recom 
-# is quarterly or annual surveillance, just use the current FU recom as a proxy
+# is quarterly or annual surveillance, use the current followup_recom as a proxy
 surveillance_summary %<>%
   mutate(surveillance_type = if_else(((is.na(surveillance_type) 
                                        | surveillance_type == "05") &
@@ -123,7 +157,7 @@ surveillance_summary %<>%
                                      followup_recom, surveillance_type))
 
 # check number of records per surveillance  
-table(surveillance_summary$surveillance_type)
+table(surveillance_summary$surveillance_type, useNA = "ifany")
 
 # keep records for surveillance 01 (3 months) and 02 (12 months)
 # copy financial year to screen_year
@@ -146,18 +180,43 @@ surveillance_summary %>%
 
 
 ### 4 - Format and Save Table ----
-# format output table
+# Create a record for each unique combination of screen_year, upi, hbres, and 
+# surveillance_type, then count totals by screen_year, surveillance_type, and hbres
+
+# Format output table
+# surveillance_summary_table6 <- surveillance_summary %>% 
+#   mutate(surveillance_type = case_when(surveillance_type == "01" ~ "3 months",
+#                                        surveillance_type == "02" ~ "12 months")) %>% 
+#   group_by(screen_year, hbres, surveillance_type) %>% 
+#   summarise(count = sum(count)) %>% 
+#   pivot_wider(names_from = c(hbres), values_from = count) %>% 
+#   mutate(Scotland = rowSums(across(where(is.numeric)), na.rm=TRUE)) %>% 
+#   pivot_longer(cols = c(3:17), names_to = "hbres", values_to = "count") %>% 
+#   arrange(screen_year, desc(surveillance_type)) %>% 
+#   pivot_wider(names_from = c(screen_year, surveillance_type), values_from = count)
+
 surveillance_summary_table6 <- surveillance_summary %>% 
   mutate(surveillance_type = case_when(surveillance_type == "01" ~ "3 months",
                                        surveillance_type == "02" ~ "12 months")) %>% 
-  group_by(screen_year, hbres, surveillance_type) %>% 
-  summarise(count = sum(count)) %>% 
+  group_by(screen_year, upi, hbres, surveillance_type) %>% 
+  summarise(count = n()) %>% 
+  # reset the count so each UPI is only counted 1x
+  mutate(count = 1) %>% 
+  ungroup() %>% 
+  # UPI no longer needed
+  select(-upi) %>% 
+  group_by(screen_year, surveillance_type, hbres) %>% 
+  summarise(count = n()) %>% 
+  # include Scotland totals
   pivot_wider(names_from = c(hbres), values_from = count) %>% 
   mutate(Scotland = rowSums(across(where(is.numeric)), na.rm=TRUE)) %>% 
   pivot_longer(cols = c(3:17), names_to = "hbres", values_to = "count") %>% 
   arrange(screen_year, desc(surveillance_type)) %>% 
+  filter(!is.na(screen_year)) %>% 
+  # match format to Excel Table 6
   pivot_wider(names_from = c(screen_year, surveillance_type), values_from = count)
-  
+
+
 # create order of rows
 template <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
                              "Dumfries & Galloway", "Fife", "Forth Valley", 
@@ -172,7 +231,7 @@ surveillance_summary_table6 <- template %>%
 # save out table file
 # write_rds(surveillance_summary_table6, 
 #           paste0(wd, "/temp/surveillance_summary_table6.rds"))
-write.csv(surveillance_summary_table6, paste0(temp_path, "/KPI_1_4_table_6.csv"))
+write.csv(surveillance_summary_table6, paste0(temp_path, "/KPI_1_4_table_6_update.csv"))
 
 
 ################################################################################
