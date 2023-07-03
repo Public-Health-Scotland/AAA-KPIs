@@ -38,8 +38,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(gpd_lookups, cutoff_date, year1_start, 
-   year1_end, year2_start, year2_end)
+rm(gpd_lookups)
 
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
@@ -52,10 +51,10 @@ template <- tibble(fy_due = financial_year_due,
 ### 2 - Read in Files ----
 
 # AAA extract path
-aaa_extract <- readRDS(extract_path)
+aaa_extract <- readRDS(hist_extract_path)
 
 # AAA exclusions path
-aaa_exclusions <- readRDS(exclusions_path)
+aaa_exclusions <- readRDS(hist_exclusions_path)
 
 
 ### 3 - Format Tables ----
@@ -63,6 +62,8 @@ aaa_exclusions <- readRDS(exclusions_path)
 ## 3.1 - Check Exclusions and filter ----
 # check number of screened records
 aaa_exclusions %>% nrow()
+# 114,781 rows 2021/09
+# 123,791 rows 2022/03
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
 
@@ -92,8 +93,9 @@ aaa_extract %<>%
             first_outcome:audit_batch_outcome )) %>% # eligibility_period:dob_eligibility needed?
   arrange(upi, date_screen) %>% 
   glimpse()
-
-# 523,774 rows sept 2022
+# 465,782 rows 2021/09
+# 493,121 rows 2022/03
+# 523,774 rows 2022/09
 # 551,027 rows 2023/03
 
 # filter if screen result is positive, negative or non-visualisation and 
@@ -152,6 +154,8 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(followup_recom == "02") %>% 
   filter(financial_year %in% c(prev_year, current_year)) %>% 
   mutate(cohort = 1)
+# 2,924 rows 2021/09
+# 2,826 rows 2022/03
 # 2,826 rows 2022/09
 # 2,781 rows 2023/03
   
@@ -194,6 +198,8 @@ exclusions_appointments <- aaa_exclusions %>%
   group_by(upi, financial_year_ac, fin_month_ac) %>% 
   slice(n()) %>% 
   ungroup()
+# 286 rows 2021/09
+# 252 rows 2022/03
 # 261 rows 2022/09
 # 228 rows 2023/03
 
@@ -204,6 +210,8 @@ combined_appointments <- follow_up_appointments %>%
 
 final_follow_ups <- annual_surveillance_cohort %>% 
   left_join(combined_appointments, by = c("upi_ac"="upi"))
+# 2997 rows 2021/09
+# 2854 rows 2022/03
 # 1407 rows 2022/09
 # 2824 rows 2023/03
   
@@ -290,6 +298,13 @@ kpi_1.4a <- template %>% left_join(kpi_1.4a,
                                    by = c("fy_due", "hbres" = "hbres_final"))
 
 View(kpi_1.4a)
+
+saveRDS(kpi_1.4a, paste0(output_path, "/temp/kpi_1-4a_", yymm, ".rds"))
+
+
+maymeg22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202203.rds"))
+
+
 
 ################################################################################
 

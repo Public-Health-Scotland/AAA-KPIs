@@ -10,8 +10,11 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Ubiquitous Variables
-yymm <- 202303
-
+#yymm <- 202303
+#yymm <- 202209
+#yymm <- 202203
+#yymm <- 202109
+yymm <- 202103
 
 
 ## Ubiquitous Pathways
@@ -26,30 +29,63 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 gpd_lookups <- glue("/conf/linkage/output/lookups/Unicode")
 
+output_path <- paste0("/PHI_conf/AAA/Topics/Investigations",
+                      "/20230419-AnnBlair-ScreeningSurveillance-KPI1.4a&b")
+
+hist_extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/historical",
+                            "/aaa_extract_", yymm, ".rds") # extracts May2022 and older
+
+hist_exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/historical",
+                               "/aaa_exclusions_", yymm, ".rds") # exclusions May2022 and older
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 1_1_processing_for_KPI_11-13.R
-cutoff_date <- dmy("31-03-1958")  ## How is this defined??
+## May 2023
+# # Define dates
+# prev_year <- "2020/21" # year preceding current_year
+# current_year <- "2021/22" # last year of full data (previous to current analysis)
+# current_year_start <- "2021-03-01" # 1st March of prev_year (date extract pulled)
+# next_year_start <- "2022-03-01" # 1st March of current_year (date extract pulled)
+# financial_year_due <- "2022/23" # current data being analyzed
+# financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
+# last_date <- "2023-03-01" # current extract
+# 
+
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ## September 2022
+# # Define dates
+# prev_year <- "2019/20" # year preceding current_year
+# current_year <- "2020/21" # last year of full data (previous to current analysis)
+# current_year_start <- "2020-03-01" # 1st March of prev_year (date extract pulled)
+# next_year_start <- "2021-03-01" # 1st March of current_year (date extract pulled)
+# financial_year_due <- "2021/22" # current data being analyzed
+# financial_quarters <- c("2020/21_4", "2021/22_1","2021/22_2","2021/22_3")
+# last_date <- "2022-09-01" # current extract
+ 
+
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ## May 2022
+# # Define dates
+# prev_year <- "2019/20" # year preceding current_year
+# current_year <- "2020/21" # last year of full data (previous to current analysis)
+# current_year_start <- "2020-03-01" # 1st March of prev_year (date extract pulled)
+# next_year_start <- "2021-03-01" # 1st March of current_year (date extract pulled)
+# financial_year_due <- "2021/22" # current data being analyzed
+# financial_quarters <- c("2020/21_4", "2021/22_1","2021/22_2","2021/22_3")
+# last_date <- "2022-03-01" # current extract
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 2_2_kpi_1_1-1_3_uptake_coverage.R
-year1_start <- dmy("01-04-1956")
-year1_end <- dmy("31-03-1957")
-
-year2_start <- dmy("01-04-1957")
-year2_end <- dmy("31-03-1958")
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 3_2_kpi_1_4_surveillance.R
+## September 2021
 # Define dates
-prev_year <- "2020/21" # year preceding current_year
-current_year <- "2021/22" # last year of full data (previous to current analysis)
-current_year_start <- "2021-03-01" # 1st March of prev_year (date extract pulled)
-next_year_start <- "2022-03-01" # 1st March of current_year (date extract pulled)
-financial_year_due <- "2022/23" # current data being analyzed
-financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
-last_date <- "2023-03-01" # current extract
+prev_year <- "2018/19" # year preceding current_year
+current_year <- "2019/20" # last year of full data (previous to current analysis)
+current_year_start <- "2019-03-01" # 1st March of prev_year (date extract pulled)
+next_year_start <- "2020-03-01" # 1st March of current_year (date extract pulled)
+financial_year_due <- "2020/21" # current data being analyzed
+financial_quarters <- c("2019/20_4", "2020/21_1","2020/21_2","2020/21_3")
+last_date <- "2021-09-01" # current extract
+
 
 ###
 ## Data year runs from 1Mar to 28/29Feb for surveillance
@@ -69,11 +105,11 @@ last_date <- "2023-03-01" # current extract
 ##   Example: when current_year = 2021/22, last_date = 2023-04-01
 ###
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 6_2_Supplementary_Surveillance.R
-# Define dates
-next_year <- "2022/23"
-cut_off_date <- "2023-03-31"
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ## 6_2_Supplementary_Surveillance.R
+# # Define dates
+# next_year <- "2022/23"
+# cut_off_date <- "2023-03-31"
 
 
 
