@@ -62,6 +62,8 @@ aaa_exclusions <- readRDS(hist_exclusions_path)
 ## 3.1 - Check Exclusions and filter ----
 # check number of screened records
 aaa_exclusions %>% nrow()
+# 98,960  rows 2020/09
+# 106,417 rows 2021/03
 # 114,781 rows 2021/09
 # 123,791 rows 2022/03
 # 133,707 rows 2022/09
@@ -93,6 +95,8 @@ aaa_extract %<>%
             first_outcome:audit_batch_outcome )) %>% # eligibility_period:dob_eligibility needed?
   arrange(upi, date_screen) %>% 
   glimpse()
+# 417,692 rows 2020/09
+# 440,014 rows 2021/03
 # 465,782 rows 2021/09
 # 493,121 rows 2022/03
 # 523,774 rows 2022/09
@@ -110,7 +114,10 @@ screened_cohort %>%
   group_by(screen_flag) %>% 
   summarise(screen_n = n())
 
-# 18,647 1's, 505,127 0's sept 2022
+# 13,597 1's, 404,095 0's 2020/09
+# 14,790 1's, 425,224 0's 2021/03
+#
+# 18,647 1's, 505,127 0's 2022/09
 # 20,020 1's, 531,007 0's 2023/03
 
 # remove records
@@ -154,6 +161,8 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(followup_recom == "02") %>% 
   filter(financial_year %in% c(prev_year, current_year)) %>% 
   mutate(cohort = 1)
+# 1,408 rows 2020/09
+# 2,924 rows 2021/03
 # 2,924 rows 2021/09
 # 2,826 rows 2022/03
 # 2,826 rows 2022/09
@@ -198,6 +207,8 @@ exclusions_appointments <- aaa_exclusions %>%
   group_by(upi, financial_year_ac, fin_month_ac) %>% 
   slice(n()) %>% 
   ungroup()
+# 115 rows 2020/09
+# 281 rows 2021/03
 # 286 rows 2021/09
 # 252 rows 2022/03
 # 261 rows 2022/09
@@ -210,6 +221,8 @@ combined_appointments <- follow_up_appointments %>%
 
 final_follow_ups <- annual_surveillance_cohort %>% 
   left_join(combined_appointments, by = c("upi_ac"="upi"))
+# 1408 rows 2020/09
+# 2978 rows 2021/03
 # 2997 rows 2021/09
 # 2854 rows 2022/03
 # 1407 rows 2022/09
@@ -302,8 +315,13 @@ View(kpi_1.4a)
 saveRDS(kpi_1.4a, paste0(output_path, "/temp/kpi_1-4a_", yymm, ".rds"))
 
 
-maymeg22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202203.rds"))
+fall20 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202009.rds"))
+fall21 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202109.rds"))
+fall22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202209.rds"))
 
+spring21 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202103.rds"))
+spring22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202203.rds"))
+spring23 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202303.rds"))
 
 
 ################################################################################

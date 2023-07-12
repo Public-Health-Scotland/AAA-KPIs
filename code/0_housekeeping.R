@@ -14,7 +14,8 @@
 #yymm <- 202209
 #yymm <- 202203
 #yymm <- 202109
-yymm <- 202103
+#yymm <- 202103
+yymm <- 202009
 
 
 ## Ubiquitous Pathways
@@ -75,16 +76,40 @@ hist_exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/historic
 # last_date <- "2022-03-01" # current extract
 
 
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ## September 2021
+# # Define dates
+# prev_year <- "2018/19" # year preceding current_year
+# current_year <- "2019/20" # last year of full data (previous to current analysis)
+# current_year_start <- "2019-03-01" # 1st March of prev_year (date extract pulled)
+# next_year_start <- "2020-03-01" # 1st March of current_year (date extract pulled)
+# financial_year_due <- "2020/21" # current data being analyzed
+# financial_quarters <- c("2019/20_4", "2020/21_1","2020/21_2","2020/21_3")
+# last_date <- "2021-09-01" # current extract
+
+
+# #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ## May 2021
+# # Define dates
+# prev_year <- "2018/19" # year preceding current_year
+# current_year <- "2019/20" # last year of full data (previous to current analysis)
+# current_year_start <- "2019-03-01" # 1st March of prev_year (date extract pulled)
+# next_year_start <- "2020-03-01" # 1st March of current_year (date extract pulled)
+# financial_year_due <- "2020/21" # current data being analyzed
+# financial_quarters <- c("2019/20_4", "2020/21_1","2020/21_2","2020/21_3")
+# last_date <- "2021-03-01" # current extract
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## September 2021
+## September 2020
 # Define dates
-prev_year <- "2018/19" # year preceding current_year
-current_year <- "2019/20" # last year of full data (previous to current analysis)
-current_year_start <- "2019-03-01" # 1st March of prev_year (date extract pulled)
-next_year_start <- "2020-03-01" # 1st March of current_year (date extract pulled)
-financial_year_due <- "2020/21" # current data being analyzed
-financial_quarters <- c("2019/20_4", "2020/21_1","2020/21_2","2020/21_3")
-last_date <- "2021-09-01" # current extract
+prev_year <- "2017/18" # year preceding current_year
+current_year <- "2018/29" # last year of full data (previous to current analysis)
+current_year_start <- "2018-03-01" # 1st March of prev_year (date extract pulled)
+next_year_start <- "2019-03-01" # 1st March of current_year (date extract pulled)
+financial_year_due <- "2019/20" # current data being analyzed
+financial_quarters <- c("2018/19_4", "2019/20_1","2019/20_2","2019/20_3")
+last_date <- "2020-09-01" # current extract
 
 
 ###
