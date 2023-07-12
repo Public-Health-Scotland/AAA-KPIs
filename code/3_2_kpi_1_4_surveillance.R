@@ -32,13 +32,13 @@ pacman::p_load(
   )
 
 
-rm(list = ls())
-gc()
-
-
-source(here::here("code/0_housekeeping.R"))
-
-rm(gpd_lookups)
+# rm(list = ls())
+# gc()
+# 
+# 
+# # source(here::here("code/0_housekeeping.R"))
+# 
+# rm(gpd_lookups)
 
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
@@ -159,7 +159,8 @@ View(aaa_extract %>% tabyl(screen_result, followup_recom))
 annual_surveillance_cohort <- aaa_extract %>% 
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "02") %>% 
-  filter(financial_year %in% c(prev_year, current_year)) %>% 
+  filter(financial_year %in% c(prev_year, current_year)) %>%
+  filter(date_screen <= as.Date("2020-02-28")) |>
   mutate(cohort = 1)
 # 1,408 rows 2020/09
 # 2,924 rows 2021/03
@@ -333,6 +334,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
   filter(fy_quarter %in% financial_quarters) %>% 
+  filter(date_screen <= as.Date("2020-11-30")) |>
   mutate(cohort = 1)
 
 
@@ -388,7 +390,7 @@ quarterly_combined_appointments <- quarterly_surveillance_cohort %>%
             by = c("upi_qc"="upi", "date_screen_qc" = "date_screen_qc")) %>% 
   left_join(quarterly_exclusions_appointments, 
             by = c("upi_qc"="upi", "date_screen_qc" = "date_screen_qc")) %>% 
-  mutate(across(c(financial_year_sc:fin_month), 
+  mutate(across(c(financial_year_sc:fin_month_sc), 
                 ~ replace(., date_screen_qc == date_screen_sc, NA)))
   
 # Remove unnecessary columns
@@ -409,7 +411,7 @@ quarterly_final_follow_ups <- quarterly_combined_appointments %>%
                                     is.na(date_end))|
                                    pat_inelig %in% c('03','05'),1,0)) %>% 
   mutate(exclusion_flag_final = ifelse(attend ==1, 0, exclusion_flag)) %>% 
-  filter(exclusion_flag_final == 0) %>%
+  filter(exclusion_flag_final == 0)  %>%
   mutate(fy_due_date = (as.POSIXct(date_screen_qc) %m+% months(3))) %>%
   mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_qc) %m+% months(3)))) %>%
   filter(fy_due == financial_year_due) %>%
@@ -418,6 +420,7 @@ quarterly_final_follow_ups <- quarterly_combined_appointments %>%
   slice(1)  %>% 
   ungroup() %>% 
   rename(upi = upi_qc) |>
+  rename(date_screen_c = date_screen_qc) |> 
   select(-ends_with(".y")) %>%
   select(-ends_with("_qc"))
 
