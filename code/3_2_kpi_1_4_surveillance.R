@@ -9,6 +9,8 @@
 # R version 4.1.2
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Update dates in 0_housekeeping.R before running this script.
+
 # There are three scripts for kpi 1.4A to be run together:
 # 1) 3_2_kpi_1_4_surveillance.R - This script
 # 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery
@@ -32,13 +34,13 @@ pacman::p_load(
   )
 
 
-# rm(list = ls())
-# gc()
-# 
-# 
-# # source(here::here("code/0_housekeeping.R"))
-# 
-# rm(gpd_lookups)
+rm(list = ls())
+gc()
+
+
+# source(here::here("code/0_housekeeping.R"))
+
+rm(gpd_lookups)
 
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
@@ -51,10 +53,10 @@ template <- tibble(fy_due = financial_year_due,
 ### 2 - Read in Files ----
 
 # AAA extract path
-aaa_extract <- readRDS(hist_extract_path)
+aaa_extract <- readRDS(extract_path)
 
 # AAA exclusions path
-aaa_exclusions <- readRDS(hist_exclusions_path)
+aaa_exclusions <- readRDS(exclusions_path)
 
 
 ### 3 - Format Tables ----
@@ -148,8 +150,8 @@ colnames(screened_cohort) <- paste(colnames(screened_cohort),"sc",sep="_")
 # must have a value for followup_recom
 # Previous records with this issue have aged out of the extract 
 # but we should still check that this does not crop up.
-View(aaa_extract %>% tabyl(screen_result, followup_recom))
-###
+# View(aaa_extract %>% tabyl(screen_result, followup_recom))
+# ###
 
 # Remove any records with no valid financial year
 # Create a list of all screening results with a recommendation to follow up 
@@ -160,7 +162,7 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "02") %>% 
   filter(financial_year %in% c(prev_year, current_year)) %>%
-  filter(date_screen <= as.Date("2020-02-28")) |>
+  filter(date_screen <= as.Date(cut_off_12m)) |>
   mutate(cohort = 1)
 # 1,408 rows 2020/09
 # 2,924 rows 2021/03
@@ -228,9 +230,9 @@ final_follow_ups <- annual_surveillance_cohort %>%
 # 2854 rows 2022/03
 # 1407 rows 2022/09
 # 2824 rows 2023/03
-  
-View(final_follow_ups %>% get_dupes()) 
-View(final_follow_ups %>% get_dupes(upi_ac))
+#   
+# View(final_follow_ups %>% get_dupes()) 
+# View(final_follow_ups %>% get_dupes(upi_ac))
 
 rm(annual_surveillance_cohort, exclusions_appointments,
    follow_up_appointments, combined_appointments)
@@ -272,12 +274,12 @@ final_follow_ups %<>%
          exclusion_flag_final = clusion_flag_final)
 
   
-# Check duplicates  
+# # Check duplicates  
 View(final_follow_ups %>% filter(financial_year_ac == current_year) %>%
   distinct(upi_ac, financial_year_ac, fin_month_ac))
-  
+
 View(final_follow_ups %>% tabyl(exclusion_flag))
-View(final_follow_ups %>% get_dupes()) 
+View(final_follow_ups %>% get_dupes())
 View(final_follow_ups %>% get_dupes(upi_ac))
 
 
@@ -313,18 +315,6 @@ kpi_1.4a <- template %>% left_join(kpi_1.4a,
 
 View(kpi_1.4a)
 
-saveRDS(kpi_1.4a, paste0(output_path, "/temp/kpi_1-4a_", yymm, ".rds"))
-
-
-fall20 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202009.rds"))
-fall21 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202109.rds"))
-fall22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202209.rds"))
-
-spring21 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202103.rds"))
-spring22 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202203.rds"))
-spring23 <- readRDS(paste0(output_path, "/temp/kpi_1-4a_202303.rds"))
-
-
 ################################################################################
 
 ### 6  Create 3M Surveillance figures ----
@@ -334,7 +324,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
   filter(fy_quarter %in% financial_quarters) %>% 
-  filter(date_screen <= as.Date("2020-11-30")) |>
+  # filter(date_screen <= as.Date(cut_off_3m)) |>
   mutate(cohort = 1)
 
 
@@ -458,9 +448,8 @@ kpi_1.4b <- template %>% left_join(kpi_1.4b,
 
 View(kpi_1.4b)
 
-# # Write out KPI tables
-# 
-# saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
-# saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
+# Write out KPI tables
+saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
+saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
 
 

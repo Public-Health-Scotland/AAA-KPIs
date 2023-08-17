@@ -8,6 +8,8 @@
 # Revised/Run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Update dates in 0_housekeeping.R before running this script.
+
 # There are three scripts for kpi 1.4A to be run together:
 # 1) 3_2_kpi_1_4_surveillance.R 
 # 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery - This script
@@ -145,6 +147,7 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "02") %>% 
   filter(financial_year %in% c(prev_year,current_year)) %>% 
+  filter(date_screen <= as.Date(cut_off_12m)) |>  
   mutate(cohort = 1)
 
 # add ac for annual cohort to identify more easily when joining
@@ -302,6 +305,7 @@ View(kpi_1.4a_assess)
 quarterly_surveillance_cohort <- aaa_extract %>% 
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
+  filter(date_screen <= as.Date(cut_off_12m)) |>
   mutate(cohort = 1) %>% 
   filter(date_screen < last_date)
 
