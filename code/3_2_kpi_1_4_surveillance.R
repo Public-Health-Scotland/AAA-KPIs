@@ -324,7 +324,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
   filter(fy_quarter %in% financial_quarters) %>% 
-  # filter(date_screen <= as.Date(cut_off_3m)) |>
+  filter(date_screen <= as.Date(cut_off_3m)) |>
   mutate(cohort = 1)
 
 

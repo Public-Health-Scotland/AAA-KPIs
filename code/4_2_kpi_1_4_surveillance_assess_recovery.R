@@ -305,7 +305,7 @@ View(kpi_1.4a_assess)
 quarterly_surveillance_cohort <- aaa_extract %>% 
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
-  filter(date_screen <= as.Date(cut_off_12m)) |>
+  filter(date_screen <= as.Date(cut_off_3m)) |>
   mutate(cohort = 1) %>% 
   filter(date_screen < last_date)
 
