@@ -9,6 +9,8 @@
 # R version 4.1.2
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Update dates in 0_housekeeping.R before running this script.
+
 # There are three scripts for kpi 1.4A to be run together:
 # 1) 3_2_kpi_1_4_surveillance.R - This script
 # 2) 4_2_kpi_1_4_surveillance_assess_recovery.R - This may be removed as it is related to COVID Recovery
@@ -36,10 +38,9 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping.R"))
+# source(here::here("code/0_housekeeping.R"))
 
-rm(gpd_lookups, cutoff_date, year1_start, 
-   year1_end, year2_start, year2_end)
+rm(gpd_lookups)
 
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
@@ -63,6 +64,10 @@ aaa_exclusions <- readRDS(exclusions_path)
 ## 3.1 - Check Exclusions and filter ----
 # check number of screened records
 aaa_exclusions %>% nrow()
+# 98,960  rows 2020/09
+# 106,417 rows 2021/03
+# 114,781 rows 2021/09
+# 123,791 rows 2022/03
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
 
@@ -92,8 +97,11 @@ aaa_extract %<>%
             first_outcome:audit_batch_outcome )) %>% # eligibility_period:dob_eligibility needed?
   arrange(upi, date_screen) %>% 
   glimpse()
-
-# 523,774 rows sept 2022
+# 417,692 rows 2020/09
+# 440,014 rows 2021/03
+# 465,782 rows 2021/09
+# 493,121 rows 2022/03
+# 523,774 rows 2022/09
 # 551,027 rows 2023/03
 
 # filter if screen result is positive, negative or non-visualisation and 
@@ -108,7 +116,10 @@ screened_cohort %>%
   group_by(screen_flag) %>% 
   summarise(screen_n = n())
 
-# 18,647 1's, 505,127 0's sept 2022
+# 13,597 1's, 404,095 0's 2020/09
+# 14,790 1's, 425,224 0's 2021/03
+#
+# 18,647 1's, 505,127 0's 2022/09
 # 20,020 1's, 531,007 0's 2023/03
 
 # remove records
@@ -139,8 +150,8 @@ colnames(screened_cohort) <- paste(colnames(screened_cohort),"sc",sep="_")
 # must have a value for followup_recom
 # Previous records with this issue have aged out of the extract 
 # but we should still check that this does not crop up.
-View(aaa_extract %>% tabyl(screen_result, followup_recom))
-###
+# View(aaa_extract %>% tabyl(screen_result, followup_recom))
+# ###
 
 # Remove any records with no valid financial year
 # Create a list of all screening results with a recommendation to follow up 
@@ -150,8 +161,13 @@ View(aaa_extract %>% tabyl(screen_result, followup_recom))
 annual_surveillance_cohort <- aaa_extract %>% 
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "02") %>% 
-  filter(financial_year %in% c(prev_year, current_year)) %>% 
+  filter(financial_year %in% c(prev_year, current_year)) %>%
+  filter(date_screen <= as.Date(cut_off_12m)) |>
   mutate(cohort = 1)
+# 1,408 rows 2020/09
+# 2,924 rows 2021/03
+# 2,924 rows 2021/09
+# 2,826 rows 2022/03
 # 2,826 rows 2022/09
 # 2,781 rows 2023/03
   
@@ -194,6 +210,10 @@ exclusions_appointments <- aaa_exclusions %>%
   group_by(upi, financial_year_ac, fin_month_ac) %>% 
   slice(n()) %>% 
   ungroup()
+# 115 rows 2020/09
+# 281 rows 2021/03
+# 286 rows 2021/09
+# 252 rows 2022/03
 # 261 rows 2022/09
 # 228 rows 2023/03
 
@@ -204,11 +224,15 @@ combined_appointments <- follow_up_appointments %>%
 
 final_follow_ups <- annual_surveillance_cohort %>% 
   left_join(combined_appointments, by = c("upi_ac"="upi"))
+# 1408 rows 2020/09
+# 2978 rows 2021/03
+# 2997 rows 2021/09
+# 2854 rows 2022/03
 # 1407 rows 2022/09
 # 2824 rows 2023/03
-  
-View(final_follow_ups %>% get_dupes()) 
-View(final_follow_ups %>% get_dupes(upi_ac))
+#   
+# View(final_follow_ups %>% get_dupes()) 
+# View(final_follow_ups %>% get_dupes(upi_ac))
 
 rm(annual_surveillance_cohort, exclusions_appointments,
    follow_up_appointments, combined_appointments)
@@ -250,12 +274,12 @@ final_follow_ups %<>%
          exclusion_flag_final = clusion_flag_final)
 
   
-# Check duplicates  
+# # Check duplicates  
 View(final_follow_ups %>% filter(financial_year_ac == current_year) %>%
   distinct(upi_ac, financial_year_ac, fin_month_ac))
-  
+
 View(final_follow_ups %>% tabyl(exclusion_flag))
-View(final_follow_ups %>% get_dupes()) 
+View(final_follow_ups %>% get_dupes())
 View(final_follow_ups %>% get_dupes(upi_ac))
 
 
@@ -300,6 +324,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   filter(!is.na(financial_year)) %>% 
   filter(followup_recom == "01") %>%
   filter(fy_quarter %in% financial_quarters) %>% 
+  filter(date_screen <= as.Date(cut_off_3m)) |>
   mutate(cohort = 1)
 
 
@@ -355,7 +380,7 @@ quarterly_combined_appointments <- quarterly_surveillance_cohort %>%
             by = c("upi_qc"="upi", "date_screen_qc" = "date_screen_qc")) %>% 
   left_join(quarterly_exclusions_appointments, 
             by = c("upi_qc"="upi", "date_screen_qc" = "date_screen_qc")) %>% 
-  mutate(across(c(financial_year_sc:fin_month), 
+  mutate(across(c(financial_year_sc:fin_month_sc), 
                 ~ replace(., date_screen_qc == date_screen_sc, NA)))
   
 # Remove unnecessary columns
@@ -376,7 +401,7 @@ quarterly_final_follow_ups <- quarterly_combined_appointments %>%
                                     is.na(date_end))|
                                    pat_inelig %in% c('03','05'),1,0)) %>% 
   mutate(exclusion_flag_final = ifelse(attend ==1, 0, exclusion_flag)) %>% 
-  filter(exclusion_flag_final == 0) %>%
+  filter(exclusion_flag_final == 0)  %>%
   mutate(fy_due_date = (as.POSIXct(date_screen_qc) %m+% months(3))) %>%
   mutate(fy_due = extract_fin_year((as.POSIXct(date_screen_qc) %m+% months(3)))) %>%
   filter(fy_due == financial_year_due) %>%
@@ -385,6 +410,7 @@ quarterly_final_follow_ups <- quarterly_combined_appointments %>%
   slice(1)  %>% 
   ungroup() %>% 
   rename(upi = upi_qc) |>
+  rename(date_screen_c = date_screen_qc) |> 
   select(-ends_with(".y")) %>%
   select(-ends_with("_qc"))
 
@@ -422,9 +448,8 @@ kpi_1.4b <- template %>% left_join(kpi_1.4b,
 
 View(kpi_1.4b)
 
-# # Write out KPI tables
-# 
-# saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
-# saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
+# Write out KPI tables
+saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
+saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
 
 
