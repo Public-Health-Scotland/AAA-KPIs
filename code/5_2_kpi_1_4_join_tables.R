@@ -39,15 +39,14 @@ yymm <- 202303
 temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/temp")
 
 # Read in data
-kpi_1.4a <- readRDS(paste0(temp_path, "/kpi_1_4_a.rds"))
-kpi_1.4b <- readRDS(paste0(temp_path, "/kpi_1_4_b.rds"))
-kpi_14a_assess <- readRDS(paste0(temp_path, "/kpi_1_4a_assess.rds"))
-kpi_14b_assess <- readRDS(paste0(temp_path, "/kpi_1_4b_assess.rds"))
+kpi_1.4a <- readRDS(paste0(temp_path, "/kpi_1_4_a_updated.rds"))
+kpi_1.4b <- readRDS(paste0(temp_path, "/kpi_1_4_b_updated.rds"))
+kpi_14a_assess <- readRDS(paste0(temp_path, "/kpi_1_4a_assess_updated.rds"))
+kpi_14b_assess <- readRDS(paste0(temp_path, "/kpi_1_4b_assess_updated.rds"))
 
 ### 2 - Reformat KPI outputs ----
 
 ## KPI 1.4a --
-
 kpi1.4a_final <- kpi_1.4a %>%
   left_join(kpi_14a_assess, by = c("fy_due", "hbres")) %>% 
   rename(appointments_due_12m_n = `sum(cohort_ac).x`,
@@ -58,8 +57,8 @@ kpi1.4a_final <- kpi_1.4a %>%
   select(-`sum(cohort_ac).y`) %>%
   glimpse()
 
-## KPI 1.4b --
 
+## KPI 1.4b --
 kpi1.4b_final <- kpi_1.4b %>%
   left_join(kpi_14b_assess, by = c("fy_due", "hbres")) %>% 
   rename(appointments_due_3m_n = `sum(cohort_qc).x`,
@@ -69,6 +68,14 @@ kpi1.4b_final <- kpi_1.4b %>%
          all_tested_3m_pc = pc.y) %>% 
   select(-`sum(cohort_qc).y`) %>%
   glimpse()
+
+
+### Output to RDS
+saveRDS(kpi1.4a_final, paste0(temp_path, "/kpi_1_4a_final_updated.rds"))
+saveRDS(kpi1.4b_final, paste0(temp_path, "/kpi_1_4b_final_updated.rds"))
+
+## re-write to save out as a single RDS file; will require renaming variables.
+
 
 ### 3 - Write to Excel ----
 
@@ -107,9 +114,8 @@ setColWidths(wb, sheet = "KPI1.4b", cols = 1:16, widths = "auto")
 
 ## 3.2 - Save Workbook --
 
-#saveWorkbook(wb, file = here("temp","kpi1_4.xlsx"),overwrite = TRUE)
+saveWorkbook(wb, paste0(temp_path,"/kpi1_4_updated.xlsx"), overwrite = TRUE)
 
-saveWorkbook(wb, file = ("/PHI_conf/AAA/Topics/Analysts/EOS/AAA-KPIs_EO/kpi1_4.xlsx"),overwrite = TRUE)
 
 
 

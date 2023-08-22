@@ -38,7 +38,7 @@ rm(list = ls())
 gc()
 
 
-# source(here::here("code/0_housekeeping.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(gpd_lookups)
 
@@ -71,7 +71,7 @@ aaa_exclusions %>% nrow()
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
 
-# add financial_year, quarter and month
+# organize data
 aaa_exclusions %<>%
   select(upi, pat_inelig, date_start, date_end) %>% 
   arrange(upi, date_start, date_end) %>% 
@@ -230,9 +230,9 @@ final_follow_ups <- annual_surveillance_cohort %>%
 # 2854 rows 2022/03
 # 1407 rows 2022/09
 # 2824 rows 2023/03
-#   
-# View(final_follow_ups %>% get_dupes()) 
-# View(final_follow_ups %>% get_dupes(upi_ac))
+
+View(final_follow_ups %>% get_dupes())
+View(final_follow_ups %>% get_dupes(upi_ac))
 
 rm(annual_surveillance_cohort, exclusions_appointments,
    follow_up_appointments, combined_appointments)
@@ -274,7 +274,7 @@ final_follow_ups %<>%
          exclusion_flag_final = clusion_flag_final)
 
   
-# # Check duplicates  
+# Check duplicates  
 View(final_follow_ups %>% filter(financial_year_ac == current_year) %>%
   distinct(upi_ac, financial_year_ac, fin_month_ac))
 
@@ -449,7 +449,7 @@ kpi_1.4b <- template %>% left_join(kpi_1.4b,
 View(kpi_1.4b)
 
 # Write out KPI tables
-saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a.rds"))
-saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b.rds"))
+saveRDS(kpi_1.4a, paste0(temp_path, "/kpi_1_4_a_updated.rds"))
+saveRDS(kpi_1.4b, paste0(temp_path, "/kpi_1_4_b_updated.rds"))
 
 
