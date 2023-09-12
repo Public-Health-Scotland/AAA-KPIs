@@ -207,7 +207,6 @@ output_1_1 <- output_1_1 %>%
 # Save
 write_rds(output_1_1, paste0(temp_path, "/KPI_1_1.rds"))
 
-rm(invite_uptake_1_1, scotland_1_1, breakdown_1_1)
 
 
 ### KPI 1.2b ----

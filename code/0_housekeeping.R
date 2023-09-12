@@ -25,10 +25,12 @@ exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
 temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                     "/temp")
 
+hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
+
 gpd_lookups <- paste0("/conf/linkage/output/lookups/Unicode")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
-                      "/temp")
+                      "/output")
 
 ##!! Dates should only be updated once a year in May!! 
 # May KPI report is a partial-year progress report of data that is reported in 
