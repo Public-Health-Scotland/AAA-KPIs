@@ -35,7 +35,7 @@
 # Step 6 : Write out
 
 
-### Step 1 : Import packages and filepaths ----
+### Step 1: Import packages and filepaths ----
 library(readr)
 library(dplyr)
 library(lubridate)
@@ -49,19 +49,19 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, extract_path, gpd_lookups, cutoff_date,
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date)
+rm(exclusions_path, extract_path, gpd_lookups, cutoff_date, cut_off_12m,
+   cut_off_3m, prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
 
 
-### Step 2 : Import data ----
-
+### Step 2: Import data ----
 invite_uptake <- read_rds(paste0(temp_path, "/1_inviteanduptake_initial.rds"))
 
 
-### Step 3 : Create derived variables ----
-
-## KPI 1.1 ---
+### Step 3: Create derived variables ----
+## KPI 1.1 ----
+## Percentage of eligible population who are sent an initial offer to 
+## screening before age 66
 invite_uptake <- invite_uptake %>%
   # age_at_screen (in months because 66 and 3 months is the key age)
   mutate(age_screen = age_calculate(dob, screen_date, units = "months")) %>%
@@ -69,135 +69,140 @@ invite_uptake <- invite_uptake %>%
   mutate(age_offer = interval(dob, date_first_offer_sent) %/% years(1))
 
 
-# assign year eligible cohorts
+# Denominator: assign year eligible cohorts
 invite_uptake <- invite_uptake %>%
   mutate(cohort_year1 = case_when(between(dob, year1_start, year1_end) ~ 1,
-                                  TRUE ~ as.numeric(NA)
-  ),
-  cohort_year2 = case_when(between(dob, year2_start, year2_end) ~ 1,
-                           TRUE ~ as.numeric(NA)
-  ))
+                                  TRUE ~ as.numeric(NA)),
+         cohort_year2 = case_when(between(dob, year2_start, year2_end) ~ 1,
+                                  TRUE ~ as.numeric(NA)))
 
-# assign year offer cohorts (offered before age 66)
+# Numerator: assign year offer cohorts (offered before age 66)
 invite_uptake <- invite_uptake %>%
   mutate(offer_year1 = case_when(cohort_year1 == 1 & inoffer == 1 & 
                                    age_offer < 66 ~ 1,
-                                 TRUE ~ as.numeric(NA)
-  ),
-  offer_year2 = case_when(cohort_year2 == 1 & inoffer == 1 & 
-                            age_offer < 66 ~ 1,
-                          TRUE ~ as.numeric(NA)
-  ),
-  offer_not_assigned = if_else(offer_year1 != 1 &
-                                 offer_year2 != 1, 1, 0)
-  )
+                                 TRUE ~ as.numeric(NA)),
+         offer_year2 = case_when(cohort_year2 == 1 & inoffer == 1 & 
+                                   age_offer < 66 ~ 1,
+                                 TRUE ~ as.numeric(NA)),
+         offer_not_assigned = if_else(offer_year1 != 1 &
+                                        offer_year2 != 1, 1, 0))
 
-# secondary numerator: those offered an appointment at any point
+# Secondary numerator: those offered an appointment at any point (after age 66)
 invite_uptake <- invite_uptake %>%
-  mutate(offer_any_year1 = case_when(cohort_year1 == 1 & inoffer == 1 ~ 1,
-                                     TRUE ~ as.numeric(NA)
-  ),
-  offer_any_year2 = case_when(cohort_year2 == 1 & inoffer == 1 ~ 1,
-                              TRUE ~ as.numeric(NA)
-  ))
+  mutate(offer_add_year1 = case_when(cohort_year1 == 1 & inoffer == 1 ~ 1,
+                                     TRUE ~ as.numeric(NA)),
+         offer_add_year2 = case_when(cohort_year2 == 1 & inoffer == 1 ~ 1,
+                                     TRUE ~ as.numeric(NA)))
 
 
-## KPI 1.2b ---
-# tested before 795 months and offered before age 66
+## KPI 1.2a ----
+## Percentage eligible men tested before the age of 66 and 3 months
+# Numerator: patients that have been tested and age_screen < 795 months 
+# (66 years + 3 months)
 invite_uptake <- invite_uptake %>%
-  mutate(tested_year1 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
-                                    age_offer < 66 & cohort_year1 == 1 ~ 1,
-                                  TRUE ~ as.numeric(NA)
-  ),
-  tested_year2 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
-                             age_offer < 66 & cohort_year2 == 1 ~ 1,
-                           TRUE ~ as.numeric(NA)
-  ),
-  tested_not_assigned = if_else(tested_year1 != 1 &
-                                  tested_year2 != 1, 1, 0)
-  )
-
-
-## KPI 1.2a ---
-# numerator : if patient has been tested and age_screen < 795 months
-invite_uptake <- invite_uptake %>%
-  mutate(tested2_year1 = case_when(!is.na(screen_result) & age_screen < 795 &
+  mutate(tested_a_year1 = case_when(!is.na(screen_result) & age_screen < 795 &
                                      cohort_year1 == 1 ~ 1,
-                                   TRUE ~ as.numeric(NA)
-  ),
-  tested2_year2 = case_when(!is.na(screen_result) & age_screen < 795 &
-                              cohort_year2 == 1 ~ 1,
-                            TRUE ~ as.numeric(NA)
-  ),
-  tested2_not_assigned = if_else(!is.na(tested2_year1) |
-                                   !is.na(tested2_year2) , as.numeric(NA), 1)
-  )
+                                   TRUE ~ as.numeric(NA)),
+         tested_a_year2 = case_when(!is.na(screen_result) & age_screen < 795 &
+                                     cohort_year2 == 1 ~ 1,
+                                   TRUE ~ as.numeric(NA)),
+         tested_a_not_assigned = if_else(!is.na(tested_a_year1) |
+                                          !is.na(tested_a_year2) , as.numeric(NA), 1))
 
-# additional : if patient has been tested at any time
+# Secondary numerator: patients that have been tested at any point (after age 66)
 invite_uptake <- invite_uptake %>%
-  mutate(tested2_any_year1 = case_when(!is.na(screen_result) & 
-                                         cohort_year1 == 1 ~ 1,
-                                       TRUE ~ as.numeric(NA)
-  ),
-  tested2_any_year2 = case_when(!is.na(screen_result) & 
-                                  cohort_year2 == 1 ~ 1,
-                                TRUE ~ as.numeric(NA)
-  ),
-  tested2_any_not_assigned = if_else(!is.na(tested2_any_year1) |
-                                       !is.na(tested2_any_year2) , 
-                                     as.numeric(NA), 1)
-  )
+  mutate(tested_a_add_year1 = case_when(!is.na(screen_result) & 
+                                          cohort_year1 == 1 ~ 1,
+                                        TRUE ~ as.numeric(NA)),
+         tested_a_add_year2 = case_when(!is.na(screen_result) & 
+                                          cohort_year2 == 1 ~ 1,
+                                        TRUE ~ as.numeric(NA)),
+         tested_a_add_not_assigned = if_else(!is.na(tested_a_add_year1) |
+                                               !is.na(tested_a_add_year2) , 
+                                             as.numeric(NA), 1))
 
-# additional : if patient has been tested before Sep 1 of extract year
-#           don't have
-# This one seems kind of weird because it overwrites the previous one.
-# Going to leave it out for now but might need to come back.
-# Actually doesn't seem like it overwrites anything so could just come out?
+# Coverage by 1st Sept: patients that have been tested before Sept 1 of extract year
+# Only used in autumn report
+##!! This needs to be added in!!
 
 
-### Step 4 : Save out basefiles for other scripts ----
-# These files are the same. I think we only need one in future but
-# subsequent scripts currently need both names
 
-#write_rds(invite_uptake, paste0(output_fpath, "inviteanduptake_initial.rds"))
+## KPI 1.2b ----
+# Numerator: patients that have been tested before 795 months and offered 
+# before age 66
+invite_uptake <- invite_uptake %>%
+  mutate(tested_b_year1 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
+                                    age_offer < 66 & cohort_year1 == 1 ~ 1,
+                                  TRUE ~ as.numeric(NA)),
+         tested_b_year2 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
+                                    age_offer < 66 & cohort_year2 == 1 ~ 1,
+                                  TRUE ~ as.numeric(NA)),
+         tested_b_not_assigned = if_else(tested_b_year1 != 1 &
+                                         tested_b_year2 != 1, 1, 0))
+
+
+## KPI 1.3a ----
+# Coverage by 1st Sept SIMD: patients that have been tested before Sept 1 of 
+# extract year by SIMD
+# Only used in autumn report
+##!! This needs to be added in!!
+
+
+### Step 4: Save out basefiles ----
 write_rds(invite_uptake, paste0(temp_path, "/1_coverage_basefile.rds"))
 
 
-### Step 5 : Summary tables ----
-### KPI 1.1 ----
-# create health board breakdown
-breakdown_1_1 <- invite_uptake %>%
+### Step 5: Add historical data ----
+# Historical data from two previous published years needs to be added to 
+# KPI 1.1, 1.2a, Coverage by 1 Sept, 1.2b, 1.3a, Coverage by 1 Sept SIMD,
+# 1.3a Additional, 1.3b, and 1.3b Additional
+
+## KPI 1.1 ----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Step 5: Summary tables ----
+## KPI 1.1 ----
+# Create health board breakdown
+output_1_1 <- invite_uptake %>%
   # trim date (select men born from 1 April 1948)
   # keeps data for eligible cohorts for men turning age 66 from 2014/15
   filter(dob >= dmy("01-04-1948")) %>%
   group_by(hbres) %>%
-  summarise(across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
-  ) %>%
+  summarise(across(cohort_year1:tested_b_not_assigned, sum, na.rm = TRUE)) %>%
   ungroup()
 
-scotland_1_1 <- breakdown_1_1 %>%
+scotland_1_1 <- output_1_1 %>%
   summarise(
-    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
+    across(cohort_year1:tested_b_not_assigned, sum, na.rm = TRUE)
   ) %>%
-  mutate(hbres = "Scotland")
+  mutate(hbres = "Scotland", .before = cohort_year1)
 
-breakdown_1_1 <- bind_rows(scotland_1_1, breakdown_1_1)
+output_1_1 <- bind_rows(scotland_1_1, output_1_1)
 
-# create percentages
-breakdown_1_1 <- breakdown_1_1 %>%
-  mutate(
-    percent_year1 = (offer_year1/cohort_year1)*100,
-    percent_year2 = (offer_year2/cohort_year2)*100,
-    
-    percent_any_year1 = (offer_any_year1/cohort_year1)*100,
-    percent_any_year2 = (offer_any_year2/cohort_year2)*100
-  )
-
-# Output tables
-output_1_1 <- breakdown_1_1 %>%
-  select(hbres, cohort_year1, offer_year1, percent_year1, offer_any_year1, 
-         percent_any_year1, cohort_year2, offer_year2, percent_year2,
-         offer_any_year2, percent_any_year2) #These last 2 only used in fall MEG
+# Create percentages
+output_1_1 <- output_1_1 %>%
+  mutate(percent_year1 = (offer_year1/cohort_year1)*100,
+         percent_year2 = (offer_year2/cohort_year2)*100,
+         percent_add_year1 = (offer_add_year1/cohort_year1)*100,
+         percent_add_year2 = (offer_add_year2/cohort_year2)*100) %>%
+  select(hbres, cohort_year1, offer_year1, percent_year1, offer_add_year1, 
+         percent_add_year1, cohort_year2, offer_year2, percent_year2,
+         offer_add_year2, percent_add_year2) #These last 2 only used in fall MEG
 
 # Save
 write_rds(output_1_1, paste0(temp_path, "/KPI_1_1.rds"))
@@ -400,7 +405,7 @@ pc_simd <- readRDS(glue("{gpd_lookups}/Deprivation/",
                         "postcode_2022_2_simd2020v2.rds")) |>
   select(pc8, simd2020v2_hb2019_quintile)
 
-### Join Files ----
+### Join Files ---
 coverage_by_NHS_Board_SIMD <- invite_uptake %>% 
   left_join(pc_simd, by = c("postcode" = "pc8")) |>
   relocate(simd2020v2_hb2019_quintile, .before = hbres)

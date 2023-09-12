@@ -12,6 +12,7 @@
 
 ## Ubiquitous Variables
 yymm <- 202309
+season <- "autumn"
 
 
 ## Ubiquitous Pathways
@@ -36,17 +37,21 @@ output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## 1_1_processing_for_KPI_11-13.R
-## Individuals born after this date are not eligible for the program yet 
-## (Have not turned 65 years old in time for this KPI round)
+# Individuals born after this date are not eligible for the program yet 
+# (Have not turned 65 years old in time for this KPI round)
+# This will match `year2_end` variable in next script
 cutoff_date <- dmy("31-03-1958")  
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## 2_2_kpi_1_1-1_3_uptake_coverage.R
-year1_start <- dmy("01-04-1956")
+# Year 1 is the cohort currently being analyzed for reporting (complete), 
+# while year 2 looks into the future to give a snapshot of progress for the  
+# cohort reported on next cycle.
+year1_start <- dmy("01-04-1956") # cohort year being analyzed
 year1_end <- dmy("31-03-1957")
 
-year2_start <- dmy("01-04-1957")
+year2_start <- dmy("01-04-1957") # cohort year still active
 year2_end <- dmy("31-03-1958")
 
 
