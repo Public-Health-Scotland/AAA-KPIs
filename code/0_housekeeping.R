@@ -11,8 +11,7 @@
 
 
 ## Ubiquitous Variables
-yymm <- 202303
-# yymm <- 202209
+yymm <- 202309
 
 
 ## Ubiquitous Pathways
@@ -74,7 +73,7 @@ current_year_start <- "2021-03-01" # 1st March of prev_year
 next_year_start <- "2022-03-01" # 1st March of current_year 
 financial_year_due <- "2022/23" # current data being analyzed
 financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
-last_date <- "2023-03-01" # current extract
+last_date <- "2023-09-01" # current extract
 
 
 # # ## September 2022
@@ -112,7 +111,7 @@ last_date <- "2023-03-01" # current extract
 ## 6_2_Supplementary_Surveillance.R
 # Define dates
 next_year <- "2022/23"
-cut_off_date <- "2023-03-31"
+date_cut_off <- "2023-03-31"
 
 
 
