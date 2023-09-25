@@ -13,6 +13,8 @@
 ## Ubiquitous Variables
 yymm <- 202309
 season <- "autumn"
+# Years needed from the historical extract for current KPI report
+kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
 
 ## Ubiquitous Pathways
@@ -27,7 +29,10 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
 
-gpd_lookups <- paste0("/conf/linkage/output/lookups/Unicode")
+gpd_lookups <- paste0("/conf/linkage/output/lookups/Unicode") ## useful or remove?
+
+simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
+                    "/postcode_2023_1_simd2020v2.rds")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
