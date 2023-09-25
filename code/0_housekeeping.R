@@ -16,6 +16,13 @@ season <- "autumn"
 # Years needed from the historical extract for current KPI report
 kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
+# hbres_list
+hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
+                            "Dumfries & Galloway", "Fife", "Forth Valley", 
+                            "Grampian", "Greater Glasgow & Clyde", "Highland", 
+                            "Lanarkshire", "Lothian", "Orkney",
+                            "Shetland", "Tayside","Western Isles"))
+
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
@@ -55,6 +62,9 @@ cutoff_date <- dmy("31-03-1958")
 # Year 1 is the cohort currently being analyzed for reporting (complete), 
 # while year 2 looks into the future to give a snapshot of progress for the  
 # cohort reported on next cycle.
+year1 <- "2022/23"
+year2 <- "2023/24"
+
 year1_start <- dmy("01-04-1956") # cohort year being analyzed
 year1_end <- dmy("31-03-1957")
 

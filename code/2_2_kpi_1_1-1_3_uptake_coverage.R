@@ -88,8 +88,8 @@ invite_uptake <- invite_uptake %>%
                                    age_offer < 66 ~ 1,
                                  TRUE ~ as.numeric(NA)),
          offer_not_assigned = if_else(offer_year1 != 1 &
-                                        offer_year2 != 1, 1, 0))
-
+                                        offer_year2 != 1, 1, 0)) ## This feels like a check...
+  
 # Additional management information (COVID recovery related -- not KPI data)
 # Secondary numerator: eligible individuals offered any time before 1 Sept 
 # (after age 66)
@@ -102,31 +102,33 @@ invite_uptake <- invite_uptake %>%
 
 ## KPI 1.2a ----
 ## Percentage of eligible individuals tested before the age of 66 and 3 months
+# Denominator: eligible population for current analysis year and current active 
+# year (as KPI 1.1)
 # Numerator: eligible individuals that have been tested and age_screen < 795 months 
 # (66 years + 3 months)
 invite_uptake <- invite_uptake %>%
-  mutate(tested_a_year1 = case_when(!is.na(screen_result) & age_screen < 795 &
-                                     cohort_year1 == 1 ~ 1,
-                                   TRUE ~ as.numeric(NA)),
-         tested_a_year2 = case_when(!is.na(screen_result) & age_screen < 795 &
-                                     cohort_year2 == 1 ~ 1,
-                                   TRUE ~ as.numeric(NA)),
-         tested_a_not_assigned = if_else(!is.na(tested_a_year1) |
-                                          !is.na(tested_a_year2) , as.numeric(NA), 1))
+  mutate(test_a_year1 = case_when(!is.na(screen_result) & age_screen < 795 &
+                                    cohort_year1 == 1 ~ 1,
+                                  TRUE ~ as.numeric(NA)),
+         test_a_year2 = case_when(!is.na(screen_result) & age_screen < 795 &
+                                    cohort_year2 == 1 ~ 1,
+                                  TRUE ~ as.numeric(NA)),
+         test_a_not_assigned = if_else(!is.na(test_a_year1) |
+                                         !is.na(test_a_year2) , as.numeric(NA), 1))
 
 # Additional management information (COVID recovery related -- not KPI data)
 # Secondary numerator: eligible individuals that have been tested any time 
 # before 1 Sept (after age 66 and 3 months)
 invite_uptake <- invite_uptake %>%
-  mutate(tested_a_add_year1 = case_when(!is.na(screen_result) & 
-                                          cohort_year1 == 1 ~ 1,
-                                        TRUE ~ as.numeric(NA)),
-         tested_a_add_year2 = case_when(!is.na(screen_result) & 
-                                          cohort_year2 == 1 ~ 1,
-                                        TRUE ~ as.numeric(NA)),
-         tested_a_add_not_assigned = if_else(!is.na(tested_a_add_year1) |
-                                               !is.na(tested_a_add_year2) , 
-                                             as.numeric(NA), 1))
+  mutate(test_a_add_year1 = case_when(!is.na(screen_result) & 
+                                        cohort_year1 == 1 ~ 1,
+                                      TRUE ~ as.numeric(NA)),
+         test_a_add_year2 = case_when(!is.na(screen_result) & 
+                                        cohort_year2 == 1 ~ 1,
+                                      TRUE ~ as.numeric(NA)),
+         test_a_add_not_assigned = if_else(!is.na(test_a_add_year1) |
+                                             !is.na(test_a_add_year2) , 
+                                           as.numeric(NA), 1))
 
 ## Coverage by 1 Sept: individuals that have been tested before 1 Sept
 # Only used in autumn report
@@ -141,14 +143,14 @@ invite_uptake <- invite_uptake %>%
 # Numerator: individuals that have been offered screening before age 66 who are 
 # tested before 795 months (66 years + 3 months)
 invite_uptake <- invite_uptake %>%
-  mutate(tested_b_year1 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
+  mutate(test_b_year1 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
                                     age_offer < 66 & cohort_year1 == 1 ~ 1,
                                   TRUE ~ as.numeric(NA)),
-         tested_b_year2 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
+         test_b_year2 = case_when(!is.na(screen_result) == 1 & age_screen < 795 &
                                     age_offer < 66 & cohort_year2 == 1 ~ 1,
                                   TRUE ~ as.numeric(NA)),
-         tested_b_not_assigned = if_else(tested_b_year1 != 1 &
-                                         tested_b_year2 != 1, 1, 0))
+         test_b_not_assigned = if_else(test_b_year1 != 1 &
+                                         test_b_year2 != 1, 1, 0))
 
 
 ## KPI 1.3a ----
@@ -214,81 +216,141 @@ write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
 
 
 
-
-
-
-
-
-
-
-### Step 5: Summary tables ----
+### Step 5: Summaries ----
 ## KPI 1.1 ----
-# Create health board breakdown
-output_1_1 <- invite_uptake %>%
-  # trim date (select men born from 1 April 1948)
+kpi_1_1 <- invite_uptake  |> 
+  # trim date (select men born from 1 April 1948)    ##!!WHY??
   # keeps data for eligible cohorts for men turning age 66 from 2014/15
-  filter(dob >= dmy("01-04-1948")) %>% 
-  group_by(hbres) %>%
-  summarise(across(cohort_year1:tested_b_not_assigned, sum, na.rm = TRUE)) %>%
-  ungroup()
+  filter(dob >= dmy("01-04-1948")) |> 
+  select(hbres, cohort_year1:offer_add_year2) |> 
+  group_by(hbres) |> 
+  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) %>%
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) %>% 
+  ungroup() |> 
+  glimpse() # offer_not_assigned should be 0 for each HB
 
-scotland_1_1 <- output_1_1 %>%
-  summarise(
-    across(cohort_year1:tested_b_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  mutate(hbres = "Scotland", .before = cohort_year1)
+kpi_1_1<- kpi_1_1 |> 
+  mutate(coverage_year1 = (offer_year1/cohort_year1)*100,
+         coverage_year2 = (offer_year2/cohort_year2)*100,
+         coverage_add_year1 = (offer_add_year1/cohort_year1)*100,
+         coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
+  select(hbres, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
+         coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
+         offer_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
 
-output_1_1 <- bind_rows(scotland_1_1, output_1_1)
+# Reformat to match historical data
+kpi_1_1 <- kpi_1_1 |> 
+  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
+  mutate(group = fin_year, .after = fin_year) |> 
+  mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
+                       "KPI 1.1 additional", "KPI 1.1"), .after = hbres) |> 
+  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
+                              str_detect(fin_year, "_year2") ~ year2),
+         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
+                           str_detect(group, "offer") ~ "offer_n",
+                           str_detect(group, "coverage") ~ "coverage_p")) |> 
+  mutate(simd = NA, .after = fin_year) |> 
+  glimpse()
 
-# Create percentages
-output_1_1 <- output_1_1 %>%
-  mutate(percent_year1 = (offer_year1/cohort_year1)*100,
-         percent_year2 = (offer_year2/cohort_year2)*100,
-         percent_add_year1 = (offer_add_year1/cohort_year1)*100,
-         percent_add_year2 = (offer_add_year2/cohort_year2)*100) %>%
-  select(hbres, cohort_year1, offer_year1, percent_year1, offer_add_year1, 
-         percent_add_year1, cohort_year2, offer_year2, percent_year2,
-         offer_add_year2, percent_add_year2) #These last 2 only used in fall MEG
+kpi_1_1 <- hb_list |> left_join(kpi_1_1, by = "hbres")
 
-# Save
-write_rds(output_1_1, paste0(temp_path, "/KPI_1_1.rds"))
+
+### KPI 1.2a ----
+kpi_1_2a <- invite_uptake  |> 
+  select(hbres, cohort_year1, cohort_year2, test_a_year1:test_a_add_not_assigned) |> 
+  group_by(hbres) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
+  ungroup() |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+kpi_1_2a <- kpi_1_2a  |> 
+  mutate(coverage_year1 = (test_a_year1/cohort_year1)*100,
+         coverage_year2 = (test_a_year2/cohort_year2)*100,
+         coverage_add_year1 = (test_a_add_year1/cohort_year1)*100,
+         coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
+  select(hbres, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
+         coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+
+# Reformat to match historical data
+kpi_1_2a <- kpi_1_2a |> 
+  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
+  mutate(group = fin_year, .after = fin_year) |> 
+  mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
+                       "KPI 1.2a additional", "KPI 1.2a"), .after = hbres) |> 
+  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
+                              str_detect(fin_year, "_year2") ~ year2),
+         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
+                           str_detect(group, "test") ~ "test_n",
+                           str_detect(group, "coverage") ~ "coverage_p")) |> 
+  mutate(simd = NA, .after = fin_year) |> 
+  glimpse()
+
+kpi_1_2a <- hb_list |> left_join(kpi_1_2a, by = "hbres")
+
+
+### KPI 1.2b ----
+kpi_1_2b <- invite_uptake  |> 
+  select(hbres, offer_year1, offer_year2, test_b_year1:test_b_not_assigned) |> 
+  group_by(hbres) |> 
+  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
+  ungroup() |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+kpi_1_2b <- kpi_1_2b  |> 
+  mutate(uptake_year1 = (test_b_year1/offer_year1)*100,
+         uptake_year2 = (test_b_year2/offer_year2)*100) |> 
+  select(hbres, offer_year1, test_b_year1, uptake_year1,
+         offer_year2, test_b_year2, uptake_year2)
+
+# Reformat to match historical data
+kpi_1_2b_test <- kpi_1_2b |> 
+  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
+  mutate(group = fin_year, .after = fin_year) |> 
+  mutate(kpi = "KPI 1.2b", .after = hbres) |> 
+  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
+                              str_detect(fin_year, "_year2") ~ year2),
+         group = case_when(str_detect(group, "offer") ~ "offer_n",
+                           str_detect(group, "test") ~ "test_n",
+                           str_detect(group, "uptake") ~ "uptake_p")) |> 
+  mutate(simd = NA, .after = fin_year) |> 
+  glimpse()
+
+kpi_1_2b <- hb_list |> left_join(kpi_1_2b, by = "hbres")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #########
 
-### KPI 1.2b ----
-breakdown_1_2b <- invite_uptake %>%
-  group_by(hbres) %>%
-  summarise(
-    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  ungroup()
-
-scotland_1_2b <- breakdown_1_2b %>%
-  summarise(
-    across(cohort_year1:tested_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  mutate(hbres = "Scotland", .before = cohort_year1)
-
-breakdown_1_2b <- bind_rows(scotland_1_2b, breakdown_1_2b)
-
-# create percentages
-breakdown_1_2b <- breakdown_1_2b %>%
-  mutate(
-    percent_year1 = (tested_year1/offer_year1)*100,
-    percent_year2 = (tested_year2/offer_year2)*100,
-    
-    p_not_assigned = (tested_not_assigned/offer_not_assigned)*100
-  )
-
-# Output tables
-output_1_2b <- breakdown_1_2b %>%
-  select(hbres, offer_year1, tested_year1, percent_year1,
-         offer_year2, tested_year2, percent_year2)
-
-# Save
-write_rds(output_1_2b, paste0(temp_path, "/KPI_1_2b.rds"))
-
-rm(scotland_1_2b, breakdown_1_2b)
 
 
 ### KPI 1.3b ----
@@ -349,43 +411,6 @@ write_rds(output_1_3b, paste0(temp_path, "/KPI_1_3b.rds"))
 
 rm(scotland_1_3b, scotland_1_3b_tot, breakdown_1_3b, breakdown_1_3b_tot)
 
-
-### KPI 1.2a ----
-breakdown_1_2a <- invite_uptake %>%
-  group_by(hbres) %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  ungroup()
-
-scotland_1_2a <- breakdown_1_2a %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  mutate(hbres = "Scotland", .before = cohort_year1)
-
-breakdown_1_2a <- bind_rows(scotland_1_2a, breakdown_1_2a)
-
-# create percentages
-breakdown_1_2a <- breakdown_1_2a %>%
-  mutate(
-    percent_year1 = (tested2_year1/cohort_year1)*100,
-    percent_year2 = (tested2_year2/cohort_year2)*100,
-    
-    percent_any_year1 = (tested2_any_year1/cohort_year1)*100,
-    percent_any_year2 = (tested2_any_year2/cohort_year2)*100
-  )
-
-# Output tables
-output_1_2a <- breakdown_1_2a %>%
-  select(hbres, cohort_year1, tested2_year1, percent_year1, tested2_any_year1, 
-         percent_any_year1, cohort_year2, tested2_year2, percent_year2, 
-         tested2_any_year2, percent_any_year2) #These last 2 only used in fall MEG
-
-# Save
-#write_rds(output_1_2a, paste0(temp_path, "/KPI_1_2a.rds"))
-
-rm(scotland_1_2a)
 
 
 ### KPI 1.3a ----
@@ -493,7 +518,6 @@ rm(breakdown_1_3a_add, breakdown_1_3_tot_add)
 
 
 ### KPI 1.3b ----
-## Only needed for autumn MEG
 # create percentages
 breakdown_1_3b_add <- breakdown_1_3_add %>%
   mutate(
@@ -580,19 +604,4 @@ Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
 
 
 
-
-
-
-
-
-
-
-
-# ### Rewrite all as .csv files so can copy/paste into Excel file
-# write_csv(output_1_1, paste0(temp_path, "/KPI_1_1.csv"))
-# write_csv(output_1_2a, paste0(temp_path, "/KPI_1_2a.csv"))
-# write_csv(output_1_2b, paste0(temp_path, "/KPI_1_2b.csv"))
-# write_csv(output_1_3a, paste0(temp_path, "/KPI_1_3a.csv"))
-# write_csv(output_1_3a_add, paste0(temp_path, "/KPI_1_3a_add.csv"))
-# write_csv(output_1_3b, paste0(temp_path, "/KPI_1_3b.csv"))
 
