@@ -40,8 +40,8 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(phsmethods)
+library(stringr)
 library(tidylog)
-library(glue)
 
 rm(list = ls())
 gc()
@@ -52,6 +52,9 @@ source(here::here("code/0_housekeeping.R"))
 rm(exclusions_path, extract_path, cutoff_date, cut_off_12m, cut_off_3m, 
    prev_year, current_year, current_year_start, next_year_start,
    financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
+
+# SIMD levels
+simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
 
 
 ### Step 2: Import data ----
@@ -161,6 +164,10 @@ invite_uptake <- invite_uptake %>%
 ## Scotland-weighted SIMD
 # Numerator: eligible individuals that have been tested and age_screen < 795 months 
 # (66 years + 3 months)
+# NOTE: year2 is only used for Scotland totals and is not used for HB splits. 
+# This information is added to tab 'KPI 1.2a Additional'. As with 1.2a, the 
+# additional figures for individuals tested any time before 1 Sept are produced 
+# for the autumn report only.
 
 ## Coverage by 1st Sept SIMD: individuals that have been tested before Sept 1 of 
 # extract year by Scotland-weighted SIMD
@@ -207,7 +214,7 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
+#write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
 
 ##!!Is this step needed if data is to be stored as historical file? Is it worth 
 ## also having a file that is just the given KPI run??
@@ -227,7 +234,7 @@ kpi_1_1 <- invite_uptake  |>
   summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) %>%
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() |> 
-  glimpse() # offer_not_assigned should be 0 for each HB
+  glimpse() # offer_not_assigned what does this tell us? Why included??
 
 kpi_1_1<- kpi_1_1 |> 
   mutate(coverage_year1 = (offer_year1/cohort_year1)*100,
@@ -243,7 +250,7 @@ kpi_1_1 <- kpi_1_1 |>
   pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
   mutate(group = fin_year, .after = fin_year) |> 
   mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
-                       "KPI 1.1 additional", "KPI 1.1"), .after = hbres) |> 
+                       "KPI 1.1 Sept coverage", "KPI 1.1"), .after = hbres) |> 
   mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
                               str_detect(fin_year, "_year2") ~ year2),
          group = case_when(str_detect(group, "cohort") ~ "cohort_n",
@@ -278,7 +285,7 @@ kpi_1_2a <- kpi_1_2a |>
   pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
   mutate(group = fin_year, .after = fin_year) |> 
   mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
-                       "KPI 1.2a additional", "KPI 1.2a"), .after = hbres) |> 
+                       "KPI 1.2a Sept coverage", "KPI 1.2a"), .after = hbres) |> 
   mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
                               str_detect(fin_year, "_year2") ~ year2),
          group = case_when(str_detect(group, "cohort") ~ "cohort_n",
@@ -306,7 +313,7 @@ kpi_1_2b <- kpi_1_2b  |>
          offer_year2, test_b_year2, uptake_year2)
 
 # Reformat to match historical data
-kpi_1_2b_test <- kpi_1_2b |> 
+kpi_1_2b <- kpi_1_2b |> 
   pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
   mutate(group = fin_year, .after = fin_year) |> 
   mutate(kpi = "KPI 1.2b", .after = hbres) |> 
@@ -321,6 +328,91 @@ kpi_1_2b_test <- kpi_1_2b |>
 kpi_1_2b <- hb_list |> left_join(kpi_1_2b, by = "hbres")
 
 
+### KPI 1.3a ----
+## Coverage by Scotland-level SIMD
+# Health Boards
+kpi_1_3a <- invite_uptake  |> 
+  select(hbres, simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
+         test_a_year1:test_a_add_not_assigned) |> 
+  group_by(hbres, simd2020v2_sc_quintile) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+# Scotland
+kpi_1_3a_scot <- invite_uptake  |> 
+  select(simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
+         test_a_year1:test_a_add_not_assigned) |> 
+  group_by(simd2020v2_sc_quintile) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+# Combine & order by SIMD
+kpi_1_3a <- bind_rows(kpi_1_3a_scot, kpi_1_3a) |> 
+  mutate(simd2020v2_sc_quintile = if_else(is.na(simd2020v2_sc_quintile), 
+                                          "Unknown", simd2020v2_sc_quintile))
+kpi_1_3a <- simd_level |> left_join(kpi_1_3a, 
+                                    by = c("simd" = "simd2020v2_sc_quintile"))
+
+kpi_1_3a <- kpi_1_3a  |> 
+  mutate(coverage_year1 = (test_a_year1/cohort_year1)*100,
+         coverage_year2 = (test_a_year2/cohort_year2)*100,
+         coverage_add_year1 = (test_a_add_year1/cohort_year1)*100,
+         coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
+  select(hbres, simd, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
+         coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+
+# Reformat to match historical data
+kpi_1_3a <- kpi_1_3a |> 
+  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
+  mutate(group = fin_year, .after = fin_year) |> 
+  mutate(kpi = if_else(str_detect(fin_year, "_add_"), "KPI 1.3a Sept coverage", 
+                       "KPI 1.3a Scotland SIMD"), .after = hbres) |> 
+  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
+                              str_detect(fin_year, "_year2") ~ year2),
+         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
+                           str_detect(group, "test") ~ "test_n",
+                           str_detect(group, "coverage") ~ "coverage_p")) |> 
+  relocate(simd, .after = fin_year) |>
+  glimpse()
+
+kpi_1_3a <- hb_list |> left_join(kpi_1_3a, by = "hbres")
+
+
+### KPI 1.3 Additional ----
+## Coverage by HB-level SIMD
+# Health Boards
+kpi_1_3a_add <- invite_uptake  |> 
+  select(hbres, simd2020v2_hb2019_quintile, cohort_year1, cohort_year2, 
+         test_a_year1:test_a_add_not_assigned) |> 
+  group_by(hbres, simd2020v2_hb2019_quintile) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+# Scotland
+kpi_1_3a_scot <- invite_uptake  |> 
+  select(simd2020v2_hb2019_quintile, cohort_year1, cohort_year2, 
+         test_a_year1:test_a_add_not_assigned) |> 
+  group_by(simd2020v2_hb2019_quintile) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  mutate(hbres = "Scotland", .before = simd2020v2_hb2019_quintile) |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+# Combine & order by SIMD
+kpi_1_3a_add <- bind_rows(kpi_1_3a_scot, kpi_1_3a_add) |> 
+  mutate(simd2020v2_hb2019_quintile = if_else(is.na(simd2020v2_hb2019_quintile), 
+                                          "Unknown", simd2020v2_hb2019_quintile))
+kpi_1_3a_add <- simd_level |> left_join(kpi_1_3a_add, 
+                                    by = c("simd" = "simd2020v2_hb2019_quintile"))
 
 
 
@@ -333,18 +425,7 @@ kpi_1_2b <- hb_list |> left_join(kpi_1_2b, by = "hbres")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+####
 
 
 
@@ -407,92 +488,12 @@ output_1_3b <- breakdown_1_3b %>%
   mutate_all(~ifelse(is.nan(.), NA, .))
 
 # Save
-write_rds(output_1_3b, paste0(temp_path, "/KPI_1_3b.rds"))
 
 rm(scotland_1_3b, scotland_1_3b_tot, breakdown_1_3b, breakdown_1_3b_tot)
 
 
 
-### KPI 1.3a ----
-## Coverage by Scotland-level SIMD
-breakdown_1_3a <- invite_uptake %>%
-  group_by(hbres, simd2020v2_sc_quintile) %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  ungroup() %>%
-  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile)) %>% 
-  mutate(simd2020v2_sc_quintile = 
-           case_when(is.na(simd2020v2_sc_quintile) ~ "Unknown",
-                     !is.na(simd2020v2_sc_quintile) ~ simd2020v2_sc_quintile))
 
-scotland_1_3a <- breakdown_1_3a %>%
-  group_by(simd2020v2_sc_quintile) %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile)%>%
-  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
-
-tot_1_3a <- breakdown_1_2a %>%
-  mutate(simd2020v2_sc_quintile = "Total", .after = hbres)
-
-# bind together including non-simd totals from previous kpi
-breakdown_1_3a <- bind_rows(breakdown_1_3a, scotland_1_3a, tot_1_3a)
-
-# create percentages
-breakdown_1_3a <- breakdown_1_3a %>%
-  mutate(
-    percent_year1 = (tested2_year1/cohort_year1)*100,
-    percent_year2 = (tested2_year2/cohort_year2)*100,
-    
-    percent_any_year1 = (tested2_any_year1/cohort_year1)*100,
-    percent_any_year2 = (tested2_any_year2/cohort_year2)*100
-  )
-
-# Output tables
-output_1_3a <- breakdown_1_3a %>%
-  select(hbres, simd2020v2_sc_quintile, cohort_year1, tested2_year1, 
-         percent_year1, tested2_any_year1, percent_any_year1,
-         cohort_year2, tested2_year2, percent_year2, tested2_any_year2, 
-         percent_any_year2) %>%
-  arrange(factor(simd2020v2_sc_quintile, levels = "Total"), 
-          simd2020v2_sc_quintile)%>%
-  arrange(factor(hbres, levels = "Scotland"), hbres)
-# Slight differences due to newer simd version
-
-# Save
-#write_rds(output_1_3a, paste0(temp_path, "/KPI_1_3a.rds"))
-
-rm(scotland_1_3a, breakdown_1_2a, breakdown_1_3a, tot_1_3a)
-
-
-### KPI 1.3 Additional ----
-## Coverage by HB-level SIMD
-## Coverage by simd
-breakdown_1_3_add <- coverage_by_NHS_Board_SIMD %>%
-  group_by(hbres, simd2020v2_hb2019_quintile) %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  ungroup() %>%
-  mutate(simd2020v2_hb2019_quintile = as.character(simd2020v2_hb2019_quintile)) %>% 
-  mutate(simd2020v2_hb2019_quintile = 
-           case_when(is.na(simd2020v2_hb2019_quintile) ~ "Unknown",
-                     !is.na(simd2020v2_hb2019_quintile) ~ simd2020v2_hb2019_quintile))
-
-breakdown_1_3_tot_add <- coverage_by_NHS_Board_SIMD %>%
-  group_by(hbres) %>%
-  summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
-  ) %>%
-  ungroup() %>% 
-  mutate(simd2020v2_hb2019_quintile = "Total", .after = hbres)
-
-
-# bind together including non-simd totals from previous kpi
-breakdown_1_3_add <- bind_rows(breakdown_1_3_tot_add, breakdown_1_3_add) %>% 
-  arrange(hbres)
 
 
 ### KPI 1.3a ----
@@ -552,7 +553,7 @@ rm(breakdown_1_3b_add)
 ## Full records (currently only from 2020/21; need to add historical)
 full_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical.rds"))
 # save a backup of full_db
-write_rds(full_db, paste0(hist_path, "/aaa_kpi_historical_bckp.rds"))
+#write_rds(full_db, paste0(hist_path, "/aaa_kpi_historical_bckp.rds"))
 # and change permissions to give the group read/write
 Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
           mode = "664", use_umask = FALSE)
@@ -590,16 +591,6 @@ Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
 # # and change permissions to give the group read/write
 # Sys.chmod(paste0(proj_folder, "/Output/SBSS_R079_complete.rds"),
 #           mode = "664", use_umask = FALSE)
-
-
-
-
-
-
-
-
-
-
 
 
 
