@@ -129,6 +129,7 @@ aaa_1.2a_Sept <- rbind(aaa_2021, aaa_2122) |>
                            str_detect(group, "_c") ~ "cohort_n",
                            str_detect(group, "p_") ~ "coverage_p"),
          kpi = "KPI 1.2a Sept coverage", .after = hbres) |> 
+  filter(group %in% c("test_n", "coverage_p")) |> 
   mutate(simd = NA, .after = kpi) |> 
   glimpse()
 
@@ -242,6 +243,7 @@ aaa_1.3a_Sept <- rbind(aaa_2021, aaa_2122) |>
                            str_detect(group, "_c") ~ "cohort_n",
                            str_detect(group, "p_") ~ "coverage_p"),
          kpi = "KPI 1.3a Sept coverage", .after = hbres) |> 
+  filter(group %in% c("test_n", "coverage_p")) |> 
   glimpse()
 
 
@@ -460,4 +462,7 @@ table(aaa_kpi_historic$kpi)
 #### 4: Write out ----
 write_rds(aaa_kpi_historic, paste0(kpi_path, 
                                    "historical/aaa_kpi_historical.rds"))
+# change permissions to give the group read/write
+Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_bckp.rds"),
+          mode = "664", use_umask = FALSE)
 

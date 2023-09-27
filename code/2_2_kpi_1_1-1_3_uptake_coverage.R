@@ -3,7 +3,7 @@
 # Angus Morton
 # 17/11/2022
 #
-# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a, 1.3b, 1.3a additional and 1.3b additional
+# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a, 1.3a HB-level, 1.3b and 1.3b HB-level
 #
 # Written on RServer (R Version 3.6.1)
 # Revised/Run on Posit PWB (R version 4.1.2)
@@ -41,6 +41,7 @@ library(dplyr)
 library(lubridate)
 library(phsmethods)
 library(stringr)
+library(forcats)
 library(tidylog)
 
 rm(list = ls())
@@ -55,6 +56,29 @@ rm(exclusions_path, extract_path, cutoff_date, cut_off_12m, cut_off_3m,
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
+
+## Functions
+history_building <- function(df, season) {
+  
+  df
+  
+  if({{season}} == "spring")
+  {print("Don't add to the history file. Move along to next script.")}
+  
+  if({{season}} == "autumn")
+  {df <- df |> 
+    filter(kpi != "KPI 1.1 Sept coverage",
+           fin_year != year2)
+  write_rds(df, paste0(hist_path, "/aaa_kpi_historical.rds"))
+  # change permissions to give the group read/write
+  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical.rds"),
+            mode = "664", use_umask = FALSE)
+  print("You made history! Proceed to the next script.")}
+  
+  else ## this prints with "spring"??
+  {print("Do you know what season it is?! Go back and figure yourself out.")}
+  
+}
 
 
 ### Step 2: Import data ----
@@ -214,7 +238,7 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-#write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
+write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
 
 
 ### Step 5: Summaries ----
@@ -256,7 +280,7 @@ kpi_1_1 <- kpi_1_1 |>
 kpi_1_1 <- hb_list |> left_join(kpi_1_1, by = "hbres")
 
 
-### KPI 1.2a ----
+## KPI 1.2a ----
 kpi_1_2a <- invite_uptake  |> 
   select(hbres, cohort_year1, cohort_year2, test_a_year1:test_a_add_not_assigned) |> 
   group_by(hbres) |> 
@@ -291,7 +315,7 @@ kpi_1_2a <- kpi_1_2a |>
 kpi_1_2a <- hb_list |> left_join(kpi_1_2a, by = "hbres")
 
 
-### KPI 1.2b ----
+## KPI 1.2b ----
 kpi_1_2b <- invite_uptake |> 
   select(hbres, offer_year1, offer_year2, test_b_year1:test_b_not_assigned) |> 
   group_by(hbres) |> 
@@ -322,7 +346,7 @@ kpi_1_2b <- kpi_1_2b |>
 kpi_1_2b <- hb_list |> left_join(kpi_1_2b, by = "hbres")
 
 
-### KPI 1.3a ----
+## KPI 1.3a ----
 ## Coverage by Scotland-level SIMD
 # Health Boards
 kpi_1_3a <- invite_uptake  |> 
@@ -378,7 +402,7 @@ kpi_1_3a <- kpi_1_3a |>
 kpi_1_3a <- hb_list |> left_join(kpi_1_3a, by = "hbres")
 
 
-### KPI 1.3a Health Board ----
+## KPI 1.3a Health Board ----
 ## Coverage by HB-level SIMD
 ## (No need to create Scotland-level)
 # Health Boards
@@ -418,7 +442,7 @@ kpi_1_3a_hb <- hb_list |> left_join(kpi_1_3a_hb, by = "hbres") |>
   filter(hbres != "Scotland")
 
 
-### KPI 1.3b ----
+## KPI 1.3b ----
 ## Coverage by Scotland-level SIMD
 # Health Boards
 kpi_1_3b <- invite_uptake  |> 
@@ -467,7 +491,7 @@ kpi_1_3b <- kpi_1_3b |>
 kpi_1_3b <- hb_list |> left_join(kpi_1_3b, by = "hbres")
 
 
-### KPI 1.3b Health Board ----
+## KPI 1.3b Health Board ----
 ## Coverage by HB-level SIMD
 ## (No need to create Scotland-level)
 # Health Boards
@@ -506,52 +530,79 @@ kpi_1_3b_hb <- kpi_1_3b_hb |>
 kpi_1_3b_hb <- hb_list |> left_join(kpi_1_3b_hb, by = "hbres") |> 
   filter(hbres != "Scotland")
 
-rm(kpi_1_3a_scot, kpi_1_3b_scot)
+rm(kpi_1_3a_scot, kpi_1_3b_scot, hb_list, simd_level)
 
 
-#########
+## Join summaries ----
+kpi_summary <- rbind(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a,  
+                     kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb) |> 
+  mutate(value = janitor::round_half_up(value, 1))
+
+table(kpi_summary$kpi)
+
+rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 
 
 ### Step 6: Add historical data ----
 # Historical data from two previous published years needs to be added to 
-# KPI 1.1, 1.2a, Coverage by 1 Sept, 1.2b, 1.3a, Coverage by 1 Sept SIMD,
-# 1.3a Additional, 1.3b, and 1.3b Additional
+# KPI 1.1, 1.2a, 1.2a Coverage by 1 Sept, 1.2b, 1.3a Scotland SIMD, 
+# 1.3a Coverage by 1 Sept SIMD, 1.3a HB SIMD, 1.3b Scotland SIMD, and 1.3b HB SIMD
 
 ## Full records (currently only from 2020/21; need to add historical)
-full_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical.rds"))
-# # save a backup of full_db
-# write_rds(full_db, paste0(hist_path, "/aaa_kpi_historical_bckp.rds"))
-# # and change permissions to give the group read/write
-# Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
-#           mode = "664", use_umask = FALSE)
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical.rds"))
+# save a backup of hist_db
+write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_bckp.rds"))
+# change permissions to give the group read/write
+Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
+          mode = "664", use_umask = FALSE)
 
-# ## current month's records
-# current <- read_csv(paste0(r079_path, file_name, YYMM, ".csv"))
-# 
-# 
-# ## Add new records onto full database
-# new_db <- bind_rows(full_db, current) %>% 
-#   arrange(WorklistDate, BSCName)
-# 
-# ## Check for duplication
-# table(new_db$start_date) # current month should match `current` obs.
-# ggplot(new_db, aes(x = WorklistDate)) +
-#   geom_histogram(binwidth = 24)
-# 
-# ## Check any dates that look odd from visual inspection
-# date_check <- new_db %>%
-#   count(WorklistDate)
-# 
-# ggplot(date_check, aes(x = WorklistDate)) +
-#   geom_histogram(binwidth = 20)
-# 
-# 
-# write_rds(new_db, paste0(proj_folder, "/Output/SBSS_R079_complete.rds"))
-# # and change permissions to give the group read/write
-# Sys.chmod(paste0(proj_folder, "/Output/SBSS_R079_complete.rds"),
-#           mode = "664", use_umask = FALSE)
+table(hist_db$kpi, hist_db$fin_year) # should be equal across FYs and match below 
+#                        2020/21 2021/22
+# KPI 1.1                     45      45
+# KPI 1.2a                    45      45
+# KPI 1.2a Sept coverage      30      30
+# KPI 1.2b                    45      45
+# KPI 1.3a HB SIMD           294     294
+# KPI 1.3a Scotland SIMD     315     315
+# KPI 1.3a Sept coverage     210     210
+# KPI 1.3b HB SIMD           294     294
+# KPI 1.3b Scotland SIMD     315     315
+# KPI 1.4a                    45      45
+# KPI 1.4b                    45      45
+
+## Add new records onto full database
+new_hist_db <- bind_rows(hist_db, kpi_summary)
+
+## Check for duplication
+table(new_hist_db$kpi, new_hist_db$fin_year) # current year (year1) should match 
+# previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2
 
 
+## Current report output ----
+report_db <- new_hist_db |> 
+  filter(fin_year %in% kpi_report_years)
+
+write_rds(report_db, paste0(temp_path, "/3_Invite_attend", yymm, ".rds"))
+#write_csv(report_db, paste0(temp_path, "/3_Invite_attend", yymm, ".csv")) # for checking
 
 
+## New historical database ----
+new_hist_db <- new_hist_db |>
+  mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
+                                  "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
+                                  "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
+                                  "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD")),
+         fin_year = fct_relevel(fin_year, c("2012/13", "2013/14", "2014/15", 
+                                            "2015/16", "2016/17", "2017/18", 
+                                            "2018/19", "2019/20", "2020/21", 
+                                            "2021/22", "2022/23")),
+         hbres = fct_relevel(hbres, c("Scotland","Ayrshire & Arran","Borders",
+                                      "Dumfries & Galloway", "Fife", "Forth Valley", 
+                                      "Grampian", "Greater Glasgow & Clyde",  
+                                      "Highland", "Lanarkshire", "Lothian", "Orkney",
+                                      "Shetland", "Tayside","Western Isles"))) |> 
+  arrange(kpi, fin_year, hbres)
+
+
+history_building(new_hist_db, season)
 
