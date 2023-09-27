@@ -582,8 +582,8 @@ table(new_hist_db$kpi, new_hist_db$fin_year) # current year (year1) should match
 report_db <- new_hist_db |> 
   filter(fin_year %in% kpi_report_years)
 
-write_rds(report_db, paste0(temp_path, "/3_Invite_attend", yymm, ".rds"))
-#write_csv(report_db, paste0(temp_path, "/3_Invite_attend", yymm, ".csv")) # for checking
+write_rds(report_db, paste0(temp_path, "/3_Invite_attend_", yymm, ".rds"))
+#write_csv(report_db, paste0(temp_path, "/3_Invite_attend_", yymm, ".csv")) # for checking
 
 
 ## New historical database ----
