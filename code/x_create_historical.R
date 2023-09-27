@@ -165,6 +165,7 @@ aaa_1.2b <- rbind(aaa_2021, aaa_2122) |>
 
 
 ### KPI 1.3a ----
+## Scotland-level SIMD
 ## 2020/21
 aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_supp_path, 
                              "/coverage_simd_202021_202122.xlsx"), 
@@ -200,7 +201,7 @@ aaa_1.3a <- rbind(aaa_2021, aaa_2122) |>
          group = case_when(str_detect(group, "_tested") ~ "test_n",
                            str_detect(group, "_c") ~ "cohort_n",
                            str_detect(group, "p_") ~ "coverage_p"),
-         kpi = "KPI 1.3a", .after = hbres) |> 
+         kpi = "KPI 1.3a Scotland SIMD", .after = hbres) |> 
   glimpse()
 
 
@@ -244,7 +245,8 @@ aaa_1.3a_Sept <- rbind(aaa_2021, aaa_2122) |>
   glimpse()
 
 
-### KPI 1.3a additional ----
+### KPI 1.3a Health Board ----
+## Health Board-level SIMD
 ## 2020/21
 aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_supp_path, 
                              "/coverage_boardlevelsimd_202021_202122.xlsx"),
@@ -262,7 +264,7 @@ aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_2_path,
   mutate(group = fin_year, .after = fin_year)
 
 ## Combine and clean
-aaa_1.3a_add <- rbind(aaa_2021, aaa_2122) |> 
+aaa_1.3a_hb <- rbind(aaa_2021, aaa_2122) |> 
   mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
          X1 = str_replace_all(X1, "&amp;", "&"),
          X1 = str_replace(X1, "AS", "S")) |> 
@@ -280,11 +282,12 @@ aaa_1.3a_add <- rbind(aaa_2021, aaa_2122) |>
          group = case_when(str_detect(group, "_tested") ~ "test_n",
                            str_detect(group, "_c") ~ "cohort_n",
                            str_detect(group, "p_") ~ "coverage_p"),
-         kpi = "KPI 1.3a additional", .after = hbres) |> 
+         kpi = "KPI 1.3a HB SIMD", .after = hbres) |> 
   glimpse()
 
 
 ### KPI 1.3b ----
+## Scotland-level SIMD
 ## 2020/21
 aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_path, 
                              "/KPI_1.3_overall.xlsx"), 
@@ -320,11 +323,12 @@ aaa_1.3b <- rbind(aaa_2021, aaa_2122) |>
          group = case_when(str_detect(group, "_tested") ~ "test_n",
                            str_detect(group, "offer") ~ "offer_n",
                            str_detect(group, "p_") ~ "uptake_p"),
-         kpi = "KPI 1.3b", .after = hbres) |> 
+         kpi = "KPI 1.3b Scotland SIMD", .after = hbres) |> 
   glimpse()
 
 
-### KPI 1.3b additional ----
+### KPI 1.3b Health Board ----
+## Health Board-level SIMD
 ## 2020/21
 aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_add_path, 
                              "/KPI_1.3_additional.xlsx"),
@@ -342,7 +346,7 @@ aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_2_path,
   mutate(group = fin_year, .after = fin_year)
 
 ## Combine and clean
-aaa_1.3b_add <- rbind(aaa_2021, aaa_2122) |> 
+aaa_1.3b_hb <- rbind(aaa_2021, aaa_2122) |> 
   mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
          X1 = str_replace_all(X1, "&amp;", "&"),
          X1 = str_replace(X1, "AS", "S")) |> 
@@ -360,7 +364,7 @@ aaa_1.3b_add <- rbind(aaa_2021, aaa_2122) |>
          group = case_when(str_detect(group, "_tested") ~ "test_n",
                            str_detect(group, "offer") ~ "offer_n",
                            str_detect(group, "p_") ~ "uptake_p"),
-         kpi = "KPI 1.3b additional", .after = hbres) |> 
+         kpi = "KPI 1.3b HB SIMD", .after = hbres) |> 
   glimpse()
 
 
@@ -431,16 +435,16 @@ names(aaa_1.2a)
 names(aaa_1.2a_Sept)
 names(aaa_1.2b)
 names(aaa_1.3a)
-names(aaa_1.3a_add)
+names(aaa_1.3a_hb)
 names(aaa_1.3a_Sept)
 names(aaa_1.3b)
-names(aaa_1.3b_add)
+names(aaa_1.3b_hb)
 names(aaa_1.4a)
 names(aaa_1.4b)
 
 aaa_kpi_historic <- rbind(aaa_1.1, aaa_1.2a, aaa_1.2a_Sept, aaa_1.2b,
-                          aaa_1.3a, aaa_1.3a_add, aaa_1.3a_Sept, aaa_1.3b,
-                          aaa_1.3b_add, aaa_1.4a, aaa_1.4b) |> 
+                          aaa_1.3a, aaa_1.3a_hb, aaa_1.3a_Sept, aaa_1.3b,
+                          aaa_1.3b_hb, aaa_1.4a, aaa_1.4b) |> 
   mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
                                       "Dumfries & Galloway", "Fife", "Forth Valley",
                                       "Grampian", "Greater Glasgow & Clyde", 
