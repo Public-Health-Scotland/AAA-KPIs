@@ -29,9 +29,13 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, exclusions_path, extract_path, hist_path, cutoff_date,
+rm(hb_list, exclusions_path, extract_path, hist_path, cutoff_date, year1,
    prev_year, current_year, current_year_start, next_year_start,
    financial_year_due, financial_quarters, last_date)
+
+year2 <- "2023/24"
+# kpi_report_years <- gsub("/", "_", kpi_report_years)
+# year2 <- gsub("/", "_", year2)
 
 
 ## File paths
@@ -39,10 +43,14 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 ### 2: Import data ----
-theme2 <- read_rds(paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
+theme2 <- read_rds(paste0(temp_path, "/3_invite_attend_", yymm, ".rds")) #|> 
+  #mutate(fin_year = gsub("/", "_", fin_year))
 
 table(theme2$kpi, theme2$fin_year) 
 # should be 3 most recent complete years + incomplete/active year
+
+# Change NaNs to NAs
+theme2$value[is.nan(theme2$value)] <- NA ##!! MOVE TO 2_2_kpi_1_1-1_3_uptake_coverage.R script *****
 
 
 ### 3: Format data ----
@@ -197,35 +205,118 @@ kpi_1.3b_hb <- theme2 |>
 kpi_1.3b_hb <- kpi_1.3b_hb |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
+#####
 ##!! KPIs 1.4a & 1.4b to go here, as well as Table 6) Surveillance, 
 ##!! DNA Exclusions, and KPI2 1.2a & 1.2b Prisoners extract
 
 
-### 4: Write to Excel ----
+# ### 4: Write to Excel (openxlsx2) ----
+# ### Setup workbook ---
+# # ## Styles
+# today <- paste0("Workbook created ", Sys.Date())
+# # table_style <- createStyle(valign = "Bottom", halign = "Left",
+# #                            border = "TopBottomLeftRight")
+# 
+# wb <- wb_load(paste0(template_path, "/2_Invitation & Attendance_",
+#                      season, ".xlsx")) |> 
+# # options("openxlsx.dateFormat" = "dd/mm/yyyy")
+# 
+# ## Table of Contents ---
+# #wb_add_data(wb, sheet = "Table of Contents", today, start_row = 6) |> 
+# 
+# ## KPI 1.1 ---
+# wb_add_data(wb, sheet = "KPI 1.1", kpi_1.1, start_row = 7, col_names = FALSE) |> 
+# 
+# ## KPI 1.1 Additional (20YY-YY) ---
+# wb_add_data(wb, sheet = "KPI 1.1 Additional (20YY-YY)", 
+#             kpi_1.1_y2, start_row = 9, col_names = FALSE) |> 
+# 
+# 
+# 
+# ### Save ----
+# wb_save(wb, paste0(output_path, "/2_Invitation & Attendance_", yymm, ".xlsx"))
+
+
+### 4: Write to Excel (openxlsx) ----
 ### Setup workbook ---
-# ## Styles
-# table_style <- createStyle(valign = "Bottom", halign = "Left",
-#                            border = "TopBottomLeftRight")
-
-wb <- loadWorkbook(paste0(template_path, "/2_Invitation & Attendance_",
-                          season, ".xlsx"))
-# options("openxlsx.dateFormat" = "dd/mm/yyyy")
+year2 <- gsub("/", "-", year2)
 today <- paste0("Workbook created ", Sys.Date())
+tab_1.1_add <- paste0("1.1 Additional (", year2, ")")
+tab_1.2a_add <- paste0("1.2a Additional (", year2, ")")
+tab_1.2b_add <- paste0("1.2b (uptake) Additional (", year2, ")")
+kpi_1.3a_y2 <- select(kpi_1.3a_y2, -c(hbres, simd)) # to match Excel table
 
-### Table of Contents ---
+wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
+                          season, ".xlsx"))
+
+## Table of Contents ---
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
+writeData(wb, sheet = "Table of Contents", tab_1.1_add, startRow = 12)
+writeData(wb, sheet = "Table of Contents", tab_1.2a_add, startRow = 15)
+writeData(wb, sheet = "Table of Contents", tab_1.2b_add, startRow = 17)
 
-### KPI 1.1 ---
+## KPI 1.1 ---
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, startRow = 7, colNames = FALSE)
 
-### KPI 1.1 Additional (20YY-YY) ---
+## KPI 1.1 Additional (20YY-YY)
 writeData(wb, sheet = "KPI 1.1 Additional (20YY-YY)", 
           kpi_1.1_y2, startRow = 9, colNames = FALSE)
+names(wb)[[3]] <- paste0("KPI 1.1 Additional (", year2, ")")
+
+## KPI 1.2a ---
+writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
+
+## KPI 1.2a Coverage by 1 Sept
+writeData(wb, sheet = "Coverage by 1 Sept", 
+          kpi_1.2a_sept, startRow = 7, colNames = FALSE)
+
+## KPI 1.2a Additional (20YY-YY)
+writeData(wb, sheet = "KPI 1.2a Additional (20YY-YY)", 
+          kpi_1.2a_y2, startRow = 9, colNames = FALSE)
+
+## KPI 1.2b ---
+writeData(wb, sheet = "KPI 1.2b", kpi_1.2b, startRow = 7, colNames = FALSE)
+
+## KPI 1.2b Additional (20YY-YY)
+writeData(wb, sheet = "KPI 1.2b Additional (20YY-YY)", 
+          kpi_1.2b_y2, startRow = 9, colNames = FALSE)
+names(wb)[[8]] <- paste0("KPI 1.2b Additional (", year2, ")")
+
+## KPI 1.3a ---
+writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
+
+## KPI 1.3a Coverage by 1 Sept by SIMD
+writeData(wb, sheet = "Coverage by 1 Sept by SIMD", 
+          kpi_1.3a_sept, startRow = 7, colNames = FALSE)
+
+## KPI 1.3a Additional (20YY-YY)
+writeData(wb, sheet = "KPI 1.2a Additional (20YY-YY)",
+          kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
+names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
+
+## KPI 1.3a HB SIMD
+writeData(wb, sheet = "KPI 1.3a HB SIMD", 
+          kpi_1.3a_hb, startRow = 8, colNames = FALSE)
+
+## KPI 1.3b ---
+writeData(wb, sheet = "KPI 1.3b", kpi_1.3b, startRow = 7, colNames = FALSE)
+
+## KPI 1.3b HB SIMD
+writeData(wb, sheet = "KPI 1.3b HB SIMD", 
+          kpi_1.3b_hb, startRow = 8, colNames = FALSE)
+
+# ## KPI 1.4a ---
+# writeData(wb, sheet = "KPI 1.4a", kpi_1.4a, startRow = 7, colNames = FALSE)
+# 
+# ## KPI 1.4b 
+# writeData(wb, sheet = "KPI 1.4b", kpi_1.2b_y2, startRow = 7, colNames = FALSE)
+# 
+# ## Table 6: Surveillance 
+# writeData(wb, sheet = "6) Surveillance", t6_surveill, 
+#           startRow = 8, colNames = FALSE)
 
 
-
-### Save ----
-saveWorkbook(wb, paste0(output_path, "/2_Invitation & Attendance_", 
+## Save ----
+saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_", 
                         yymm, ".xlsx"), overwrite = TRUE)
 
-## Workbook is corrupt... :/
