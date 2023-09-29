@@ -197,7 +197,7 @@ cohort1 <- cohort1 %>%
   filter(keep == 1) %>% 
   select(upi, postcode, ca2019, simd2020v2_sc_quintile,
          hbres, dob_eligibility, dob) %>%
-  filter(dob <= cutoff_date)
+  filter(dob <= dmy(cutoff_date))
 
 
 # Step 6: Create series of exclusions objects ----

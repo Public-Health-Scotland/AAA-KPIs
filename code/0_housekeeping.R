@@ -17,7 +17,7 @@ season <- "autumn" # options are "spring" or "autumn"
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
 # current year of analysis) and the year in current screening process)
-kpi_report_years <- c("2020/21", "2021/22", "2022/23", "2023/24") 
+kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
 # hbres_list
 hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
@@ -39,8 +39,6 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
 
-gpd_lookups <- paste0("/conf/linkage/output/lookups/Unicode") ## useful or remove?
-
 simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
                     "/postcode_2023_1_simd2020v2.rds")
 
@@ -57,7 +55,7 @@ output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 # Individuals born after this date are not eligible for the program yet 
 # (Have not turned 65 years old in time for this KPI round)
 # This will match `year2_end` variable in next script
-cutoff_date <- dmy("31-03-1958")  
+cutoff_date <- "31-03-1958"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,18 +66,15 @@ cutoff_date <- dmy("31-03-1958")
 year1 <- "2022/23"
 year2 <- "2023/24"
 
-year1_start <- dmy("01-04-1956") # cohort year being analyzed
-year1_end <- dmy("31-03-1957")
+year1_start <- "01-04-1956" # cohort year being analyzed
+year1_end <- "31-03-1957"
 
-year2_start <- dmy("01-04-1957") # cohort year still active
-year2_end <- dmy("31-03-1958")
+year2_start <- "01-04-1957" # cohort year still active
+year2_end <- "31-03-1958"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 3_2_kpi_1_4_surveillance.R & 4_2_kpi_1_4_surveillance_assess_recovery.R
-
-# Dates for KPI 1.4 should only be updated once a year in the May report as this 
-# is a partial report that is completed and published in the September report.
 
 # # May Cut-Off Dates
 # ## Cut off dates for the spring report generate a 10-month view to

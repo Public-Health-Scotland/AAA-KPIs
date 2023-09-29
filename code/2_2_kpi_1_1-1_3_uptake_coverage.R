@@ -100,9 +100,9 @@ invite_uptake <- invite_uptake %>%
 
 # Denominator: eligible population for current analysis year and current active year
 invite_uptake <- invite_uptake %>%
-  mutate(cohort_year1 = case_when(between(dob, year1_start, year1_end) ~ 1,
+  mutate(cohort_year1 = case_when(between(dob, dmy(year1_start), dmy(year1_end)) ~ 1,
                                   TRUE ~ as.numeric(NA)),
-         cohort_year2 = case_when(between(dob, year2_start, year2_end) ~ 1,
+         cohort_year2 = case_when(between(dob, dmy(year2_start), dmy(year2_end)) ~ 1,
                                   TRUE ~ as.numeric(NA)))
 
 # Numerator: eligible individuals sent initial offer to screening during current 
@@ -240,6 +240,7 @@ rm(pc_simd, simd_path)
 ### Step 4: Save out basefiles ----
 write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
 
+#invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))
 
 ### Step 5: Summaries ----
 ## KPI 1.1 ----
@@ -540,6 +541,9 @@ kpi_summary <- rbind(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a,
 
 table(kpi_summary$kpi)
 
+# Change NaNs to NAs
+kpi_summary$value[is.nan(kpi_summary$value)] <- NA
+
 rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 
 
@@ -580,10 +584,10 @@ table(new_hist_db$kpi, new_hist_db$fin_year) # current year (year1) should match
 
 ## Current report output ----
 report_db <- new_hist_db |> 
-  filter(fin_year %in% kpi_report_years)
+  filter(fin_year %in% c(kpi_report_years, year2))
 
-write_rds(report_db, paste0(temp_path, "/3_Invite_attend_", yymm, ".rds"))
-#write_csv(report_db, paste0(temp_path, "/3_Invite_attend_", yymm, ".csv")) # for checking
+write_rds(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
+#write_csv(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".csv")) # for checking
 
 
 ## New historical database ----
@@ -605,4 +609,6 @@ new_hist_db <- new_hist_db |>
 
 
 history_building(new_hist_db, season)
-
+# This will remove 750 rows of data:
+# - 720 rows where fin_year == year2
+# - 30 rows where kpi == "KPI 1.1 Sept coverage"
