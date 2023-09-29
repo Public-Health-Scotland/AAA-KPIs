@@ -29,29 +29,28 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, exclusions_path, extract_path, hist_path, cutoff_date, year1,
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date)
+rm(hb_list, exclusions_path, extract_path, hist_path, simd_path, cutoff_date, 
+   year1, year1_start, year1_end, year2_start, year2_end, cut_off_3m, 
+   cut_off_12m, prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
 
 year2 <- "2023/24"
-# kpi_report_years <- gsub("/", "_", kpi_report_years)
-# year2 <- gsub("/", "_", year2)
-
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 ### 2: Import data ----
-theme2 <- read_rds(paste0(temp_path, "/3_invite_attend_", yymm, ".rds")) #|> 
-  #mutate(fin_year = gsub("/", "_", fin_year))
+theme2 <- read_rds(paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
 
 table(theme2$kpi, theme2$fin_year) 
 # should be 3 most recent complete years + incomplete/active year
 
-# Change NaNs to NAs
-theme2$value[is.nan(theme2$value)] <- NA ##!! MOVE TO 2_2_kpi_1_1-1_3_uptake_coverage.R script *****
-
+## Reformat SIMD
+theme2 <- theme2 |> 
+  mutate(simd = case_when(simd == "1" ~ "1 (most deprived)",
+                          simd == "5" ~ "5 (least deprived)",
+                          TRUE ~ simd))
 
 ### 3: Format data ----
 ## KPI 1.1 year1 ----
