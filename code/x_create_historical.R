@@ -463,6 +463,6 @@ table(aaa_kpi_historic$kpi)
 write_rds(aaa_kpi_historic, paste0(kpi_path, 
                                    "historical/aaa_kpi_historical.rds"))
 # change permissions to give the group read/write
-Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_bckp.rds"),
+Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical.rds"),
           mode = "664", use_umask = FALSE)
 
