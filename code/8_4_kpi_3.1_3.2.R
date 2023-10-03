@@ -11,6 +11,10 @@
 # Revised on Posit PWB, R Version 4.1.2
 ###############################################################################
 
+## Note: for 3.2, numbers from published data may have minor revisions due 
+# to updates of the data recorded on the Scottish AAA Call-Recall System. 
+# Therefore, all KPI data is recalculated for each MEG.
+
 
 
 ### 1: Housekeeping ----
@@ -34,7 +38,6 @@ source(here::here("code/0_houskeeping_theme_4.R"))
 # Keep records where date_referral_true is populated and largest measure is 
 # greater than or equal to 5.5, where result_outcome is not "02" and 
 # date_screen is less than or equal to cut_off_date
-
 aaa_extract <- read_rds(extract_path) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
          result_outcome != "02", 
@@ -65,7 +68,6 @@ kpi_3_1 %>% count(screen_to_screen_group)
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
 # date_seen_outpatient is populated and screen_to_screen is greater than or equal 
 # to zero
-
 kpi_3_1 <- kpi_3_1 %>% 
   filter(result_outcome %in% c("01", "03", "04", "05") | 
            !is.na(date_seen_outpatient) & screen_to_screen >= 0)
@@ -90,7 +92,7 @@ kpi_3_1_scot <- kpi_3_1 %>%
 # Group by hbres and sum cohort and seen
 # Calculate percentage for cumulative seen and percentage seen within two weeks
 
-kpi_3.1 <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>% 
+kpi_3.1 <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) #%>% 
   #mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
   group_by(hbres) %>% 
   mutate(cum_referrals = sum(cohort), 

@@ -18,7 +18,6 @@
 library(dplyr)
 library(openxlsx)
 library(stringr)
-# library(tidyr)
 library(forcats)
 library(readr)
 library(tidylog)
@@ -36,7 +35,8 @@ names_kpi3 <- c("hb", "FY_2012/13_cohort_n", "FY_2012/13_seen_n", "FY_2012/13_co
                 "FY_2017/18_cohort_n", "FY_2017/18_seen_n", "FY_2017/18_cover_p", 
                 "FY_2018/19_cohort_n", "FY_2018/19_seen_n", "FY_2018/19_cover_p", 
                 "FY_2019/20_cohort_n", "FY_2019/20_seen_n", "FY_2019/20_cover_p", 
-                "FY_2020/21_cohort_n", "FY_2020/21_seen_n", "FY_2020/21_cover_p")
+                "FY_2020/21_cohort_n", "FY_2020/21_seen_n", "FY_2020/21_cover_p", 
+                "FY_2021/22_cohort_n", "FY_2021/22_seen_n", "FY_2021/22_cover_p")
 
 ## File paths
 pub_path <- "/PHI_conf/AAA/Topics/Screening/publications/Completed/"
@@ -49,8 +49,8 @@ temp_path <- "/temp/KPIs/KPI3.1 - KPI4.2"
 #### 2: Create historical files ----
 ### KPI 3.1 ----
 ## Health Board of Residence
-aaa_3.1 <- read.xlsx(paste0(pub_path, 20220301, temp_path, "/KPI_3.1.xlsx"), 
-                      cols = 2:29, rows = c(3,5:19))
+aaa_3.1 <- read.xlsx(paste0(kpi_path, 202209, temp_path, "/KPI_3.1_20220930.xlsx"), 
+                      cols = 2:32, rows = c(3,5:19))
 
 names(aaa_3.1) <- names_kpi3
 names(aaa_3.1)
@@ -80,8 +80,8 @@ aaa_3.1 <- aaa_3.1 |>
 
 ### KPI 3.2 ----
 ## Health Board of Residence
-aaa_3.2 <- read.xlsx(paste0(pub_path, 20220301, temp_path, "/KPI_3.2.xlsx"), 
-                     cols = 2:29, rows = c(3,5:19))
+aaa_3.2 <- read.xlsx(paste0(kpi_path, 202209, temp_path, "/KPI_3.2_20220930.xlsx"), 
+                     cols = 2:32, rows = c(3,5:19))
 
 names(aaa_3.2) <- names_kpi3
 names(aaa_3.2)
