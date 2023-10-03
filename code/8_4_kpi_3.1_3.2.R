@@ -7,77 +7,43 @@
 # KPI 3.2 percentage of men with AAA >= 5.5cm deemed appropriate for 
 # intervention/operated on within 8 weeks of screening
 #
-# Written/run on R Studio Server
-# R version 3.6.1
+# Written/run on R Studio Server, R version 3.6.1
+# Revised on Posit PWB, R Version 4.1.2
 ###############################################################################
 
 
 
-### 1 Housekeeping ----
-
+### 1: Housekeeping ----
 # Load packages
-
-library(here)
 library(dplyr)
 library(readr)
 library(lubridate)
-library(phsmethods)
+# library(phsmethods)
 library(janitor)
 library(tidylog)
-library(openxlsx)
-
-# Define date values
-
-year <- 2023
-month <- "03"
-
-year_one <- "2020/21"
-year_two <- "2021/22"
-year_three <- "2022/23"
-cut_off_date <- as.Date("2023-03-31")
-meg_month <- "May"
-
-# Define extract name
-
-extract_name <- paste0("aaa_extract_", year, month, ".rds")
-
-# Define file paths
-
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
-                        month, "/output")
-
-# Define output paths
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
-                       month, "/temp/")
 
 
+rm(list = ls())
+gc()
 
-### 2 Data Manipulation ----
 
-# Read in latest extract
-# Remove screenings after cut_off_date
+source(here::here("code/0_houskeeping_theme_4.R"))
+
+
+### 2: Data Manipulation ----
 # Keep records where date_referral_true is populated and largest measure is 
 # greater than or equal to 5.5, where result_outcome is not "02" and 
 # date_screen is less than or equal to cut_off_date
 
-aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name)) %>% 
+aaa_extract <- read_rds(extract_path) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
          result_outcome != "02", 
          date_screen <= cut_off_date)
 
 
-
-### 3 KPI 3.1 ----
-
+### 3: KPI 3.1 ----
 # Calculate time between date seen in outpatients to date of screening
-# Calculate seen variable and flag as 1 where screen_to_screen is less than or
-# equal to 14, 0 elsewhere
-# Create groups for screen_to_screen values
-
-kpi_3_1_data <- aaa_extract %>% 
-  filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
-         result_outcome != "02", 
-         date_screen <= cut_off_date) %>% 
+kpi_3_1 <- aaa_extract %>% 
   mutate(screen_to_screen = time_length(date_screen %--% date_seen_outpatient, 
                                         "days"), 
          seen = case_when(screen_to_screen <= 14 ~ 1, 
@@ -92,45 +58,40 @@ kpi_3_1_data <- aaa_extract %>%
 
 # Check variables
 
-kpi_3_1_data %>% count(screen_to_screen)
-kpi_3_1_data %>% count(seen)
-kpi_3_1_data %>% count(screen_to_screen_group)
+kpi_3_1 %>% count(screen_to_screen)
+kpi_3_1 %>% count(seen)
+kpi_3_1 %>% count(screen_to_screen_group)
 
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
-# date_seen_outpatient is populated and screen_to_screen is greater than equal 
+# date_seen_outpatient is populated and screen_to_screen is greater than or equal 
 # to zero
 
-kpi_3_1_data <- kpi_3_1_data %>% 
+kpi_3_1 <- kpi_3_1 %>% 
   filter(result_outcome %in% c("01", "03", "04", "05") | 
            !is.na(date_seen_outpatient) & screen_to_screen >= 0)
 
-# Calculate Health Board totals
-# Group by hbres and financial_year
-# Summarise totals to get cohort and sum seen column
 
-kpi_3_1_hb_totals <- kpi_3_1_data %>% 
+# Calculate Health Board totals
+kpi_3_1_hb <- kpi_3_1 %>% 
   group_by(hbres, financial_year) %>% 
   summarise(cohort = n(), 
-            seen = sum(seen))
-
-# Calculate Health Board totals
-# Group by financial_year
-# Summarise totals to get cohort and sum seen column
-
-kpi_3_1_scot_totals <- kpi_3_1_data %>% 
+            seen = sum(seen)) |> 
+  ungroup()
+  
+# Calculate Scotland total
+kpi_3_1_scot <- kpi_3_1 %>% 
   group_by(financial_year) %>% 
   summarise(cohort = n(), 
             seen = sum(seen)) %>% 
   mutate(hbres = "Scotland") %>% 
   relocate(hbres, .before = financial_year)
 
-# Bind scot_totals and hb_totals
 # Set NA to 0 for numeric columns
 # Group by hbres and sum cohort and seen
 # Calculate percentage for cumulative seen and percentage seen within two weeks
 
-kpi_3_1 <- bind_rows(kpi_3_1_scot_totals, kpi_3_1_hb_totals) %>% 
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
+kpi_3.1 <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>% 
+  #mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
   group_by(hbres) %>% 
   mutate(cum_referrals = sum(cohort), 
          cum_seen = sum(seen), 
@@ -150,7 +111,7 @@ kpi_3_1_output <- kpi_3_1 %>%
          starts_with("2014/15"), starts_with("2015/16"), starts_with("2016/17"), 
          starts_with("2017/18"), starts_with("2018/19"), starts_with("2019/20"), 
          starts_with("2020/21"), starts_with("2021/22"), starts_with("2022/23"),
-         cum_referrals, cum_seen, pc_cum_seen) %>% 
+         cum_referrals, cum_seen, pc_cum_seen) #%>% 
   arrange(hbres != "Scotland")
 
 # Select hbres and latest three years columns
@@ -162,6 +123,94 @@ kpi_3_1_latest_years <- kpi_3_1_output %>%
 # Tidy environment
 
 rm(kpi_3_1_data, kpi_3_1_hb_totals, kpi_3_1_scot_totals, kpi_3_1)
+
+
+
+
+
+
+
+
+
+
+### Step 6: Add historical data ----
+# Historical data from two previous published years needs to be added to 
+# KPI 3.1 and 3.2
+
+## Full records (currently only HB Residence; need to add HB Surgery)
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme_4.rds"))
+# save a backup of hist_db
+write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme_4_bckp.rds"))
+# change permissions to give the group read/write
+Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme_4_bckp.rds"),
+          mode = "664", use_umask = FALSE)
+
+table(hist_db$fin_year, hist_db$kpi) # should be equal across FYs and match below 
+#         KPI 3.1 HB Residence KPI 3.2 HB Residence
+# 2012/13                   45                   45
+# 2013/14                   45                   45
+# 2014/15                   45                   45
+# 2015/16                   45                   45
+# 2016/17                   45                   45
+# 2017/18                   45                   45
+# 2018/19                   45                   45
+# 2019/20                   45                   45
+# 2020/21                   45                   45
+
+
+## Add new records onto full database
+new_hist_db <- bind_rows(hist_db, kpi_summary)
+
+## Check for duplication
+table(new_hist_db$kpi, new_hist_db$fin_year) # current year (year1) should match 
+# previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2
+
+
+## Current report output ----
+report_db <- new_hist_db |> 
+  filter(fin_year %in% c(kpi_report_years, year2))
+
+write_rds(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
+#write_csv(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".csv")) # for checking
+
+
+## New historical database ----
+new_hist_db <- new_hist_db |>
+  mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
+                                  "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
+                                  "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
+                                  "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD")),
+         fin_year = fct_relevel(fin_year, c("2012/13", "2013/14", "2014/15", 
+                                            "2015/16", "2016/17", "2017/18", 
+                                            "2018/19", "2019/20", "2020/21", 
+                                            "2021/22", "2022/23")),
+         hbres = fct_relevel(hbres, c("Scotland","Ayrshire & Arran","Borders",
+                                      "Dumfries & Galloway", "Fife", "Forth Valley", 
+                                      "Grampian", "Greater Glasgow & Clyde",  
+                                      "Highland", "Lanarkshire", "Lothian", "Orkney",
+                                      "Shetland", "Tayside","Western Isles"))) |> 
+  arrange(kpi, fin_year, hbres)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -281,42 +330,42 @@ rm(kpi_3_2_data, kpi_3_2_hb_totals, kpi_3_2_scot_totals, kpi_3_2, aaa_extract)
 
 
 
-### 5 Output ----
-
-# Create workbook
-
-wb <- createWorkbook()
-
-# Define a header style for workbook
-
-hs <- createStyle(halign = "center", valign = "center", 
-                  textDecoration = "bold", border = "TopBottomLeftRight")
-
-## 5.1 - Create tab KPI1.4a --
-
-addWorksheet(wb, sheetName = "KPI3.1", gridLines = FALSE)
-
-# Add Titles
-writeData(wb, sheet = "KPI3.1", paste0("KPI 3.1: Percentage of men with AAA ≥ 5.5cm seen by vascular specialist within two weeks of screening"),
-          startCol = 1, startRow = 1)
-
-writeData(wb, sheet = "KPI3.1", kpi_3_1_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
-
-setColWidths(wb, sheet = "KPI3.1", cols = 1:16, widths = "auto")
-
-## 5.2 - Create tab KPI1.4b --
-
-addWorksheet(wb, sheetName = "KPI3.2", gridLines = FALSE)
-
-# Add Titles
-writeData(wb, sheet = "KPI3.2", paste0("KPI 3.2: Percentage of men with AAA ≥ 5.5cm deemed appropriate for intervention who were operated on by vascular specialist within eight weeks of screenin"),
-          startCol = 1, startRow = 1)
-
-writeData(wb, sheet = "KPI3.2", kpi_3_2_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
-
-setColWidths(wb, sheet = "KPI3.2", cols = 1:16, widths = "auto")
-
-## 5.3 - Save Workbook --
-
-saveWorkbook(wb, file = (paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
-                                month, "/temp/","kpi3_1__3_2.xlsx")) ,overwrite = TRUE)
+# ### 5 Output ----
+# 
+# # Create workbook
+# 
+# wb <- createWorkbook()
+# 
+# # Define a header style for workbook
+# 
+# hs <- createStyle(halign = "center", valign = "center", 
+#                   textDecoration = "bold", border = "TopBottomLeftRight")
+# 
+# ## 5.1 - Create tab KPI1.4a --
+# 
+# addWorksheet(wb, sheetName = "KPI3.1", gridLines = FALSE)
+# 
+# # Add Titles
+# writeData(wb, sheet = "KPI3.1", paste0("KPI 3.1: Percentage of men with AAA ≥ 5.5cm seen by vascular specialist within two weeks of screening"),
+#           startCol = 1, startRow = 1)
+# 
+# writeData(wb, sheet = "KPI3.1", kpi_3_1_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
+# 
+# setColWidths(wb, sheet = "KPI3.1", cols = 1:16, widths = "auto")
+# 
+# ## 5.2 - Create tab KPI1.4b --
+# 
+# addWorksheet(wb, sheetName = "KPI3.2", gridLines = FALSE)
+# 
+# # Add Titles
+# writeData(wb, sheet = "KPI3.2", paste0("KPI 3.2: Percentage of men with AAA ≥ 5.5cm deemed appropriate for intervention who were operated on by vascular specialist within eight weeks of screenin"),
+#           startCol = 1, startRow = 1)
+# 
+# writeData(wb, sheet = "KPI3.2", kpi_3_2_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
+# 
+# setColWidths(wb, sheet = "KPI3.2", cols = 1:16, widths = "auto")
+# 
+# ## 5.3 - Save Workbook --
+# 
+# saveWorkbook(wb, file = (paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
+#                                 month, "/temp/","kpi3_1__3_2.xlsx")) ,overwrite = TRUE)

@@ -14,14 +14,12 @@
 
 # Load packages
 
-library(here)
 library(dplyr)
 library(readr)
 library(stringr)
 library(lubridate)
 library(phsmethods)
 library(janitor)
-library(openxlsx)
 library(zoo)
 library(tidylog)
 
@@ -180,30 +178,30 @@ evar_surgery_totals <- evar_surgery %>%
 
 
 
-### 5 Output ----
-
-# CP - SHOULD THESE BE RDS NOW?
-
-# Save KPI 4.1 output
-
-write.xlsx(open_surgery, 
-           paste0(output_additional_path, "/1. open surgeries by year.xlsx"))
-
-write.xlsx(open_surgery_deaths, 
-           paste0(output_additional_path, 
-                  "/2. 30-day deaths by hb and year - open.xlsx"))
-
-write.xlsx(open_surgery_totals, 
-           paste0(output_additional_path, "/3. open rolling tot deaths.xlsx"))
-
-# Save KPI 4.2 output
-
-write.xlsx(evar_surgery, 
-           paste0(output_additional_path, "/4. evar surgeries by year.xlsx"))
-
-write.xlsx(evar_surgery_deaths, 
-           paste0(output_additional_path, 
-                  "/5. 30-day deaths by hb and year - evar.xlsx"))
-
-write.xlsx(evar_surgery_totals, 
-           paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
+# ### 5 Output ----
+# 
+# # CP - SHOULD THESE BE RDS NOW?
+# 
+# # Save KPI 4.1 output
+# 
+# write.xlsx(open_surgery, 
+#            paste0(output_additional_path, "/1. open surgeries by year.xlsx"))
+# 
+# write.xlsx(open_surgery_deaths, 
+#            paste0(output_additional_path, 
+#                   "/2. 30-day deaths by hb and year - open.xlsx"))
+# 
+# write.xlsx(open_surgery_totals, 
+#            paste0(output_additional_path, "/3. open rolling tot deaths.xlsx"))
+# 
+# # Save KPI 4.2 output
+# 
+# write.xlsx(evar_surgery, 
+#            paste0(output_additional_path, "/4. evar surgeries by year.xlsx"))
+# 
+# write.xlsx(evar_surgery_deaths, 
+#            paste0(output_additional_path, 
+#                   "/5. 30-day deaths by hb and year - evar.xlsx"))
+# 
+# write.xlsx(evar_surgery_totals, 
+#            paste0(output_additional_path, "/6. evar rolling tot deaths.xlsx"))
