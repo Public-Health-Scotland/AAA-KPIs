@@ -25,7 +25,6 @@
 library(dplyr)
 library(readr)
 library(lubridate)
-# library(phsmethods)
 library(janitor)
 library(tidylog)
 
@@ -34,7 +33,10 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_houskeeping_theme_4.R"))
+source(here::here("code/0_housekeeping_theme_4.R"))
+
+
+rm(exclusions_path, extract_path)
 
 
 #### 2: Data Manipulation ----
@@ -124,7 +126,7 @@ kpi_3_1_res <- kpi_3_1_res |>
                            stringr::str_detect(group, "cover") ~ "cover_p")) |> 
   rename(health_board = hbres)
 
-table(kpi_3_1_res$hbres, kpi_3_1_res$financial_year) # all hbres/FY are 3
+table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
 # Current run IS saved with this transformation, but to decide how to best store
 #### 
 
@@ -136,6 +138,12 @@ table(kpi_3_1_res$hbres, kpi_3_1_res$financial_year) # all hbres/FY are 3
 #   rename(health_board = hbres)
 # 
 # table(kpi_3_1_res$hbres, droplevels(kpi_3_1_res$financial_year)) # NOT all hbres/FY are 3
+
+kpi_3_1_res <- kpi_3_1_res |> 
+  # remove NAs for numerical counts and replace w 0
+  # not sure if this needs to be done?
+  mutate(value = case_when((group == "cohort_n" | group == "seen_n") & 
+                             is.na(value) ~ 0, TRUE ~ value))
 
 # Tidy environment
 rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
@@ -215,6 +223,7 @@ kpi_3_2_scot <- kpi_3_2 %>%
 
 # Combine
 kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
   group_by(hbres) %>% 
   mutate(#cum_approp = sum(cohort), 
          #cum_surgery = sum(surgery),
@@ -246,7 +255,7 @@ kpi_3_2_res <- kpi_3_2_res |>
                            stringr::str_detect(group, "cover") ~ "cover_p")) |> 
   rename(health_board = hbres)
 
-table(kpi_3_2_res$hbres, kpi_3_2_res$financial_year) # all hbres/FY are 3
+table(kpi_3_2_res$health_board, kpi_3_2_res$financial_year) # all hbres/FY are 3
 # Current run IS saved with this transformation, but to decide how to best store
 #### 
 
@@ -258,6 +267,12 @@ table(kpi_3_2_res$hbres, kpi_3_2_res$financial_year) # all hbres/FY are 3
 #   rename(health_board = hbres)
 # 
 # table(kpi_3_2_res$hbres, droplevels(kpi_3_2_res$financial_year)) # NOT all hbres/FY are 3
+
+kpi_3_2_res <- kpi_3_2_res |> 
+  # remove NAs for numerical counts and replace w 0
+  # not sure if this needs to be done?
+  mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
+                             is.na(value) ~ 0, TRUE ~ value))
 
 
 ### Health Board of Surgery ----
@@ -313,6 +328,7 @@ kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records??
 
 # Combine
 kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
   group_by(hb_surgery) %>% 
   mutate(#cum_referrals = sum(cohort), 
     #cum_seen = sum(seen), 
@@ -337,82 +353,76 @@ kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
 #   pivot_longer(!hb_surgery:kpi, names_to = "group", values_to = "value") |>
 #   mutate(financial_year = group, .after = kpi) |>
 #   mutate(financial_year = stringr::str_remove(financial_year, "_cohort_n"),
-#          financial_year = stringr::str_remove(financial_year, "_seen_n"),
+#          financial_year = stringr::str_remove(financial_year, "_surgery_n"),
 #          financial_year = stringr::str_remove(financial_year, "_cover_p"),
 #          group = case_when(stringr::str_detect(group, "cohort") ~ "cohort_n",
-#                            stringr::str_detect(group, "seen") ~ "seen_n",
+#                            stringr::str_detect(group, "surgery") ~ "surgery_n",
 #                            stringr::str_detect(group, "cover") ~ "cover_p")) |>
 #   rename(health_board = hb_surgery)
 # 
 # table(kpi_3_2_surg$hb_surgery, kpi_3_2_surg$financial_year) # all hbres/FY are 3
 # # Current run NOT saved with this transformation, but to decide how to best store
-# #### 
+#### 
 
 # Run the below code if it is decided that above code (creates HB records w NAs)
 # should NOT used (this uses less data storage than above)
 kpi_3_2_surg <- kpi_3_2_surg |>
-  pivot_longer(!hb_surgery:financial_year, names_to = "group", values_to = "value") |> 
+  pivot_longer(!hb_surgery:financial_year, names_to = "group", 
+               values_to = "value") |> 
   rename(health_board = hb_surgery)
 
-table(kpi_3_2_surg$hb_surgery, droplevels(kpi_3_2_surg$financial_year)) # NOT all hbres/FY are 3
+table(kpi_3_2_surg$health_board, droplevels(kpi_3_2_surg$financial_year)) # NOT all hbres/FY are 3
+
+kpi_3_2_surg <- kpi_3_2_surg |> 
+  # remove NAs for numerical counts and replace w 0
+  # not sure if this needs to be done?
+  mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
+                             is.na(value) ~ 0, TRUE ~ value))
+
 
 # Tidy environment
 rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot, hb_list)
 
 
-
-### Step 5: Report output ----
+### Step 5: Write outputs ----
 # Combine KPI 3 subsets
 kpi_3 <- bind_rows(kpi_3_1_res, kpi_3_2_res, kpi_3_2_surg)
 table(kpi_3$kpi) 
 
+## Historical file
+# Create backup of last year's file
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
+write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"))
+# Change permissions to give the group read/write
+Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"),
+          mode = "664", use_umask = FALSE)
+
+table(hist_db$financial_year, hist_db$kpi) 
+#         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
+# 2012/13                45                45               9
+# 2013/14                45                45              27
+# 2014/15                45                45              30
+# 2015/16                45                45              30
+# 2016/17                45                45              30
+# 2017/18                45                45              30
+# 2018/19                45                45              30
+# 2019/20                45                45              27
+# 2020/21                45                45              24
+# 2021/22                45                45              24
+# 2022/23                45                45              24
+
+# Write current year file
+write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
+# Change permissions to give the group read/write
+Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
+          mode = "664", use_umask = FALSE)
+
+
+## Save report file
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
 write_rds(report_db, paste0(temp_path, "/5_referral_outcomes_", yymm, ".rds"))
-write_csv(report_db, paste0(temp_path, "/5_referral_outcomes_", yymm, ".csv")) # for checking
+#write_csv(report_db, paste0(temp_path, "/5_referral_outcomes_", yymm, ".csv")) # for checking
 
 
-
-
-
-
-# ### 5 Output ----
-# 
-# # Create workbook
-# 
-# wb <- createWorkbook()
-# 
-# # Define a header style for workbook
-# 
-# hs <- createStyle(halign = "center", valign = "center", 
-#                   textDecoration = "bold", border = "TopBottomLeftRight")
-# 
-# ## 5.1 - Create tab KPI1.4a --
-# 
-# addWorksheet(wb, sheetName = "KPI3.1", gridLines = FALSE)
-# 
-# # Add Titles
-# writeData(wb, sheet = "KPI3.1", paste0("KPI 3.1: Percentage of men with AAA ≥ 5.5cm seen by vascular specialist within two weeks of screening"),
-#           startCol = 1, startRow = 1)
-# 
-# writeData(wb, sheet = "KPI3.1", kpi_3_1_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
-# 
-# setColWidths(wb, sheet = "KPI3.1", cols = 1:16, widths = "auto")
-# 
-# ## 5.2 - Create tab KPI1.4b --
-# 
-# addWorksheet(wb, sheetName = "KPI3.2", gridLines = FALSE)
-# 
-# # Add Titles
-# writeData(wb, sheet = "KPI3.2", paste0("KPI 3.2: Percentage of men with AAA ≥ 5.5cm deemed appropriate for intervention who were operated on by vascular specialist within eight weeks of screenin"),
-#           startCol = 1, startRow = 1)
-# 
-# writeData(wb, sheet = "KPI3.2", kpi_3_2_latest_years, borders = "all", headerStyle = hs, startCol = 1, startRow = 4)
-# 
-# setColWidths(wb, sheet = "KPI3.2", cols = 1:16, widths = "auto")
-# 
-# ## 5.3 - Save Workbook --
-# 
-# saveWorkbook(wb, file = (paste0("/PHI_conf/AAA/Topics/Screening/KPI", "/", year, 
-#                                 month, "/temp/","kpi3_1__3_2.xlsx")) ,overwrite = TRUE)
