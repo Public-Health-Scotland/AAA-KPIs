@@ -17,7 +17,8 @@ yymm <- 202309
 # year_two <- "2021/22"
 # year_three <- "2022/23"
 cut_off_date <- as.Date("2023-03-31") # How is this date defined?? potential match: 6_2_Suppl_Surve.R
-meg_month <- "May"
+season <- "autumn" # options are "spring" or "autumn"
+
 
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
