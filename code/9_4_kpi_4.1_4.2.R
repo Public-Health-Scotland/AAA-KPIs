@@ -16,84 +16,58 @@
 
 library(dplyr)
 library(readr)
-library(stringr)
-library(lubridate)
 library(phsmethods)
-library(janitor)
-library(zoo)
-library(tidylog)
+# library(stringr)
+# library(lubridate)
+# library(janitor)
+# library(zoo)
+# library(tidylog)
+
+rm(list = ls())
+gc()
+
+
+source(here::here("code/0_housekeeping_theme_4.R"))
+
+rm(exclusions_path)
+
 
 # Define date values
 
-year <- 2023
-month <- "03"
+# year <- 2023
+# month <- "03"
 
-# year_one <- "2019/20"
-# year_two <- "2020/21"
-# year_three <- "2021/22"
 cut_off_date <- as.Date("2023-03-31")
-
-# Define extract name
-
-extract_name <- paste0("aaa_extract_", year, month, ".rds")
-
-# Define file paths
-
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
-                        month, "/output")
-
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI",
-                      "/202303/temp/KPIs/KPI3.1 - KPI4.2/")
-
-output_additional_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI",
-                                 "/202303/temp/Additional Tables for KPIs")
-
 
 
 ### 2 Data Manipulation ----
-
-# Read in latest extract
-# Remove screenings after cut_off_date
-# Keep where they were referred to vascular, had a large aneurysm, date_surgery 
-# is less than or equal to cut_off_date and result_outcome is 15 or 16
-# 15 or 16 are cases of final outcome 'appropriate for surgery: aaa repaired and 
-# survived 30 days' or 'appropriate for surgery: died within 30 days of 
-# treatment' in line with as KPI definition document.
-# Final outcome pending is not included in this KPI denominator).
-# Calculate financial year for surgery date
-
-aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name)) %>% 
+# Final outcome pending (19) is not included in this KPI denominator.
+# 15 - 'Appropriate for Surgery: AAA repaired and survived 30 days' 
+# 16 - 'Appropriate for Surgery: Died within 30 days of treatment' 
+aaa_extract <- read_rds(extract_path) %>% 
+  # referred to vascular
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
          date_surgery <= cut_off_date, 
          result_outcome %in% c("15", "16")) %>% 
   mutate(financial_year_surg = extract_fin_year(date_surgery))
 
 
-
-### 3 KPI 4.1 ----
-
-# Keep open surgery records
-
-kpi_4_1_data <- aaa_extract %>% 
+### 3 KPI 4.1 Open surgery ----
+kpi_4_1 <- aaa_extract %>% 
   filter(surg_method == "02")
 
-# Calculate days from surgery to death
 # Check number of days to death is consistent with result outcomes
 # Outcome 15 = survived 30 days, outcome 16 = died within 30 days of surgery
-
-kpi_4_1_data %>% 
+kpi_4_1 %>% 
   mutate(surgery_to_death = time_length(date_surgery %--% date_death, 
                                         "days")) %>% 
   count(result_outcome, surgery_to_death)
 
-# Calculate open surgeries by financial year
-# Group by financial_year and count procedures and sum where result_outcome is
-# "16" for deaths
-
-open_surgery <- kpi_4_1_data %>%
+# calculate open surgeries by financial year
+open_surgery <- kpi_4_1 %>%
   group_by(financial_year_surg) %>%
-  summarise(procedures = n(), 
-            deaths = sum(result_outcome == "16")) %>% 
+  summarise(procedures_n = n(), 
+            deaths_n = sum(result_outcome == "16")) %>% 
   ungroup()
 
 # Calculate deaths from open surgeries by financial year and health board
@@ -102,7 +76,7 @@ open_surgery <- kpi_4_1_data %>%
 # "16" for deaths
 # Count financial_year and hb_screen and set name as deaths
 
-open_surgery_deaths <- kpi_4_1_data %>%
+open_surgery_deaths <- kpi_4_1 %>%
   filter(result_outcome == "16") %>%
   count(financial_year_surg, hb_screen, name = "deaths")
 

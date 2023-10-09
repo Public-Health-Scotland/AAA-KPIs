@@ -35,8 +35,7 @@ gc()
 
 source(here::here("code/0_housekeeping_theme_4.R"))
 
-
-rm(exclusions_path, extract_path)
+rm(exclusions_path)
 
 
 #### 2: Data Manipulation ----
