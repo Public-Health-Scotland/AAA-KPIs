@@ -13,8 +13,6 @@
 ### 1 Housekeeping ----
 
 # Load packages
-
-library(here)
 library(odbc)
 library(dplyr)
 library(readr)
@@ -22,31 +20,16 @@ library(lubridate)
 library(phsmethods)
 library(stringr)
 library(janitor)
-library(openxlsx)
 library(zoo)
 library(tidylog)
 
 # Define date values
-
-year <- 2023
-month <- "03"
-
-cut_off_date <- as.Date("2023-03-31")
 cut_off_date_1 <- cut_off_date - years(1)
 cut_off_date_3 <- cut_off_date - years(3)
 cut_off_date_5 <- cut_off_date - years(5)
 
-# Define extract name
-
-extract_name <- paste0("aaa_extract_", year, month, ".rds")
-
-# Define file paths
-
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts", "/", year, 
-                        month, "/output")
-
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, 
-                      month,"/temp/4. RTO/")
+# output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, 
+#                       month,"/temp/4. RTO/")
 
 # Connect to SMRA tables using odbc connection
 # The suppressWarnings function prevents your password from appearing in the
@@ -72,13 +55,16 @@ smra_con <- suppressWarnings(dbConnect(
 # Final outcome pending is not included in this KPI denominator).
 # Calculate financial year for surgery date
 
-aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name)) %>% 
+aaa_extract <- read_rds(paste0(extract_path)) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
+         date_surgery <= cut_off_date, 
          surg_method %in% c("01", "02"), 
          result_outcome %in% c("15", "16")) %>% 
-  select(upi, dob, date_screen, hbres, date_surgery, result_outcome, 
-         date_death, surg_method, financial_year) %>% 
+  select(upi, dob, date_screen, hbres, hb_surgery, date_surgery, 
+         result_outcome, date_death, surg_method, financial_year) %>% 
   mutate(financial_year_surg = extract_fin_year(date_surgery))
+
+
 
 # Read in deaths data
 # Select columns and filter for AGE >= 64, DATE_OF_DEATH 2012 onwards and where
@@ -124,7 +110,7 @@ aaa_extract %>% count(date_death == date_of_death)
 
 
 
-### 3 Mortality Output ----
+### 3 CUMULATIVE Mortality Output ----
 
 # Create flags for people who had surgery within last 1, 3 or 5 years
 # Create flags for people who had surgery within last 1, 3 or 5 years and 
@@ -163,7 +149,8 @@ mortality_scotland <- mortality %>%
                      surg_1_year, surg_3_year, surg_5_year), sum)) %>% 
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
-         rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1))
+         rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
+  ungroup()
 
 # Group by surg_method and hbres
 # Sum mortality and surgery within 1, 3, 5 years
@@ -242,20 +229,20 @@ evar <- fy_data %>%
 
 
 
-### 4 Output ----
-
-# Save mortality output
-
-write.xlsx(mortality_scotland, 
-           paste0(output_path, "Mortality_Scotland.xlsx"))
-
-write.xlsx(mortality_hb, 
-           paste0(output_path, "Mortality_HB.xlsx"))
-
-# Save financial year output
-
-write.xlsx(open_surgery, 
-           paste0(output_path, "open_surgeries_rolling_total_deaths.xlsx"))
-
-write.xlsx(evar, 
-           paste0(output_path, "evar_surgeries_rolling_total_deaths.xlsx"))
+# ### 4 Output ----
+# 
+# # Save mortality output
+# 
+# write.xlsx(mortality_scotland, 
+#            paste0(output_path, "Mortality_Scotland.xlsx"))
+# 
+# write.xlsx(mortality_hb, 
+#            paste0(output_path, "Mortality_HB.xlsx"))
+# 
+# # Save financial year output
+# 
+# write.xlsx(open_surgery, 
+#            paste0(output_path, "open_surgeries_rolling_total_deaths.xlsx"))
+# 
+# write.xlsx(evar, 
+#            paste0(output_path, "evar_surgeries_rolling_total_deaths.xlsx"))

@@ -29,13 +29,18 @@ hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
                             "Lanarkshire", "Lothian", "Orkney",
                             "Shetland", "Tayside","Western Isles"))
 
+# hbres_list
+fy_list <- tibble(financial_year = c("2012/13", "2013/14", "2014/15", "2015/16", 
+                                     "2016/17", "2017/18", "2018/19", "2019/20",  
+                                     "2020/21", "2021/22", "2022/23"))
+
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
                        "/output/aaa_extract_", yymm, ".rds")
 
-exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm, 
-                          "/output/aaa_exclusions_", yymm, ".rds")
+# exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm, 
+#                           "/output/aaa_exclusions_", yymm, ".rds")
 
 temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                     "/temp")
