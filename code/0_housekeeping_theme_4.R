@@ -29,7 +29,7 @@ hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
                             "Lanarkshire", "Lothian", "Orkney",
                             "Shetland", "Tayside","Western Isles"))
 
-# hbres_list
+# financial year list (list of FYs covered by program from start)
 fy_list <- tibble(financial_year = c("2012/13", "2013/14", "2014/15", "2015/16", 
                                      "2016/17", "2017/18", "2018/19", "2019/20",  
                                      "2020/21", "2021/22", "2022/23"))
@@ -49,5 +49,14 @@ hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## 94_4_mortality_1_3_5_years.R
+# Define date values
+cut_off_date_1 <- cut_off_date - years(1)
+cut_off_date_3 <- cut_off_date - years(3)
+cut_off_date_5 <- cut_off_date - years(5)
+
+
 
 
