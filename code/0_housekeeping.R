@@ -39,8 +39,6 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
 
-# gpd_lookups <- paste0("/conf/linkage/output/lookups/Unicode") ## useful or remove?
-
 simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
                     "/postcode_2023_1_simd2020v2.rds")
 
@@ -57,9 +55,7 @@ output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 # Individuals born after this date are not eligible for the program yet 
 # (Have not turned 65 years old in time for this KPI round)
 # This will match `year2_end` variable in next script
-cutoff_date <- dmy("31-03-1958") 
-##!! if lubridate is not loaded in script, source() call stops here *******
-##!! move dmy() into actual script *******
+cutoff_date <- "31-03-1958"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,18 +66,15 @@ cutoff_date <- dmy("31-03-1958")
 year1 <- "2022/23"
 year2 <- "2023/24"
 
-year1_start <- dmy("01-04-1956") # cohort year being analyzed
-year1_end <- dmy("31-03-1957")
+year1_start <- "01-04-1956" # cohort year being analyzed
+year1_end <- "31-03-1957"
 
-year2_start <- dmy("01-04-1957") # cohort year still active
-year2_end <- dmy("31-03-1958")
+year2_start <- "01-04-1957" # cohort year still active
+year2_end <- "31-03-1958"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 3_2_kpi_1_4_surveillance.R & 4_2_kpi_1_4_surveillance_assess_recovery.R
-
-# Dates for KPI 1.4 should only be updated once a year in the May report as this 
-# is a partial report that is completed and published in the September report.
 
 # # May Cut-Off Dates
 # ## Cut off dates for the spring report generate a 10-month view to
@@ -91,13 +84,11 @@ year2_end <- dmy("31-03-1958")
 # cut_off_3m <- "2022-10-31" # This is the end of the 10th month of the last
 #          # calendar year (i.e., if run for May 23, this is end of October 22)
 
-
 # September Cut-Off Dates
 cut_off_12m <- "2022-03-31" # This is the end of the financial year 2 years ago
-# (i.e., if run for September 23, this is end of March 22)
+           # (i.e., if run for September 23, this is end of March 22)
 cut_off_3m <- "2022-12-31" # This is the end of the last calendar year
-# (i.e., if run for September 23, this is end of December 22)
-
+           # (i.e., if run for September 23, this is end of December 22)
 
 ## September 2023
 # Define dates
@@ -136,3 +127,4 @@ last_date <- "2023-09-01" # current extract (September)
 # Define dates
 next_year <- "2022/23"
 date_cut_off <- "2023-03-31"
+
