@@ -1,6 +1,6 @@
 ###############################################################################
-# kpi_3.1_3.2.R
-# Calum Purdie
+# kpi_3.R
+# Calum Purdie & Karen Hotopp
 # 17/01/2023
 # 
 # KPI 3.1 percentage of men with AAA >= 5.5cm seen within two weeks of screening

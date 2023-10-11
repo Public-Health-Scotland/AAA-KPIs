@@ -18,9 +18,9 @@ season <- "autumn" # options are "spring" or "autumn"
 
 
 # Years needed from the historical extract for current KPI report
-# This includes the three most recent *complete* years of data (including 
+# This includes the three most recent *complete* years of data (including
 # current year of analysis) and the year in current screening process)
-kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
+kpi_report_years <- c("2020/21", "2021/22", "2022/23")
 
 # hbres_list
 hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
@@ -45,7 +45,7 @@ extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
 temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                     "/temp")
 
-hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
+# hist_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/historical")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
