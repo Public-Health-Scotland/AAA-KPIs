@@ -447,7 +447,7 @@ table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
 
 ###
-write_rds(kpi_4, paste0(temp_path, "/6_kpi_4.rds"))
-write_rds(kpi_4_hb, paste0(temp_path, "/7_kpi_4_HB.rds"))
-write_rds(kpi_4_mortality, paste0(temp_path, "/8_kpi_4_mortality.rds"))
+write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
+write_rds(kpi_4_hb, paste0(temp_path, "/7_kpi_4_HB_", yymm, ".rds"))
+write_rds(kpi_4_mortality, paste0(temp_path, "/8_kpi_4_mortality_", yymm, ".rds"))
 
