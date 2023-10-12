@@ -13,7 +13,7 @@
 
 ## Notes: 
 ## From Sept 2023, KPI 4.1 & 4.2 now includes analysis by HB of surgery (in  
-# addition to HB of residence)
+# addition to HB of screening)
 # Cohort is defined using date of surgery
 
 
@@ -35,6 +35,12 @@ gc()
 
 
 source(here::here("code/0_housekeeping_theme_4.R"))
+
+
+# Define cumulative cut-off years
+cut_off_date_1 <- cut_off_date - years(1)
+cut_off_date_3 <- cut_off_date - years(3)
+cut_off_date_5 <- cut_off_date - years(5)
 
 
 ### 2: Import AAA Data ----
@@ -88,12 +94,12 @@ open_surgery <- kpi_4_1 %>%
             deaths = sum(result_outcome == "16")) %>% 
   ungroup() |> 
   # cumulative totals for procedures and deaths  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Additional A", .before = financial_year_surg) |> 
-  mutate(surgery_type = "Open", .before = financial_year_surg) 
+  mutate(surg_method = "Open", .before = financial_year_surg) 
   
-## 5-year rolling open surgery mortalities (30 day) ---
+## 5-year rolling open surgery mortalities (30-day) ---
 open_surgery_roll <- open_surgery %>%
   select(!kpi) |> 
   # calculate rolling totals
@@ -104,8 +110,8 @@ open_surgery_roll <- open_surgery %>%
                                          lead(financial_year_surg, 4))) %>% 
   filter(!(str_detect(rolling_financial_year, "NA")),
          !(str_detect(rolling_financial_year, "Cumulative"))) %>% 
-  select(surgery_type, rolling_financial_year, surgeries_n, deaths_n) |> 
-  mutate(kpi = "KPI 4.1", .before = surgery_type) %>%
+  select(surg_method, rolling_financial_year, surgeries_n, deaths_n) |> 
+  mutate(kpi = "KPI 4.1", .before = surg_method) %>%
   mutate(deaths_p = round_half_up(deaths_n * 100 / surgeries_n, 1)) 
 
 ## Open surgery deaths by financial year and health board of SCREENING ---
@@ -125,10 +131,10 @@ open_hb_screen <- fy_list |> left_join(open_hb_screen,
                                        by = c("financial_year" = 
                                                 "financial_year_surg")) |> 
   # cumulative totals for HBs  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Add B: Screen", .before = financial_year) |> 
-  mutate(surgery_type = "Open", .before = financial_year)
+  mutate(surg_method = "Open", .before = financial_year)
 
 ## Open surgery deaths by financial year and health board of SURGERY ---
 open_hb_surgery <- kpi_4_1 %>%
@@ -147,10 +153,10 @@ open_hb_surgery <- fy_list |> left_join(open_hb_surgery,
                                         by = c("financial_year" = 
                                                  "financial_year_surg")) |> 
   # cumulative totals for HBs  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
-  mutate(kpi = "KPI 4.1 Add B: Surgery", .before = financial_year) |> 
-  mutate(surgery_type = "Open", .before = financial_year)
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
+  mutate(kpi = "KPI 4.1 Add C: Surgery", .before = financial_year) |> 
+  mutate(surg_method = "Open", .before = financial_year)
 
 
 ### 4: KPI 4.2 EVAR Surgery ----
@@ -164,12 +170,12 @@ evar_surgery <- kpi_4_2 %>%
             deaths = sum(result_outcome == "16")) %>% 
   ungroup() |> 
   # cumulative totals for procedures and deaths  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.2 Additional A", .before = financial_year_surg) |> 
-  mutate(surgery_type = "EVAR", .before = financial_year_surg)
+  mutate(surg_method = "EVAR", .before = financial_year_surg)
 
-## 5-year rolling EVAR surgery mortalities (30 day) ---
+## 5-year rolling EVAR surgery mortalities (30-day) ---
 evar_surgery_roll <- evar_surgery %>%
   select(-kpi) |> 
   # calculate rolling totals
@@ -180,8 +186,8 @@ evar_surgery_roll <- evar_surgery %>%
                                          lead(financial_year_surg, 4))) %>% 
   filter(!(str_detect(rolling_financial_year, "NA")),
          !(str_detect(rolling_financial_year, "Cumulative"))) %>% 
-  select(surgery_type, rolling_financial_year, surgeries_n, deaths_n) |> 
-  mutate(kpi = "KPI 4.2", .before = surgery_type) %>%
+  select(surg_method, rolling_financial_year, surgeries_n, deaths_n) |> 
+  mutate(kpi = "KPI 4.2", .before = surg_method) %>%
   mutate(deaths_p = round_half_up(deaths_n * 100 / surgeries_n, 1)) 
 
 ## EVAR surgery deaths by financial year and health board by SCREENING ---
@@ -201,10 +207,10 @@ evar_hb_screen <- fy_list |> left_join(evar_hb_screen,
                                         by = c("financial_year" = 
                                                  "financial_year_surg")) |> 
   # cumulative totals for HBs  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.2 Add B: Screen", .before = financial_year) |> 
-  mutate(surgery_type = "EVAR", .before = financial_year)
+  mutate(surg_method = "EVAR", .before = financial_year)
 
 ## EVAR surgery deaths by financial year and health board by SURGERY ---
 evar_hb_surgery <- kpi_4_2 %>%
@@ -223,13 +229,13 @@ evar_hb_surgery <- fy_list |> left_join(evar_hb_surgery,
                                        by = c("financial_year" = 
                                                 "financial_year_surg")) |> 
   # cumulative totals for HBs  
-  group_modify(~ janitor::adorn_totals(.x, where = "row", 
-                                       name = "Cumulative")) |> 
-  mutate(kpi = "KPI 4.2 Add B: Surgery", .before = financial_year) |> 
-  mutate(surgery_type = "EVAR", .before = financial_year)
+  group_modify(~ adorn_totals(.x, where = "row", 
+                              name = "Cumulative")) |> 
+  mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
+  mutate(surg_method = "EVAR", .before = financial_year)
 
-rm(open_hb_screen_scot, open_hb_surgery_scot, 
-   evar_hb_screen_scot, evar_hb_surgery_scot)
+rm(fy_list, hb_list, open_hb_screen_scot, open_hb_surgery_scot, 
+   kpi_4_1, kpi_4_2, evar_hb_screen_scot, evar_hb_surgery_scot)
 
 
 ### 5: Import Deaths Data ----
@@ -283,9 +289,9 @@ aaa_extract %>% count(date_death == date_of_death)
 
 
 ### 6: Cumulative Mortality by Surgery Type ----
-# Create flags for people who had surgery within last 1, 3 or 5 years
-# Create flags for people who had surgery within last 1, 3 or 5 years and 
-# died within 1, 3 or 5 years respectively
+# Flag individuals who had surgery within last 1, 3 or 5 years
+# Flag individuals who had surgery within last 1, 3 or 5 years and died within 
+# 1, 3 or 5 years, respectively
 # CP - THIS CURRENTLY SPECIFIES NUMBER OF DAYS - SHOULD WE CHANGE TO SUBTRACTING YEARS INSTEAD???
 mortality <- aaa_extract %>% 
   mutate(surg_1_year = case_when(date_surgery <= cut_off_date_1 ~ 1, 
@@ -310,7 +316,7 @@ mortality %>% count(mort_3_year)
 mortality %>% count(mort_5_year)
 
 
-## 5-year rolling surgery mortalities (1 year rate) ---
+## 5-year rolling surgery mortalities (1-year rate) ---
 fy_mortality <- mortality %>% 
   group_by(surg_method, financial_year_surg) %>% 
   summarise(across(c(mort_1_year, surg_1_year), sum)) %>% 
@@ -328,8 +334,8 @@ open_1yr_mort <- fy_mortality %>%
   filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
   select(rolling_financial_year, surgeries_n, deaths_n) %>%
   mutate(deaths_p = round_half_up(deaths_n * 100 / surgeries_n, 1)) %>%
-  mutate(surgery_type = "Open", .before = rolling_financial_year) |> 
-  mutate(kpi = "KPI 4.1 1yr Rate", .before = surgery_type)
+  mutate(surg_method = "Open", .before = rolling_financial_year) |> 
+  mutate(kpi = "KPI 4.1 1yr Rate", .before = surg_method)
 
 ## EVAR Surgery
 evar_1yr_mort <- fy_mortality %>%
@@ -343,8 +349,8 @@ evar_1yr_mort <- fy_mortality %>%
   filter(!(str_detect(rolling_financial_year, "NA"))) %>% 
   select(rolling_financial_year, surgeries_n, deaths_n) %>%
   mutate(deaths_p = round_half_up(deaths_n * 100 / surgeries_n, 1)) %>%
-  mutate(surgery_type = "EVAR", .before = rolling_financial_year) |> 
-  mutate(kpi = "KPI 4.2 1yr Rate", .before = surgery_type)
+  mutate(surg_method = "EVAR", .before = rolling_financial_year) |> 
+  mutate(kpi = "KPI 4.2 1yr Rate", .before = surg_method)
 
 
 ## 1, 3, 5-year Cumulative Mortalities ---
@@ -357,7 +363,8 @@ mortality_scotland <- mortality %>%
          rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
   ungroup() |> 
-  mutate(hbres = "Scotland", .after = surg_method)
+  mutate(hbres = "Scotland", .after = surg_method) |> 
+  mutate(kpi = "KPI 4 Cumulative", .before = surg_method)
 
 ## HB of Residence summary
 mortality_hb_res <- mortality %>% 
@@ -367,8 +374,9 @@ mortality_hb_res <- mortality %>%
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
-  ungroup()
-
+  ungroup() |> 
+  mutate(kpi = "KPI 4 Cumulative: Residence", .before = surg_method) 
+  
 # Join
 mortality_hb_res <- mortality_hb_res |>   
   bind_rows(mortality_scotland) %>% 
@@ -379,9 +387,8 @@ mortality_hb_res <- mortality_hb_res |>
   arrange(surg_method) |> 
   # move Scotland to top of HB list, then alphabetical order
   arrange(hbres != "Scotland", hbres) %>% 
-  select(surg_method, hbres, ends_with("_1_year"), ends_with("_3_year"), 
+  select(kpi, surg_method, hbres, ends_with("_1_year"), ends_with("_3_year"), 
          ends_with("_5_year")) |> 
-  mutate(kpi = "KPI 4 Cumulative: Residence", .before = surg_method) |> 
   rename(health_board = hbres)
 
 ## HB of Surgery summary
@@ -394,18 +401,15 @@ mortality_hb_surg <- mortality %>%
          rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
   ungroup()
 
-# Join
-mortality_scotland <- rename(mortality_scotland, hb_surgery = hbres)
+# No need to add Scotland, as this will be same as for residence
 
 mortality_hb_surg <- mortality_hb_surg |>   
-  bind_rows(mortality_scotland) %>% 
+  #bind_rows(mortality_scotland) %>% 
   mutate(surg_method = case_when(surg_method == "01" ~ "EVAR", 
                                  surg_method == "02" ~ "Open surgery"),
          surg_method = forcats::fct_relevel(surg_method, c("Open surgery", 
                                                            "EVAR"))) %>% 
-  arrange(surg_method) |> 
-  # move Scotland to top of HB list, then alphabetical order
-  arrange(hb_surgery != "Scotland", hb_surgery) %>% 
+  arrange(hb_surgery, surg_method) %>% 
   select(surg_method, hb_surgery, ends_with("_1_year"), ends_with("_3_year"), 
          ends_with("_5_year")) |> 
   mutate(kpi = "KPI 4 Cumulative: Surgery", .before = surg_method) |> 
@@ -431,14 +435,14 @@ kpi_4_1y_mort <- bind_rows(open_1yr_mort, evar_1yr_mort) |>
 
 kpi_4 <- bind_rows(kpi_4_roll, kpi_4_surgery, kpi_4_1y_mort)
 
-table(kpi_4$kpi, kpi_4$surgery_type)
+table(kpi_4$kpi, kpi_4$surg_method)
 
-## KPI 4 additional B
+## KPI 4 additional B and C
 kpi_4_hb <- bind_rows(open_hb_screen, open_hb_surgery, 
                       evar_hb_screen, evar_hb_surgery) |> 
   relocate(Scotland, .after = last_col())
 
-table(kpi_4_hb$kpi, kpi_4_hb$surgery_type)
+table(kpi_4_hb$kpi, kpi_4_hb$surg_method)
 
 ## Cumulative mortality rates (1, 3, 5-year)
 kpi_4_mortality <- bind_rows(mortality_hb_res, mortality_hb_surg)
