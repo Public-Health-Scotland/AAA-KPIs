@@ -30,9 +30,9 @@ hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
                             "Shetland", "Tayside","Western Isles"))
 
 # financial year list (list of FYs covered by program from start)
-fy_list <- tibble(financial_year = c("2012/13", "2013/14", "2014/15", "2015/16", 
-                                     "2016/17", "2017/18", "2018/19", "2019/20",  
-                                     "2020/21", "2021/22", "2022/23"))
+fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 
+             "2018/19", "2019/20", "2020/21", "2021/22", "2022/23")
+fy_tibble <- tibble(financial_year = c(fy_list))
 
 
 ## Ubiquitous Pathways
