@@ -301,13 +301,13 @@ mortality <- aaa_extract %>%
          surg_5_year = case_when(date_surgery < cut_off_date_5 ~ 1, 
                                  TRUE ~ 0)) %>% 
   mutate(mort_1_year = 
-           case_when(surg_1_year == 1 & surgery_to_death <= 365 ~ 1, 
+           case_when(surg_1_year == 1 & surgery_to_death <= 365 ~ 1, # 1 year
                      TRUE ~ 0), 
          mort_3_year = 
-           case_when(surg_3_year == 1 & surgery_to_death <= 1095 ~ 1, 
+           case_when(surg_3_year == 1 & surgery_to_death <= 1095 ~ 1, # 3 year 
                      TRUE ~ 0), 
          mort_5_year = 
-           case_when(surg_5_year == 1 & surgery_to_death <= 1825 ~ 1, 
+           case_when(surg_5_year == 1 & surgery_to_death <= 1825 ~ 1, # 5 year 
                      TRUE ~ 0))
 
 # Check mortality counts

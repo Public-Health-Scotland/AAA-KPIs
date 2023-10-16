@@ -421,7 +421,5 @@ Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
-write_rds(report_db, paste0(temp_path, "/5_referral_outcomes_", yymm, ".rds"))
-#write_csv(report_db, paste0(temp_path, "/5_referral_outcomes_", yymm, ".csv")) # for checking
-
+write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 

@@ -3,8 +3,7 @@
 # Calum Purdie & Karen Hotopp & Salomi Barkat
 # 16/02/2023
 # 
-# Table 7: Vascular referral types
-# Vascular KPI background information (vascular referrals outcomes)
+# Vascular referrals, operations, and outcomes
 #
 # Written/run on Posit Server
 # R version 4.1.2
@@ -100,7 +99,7 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-write_csv(vascular_referral_count, paste0(temp_path, "/9_vasc_referral_", 
+write_rds(vascular_referral_count, paste0(temp_path, "/9_vasc_referrals_", 
                                           yymm, ".rds"))
 
 rm(vascular_referral_count, aaa_extract)
