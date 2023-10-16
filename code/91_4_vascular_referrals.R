@@ -1,6 +1,6 @@
 ###############################################################################
 # vascular_referrals.R
-# Calum Purdie & Karen Hotopp
+# Calum Purdie & Karen Hotopp & Salomi Barkat
 # 16/02/2023
 # 
 # Table 7: Vascular referral types
@@ -12,16 +12,19 @@
 
 
 ## Notes:
-# 
+# This script covers three parts of the theme 4 MEG report:
+# - Table 7: Vascular Referrals
+# - Vascular Referral Outcomes
+# - AAA Repair Operations
 
 
 ### 1: Housekeeping ----
 
 # Load packages
-
 library(dplyr)
 library(readr)
 library(janitor)
+library(forcats)
 library(tidylog)
 
 rm(list = ls())
@@ -30,12 +33,14 @@ gc()
 
 source(here::here("code/0_housekeeping_theme_4.R"))
 
-rm(fy_tibble, hb_list, kpi_report_years, output_path)
+rm(fy_tibble, season)
 
 resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07',
                                          '08','11','12','13','15','16','20','97',
                                          '09','10','14','17','18','19', '96'))
 
+
+#----------------------Table 7: Vascular Referrals-----------------------------#
 
 ### 2: Data Extraction ----
 # Keep where they were referred to vascular, had a large aneurysm, date_screen
@@ -50,11 +55,9 @@ aaa_extract <- read_rds(extract_path) %>%
 # Count screen_result - they should all be positive
 # There shouldn't be any external positive results that have a referral - think 
 # it is impossible for system to do this
-
 aaa_extract %>% count(screen_result)
 
 # Define a source_ref_to_vasc variable
-
 aaa_extract <- aaa_extract %>% 
   mutate(source_ref_to_vasc = case_when(
     screen_type %in% c("02", "04") ~ "Surveillance", 
@@ -64,7 +67,6 @@ aaa_extract <- aaa_extract %>%
 
 # Define year_screen variable
 # This uses three defined years and sets other years to Other
-
 aaa_extract <- aaa_extract %>% 
   mutate(year_screen = case_when(
     financial_year %in% c(kpi_report_years) ~ financial_year, 
@@ -100,6 +102,8 @@ vascular_referral_count <- vascular_referral_count %>%
 ### 4: Save Output ----
 write_csv(vascular_referral_count, paste0(temp_path, "/9_vasc_referral_", 
                                           yymm, ".rds"))
+
+rm(vascular_referral_count, aaa_extract)
 
 
 #----------------------Vascular Referral Outcomes------------------------------#
@@ -153,7 +157,6 @@ table(vasc$outcome_type, useNA = "ifany")
 table(vasc$result_outcome, useNA = "ifany")
 # Note: should include "01", "03":"20", though some values may not be 
 # represented in data; these are added in below using resout_list
-
 
 ### Create annual (financial year) summaries by referral outcome ----
 ## Size >= 5.5cm ----
@@ -285,8 +288,160 @@ annual <- rbind(annual_great, annual_less) %>%
                                   result_outcome == "97" ~ "Total: non-final outcome",
                                   TRUE ~ outcome_type))
 
-write_rds(annual, paste0(temp_path, "/10_vasc_referrals", yymm, ".rds"))
+write_rds(annual, paste0(temp_path, "/10_vasc_outcomes_", yymm, ".rds"))
 
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
-   less, less_grantot, less_subtotal, annual_less, annual)
+   less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
+
+
+#---------------------------AAA Repair Operations------------------------------#
+
+#### 7: Re-call and format Data ####
+extract <- read_rds(extract_path) %>% 
+  select(hbres, aaa_size, date_referral_true, result_outcome,
+         date_surgery, hb_surgery, fy_surgery, surg_method) |> 
+  filter(date_surgery <= cut_off_date,
+         # select referrals
+         !is.na(date_referral_true) & aaa_size >= 5.5) 
+
+table(extract$surg_method, useNA = "ifany")
+# 296 EVAR (01), 335 open (02), Mar 2023
+# 328 EVAR (01), 372 open (02), Sep 2023
+
+###
+check <- extract[extract$surg_method == "03",]
+# Procedure abandoned (03): Historically, there are only two records  
+# (Grampian & WIs); abandoned procedures are not reported on, but good to check
+# if any more come up!
+rm(check)
+###
+
+extract <- extract |> 
+  filter(surg_method %in% c("01", "02"))
+
+####
+## Where surg_method has response, result_outcome should only have: 
+## 15 (approp for surgery and survived 30 days) or 
+## 16 (approp for surgery and died within 30 days)
+table(extract$result_outcome, extract$surg_method)
+
+#   Feb 2023  Sep 2023
+#     01  02    01  02
+# 15 294 328   326 364
+# 16   1   7     1   8
+# 20   1   0     1   0
+
+## One record has result_outcome == 20 (other final outcome)
+check <- extract[extract$result_outcome == "20",]
+# View(check)
+## FY 2016/17
+## Lothian resident who was eventually operated on in GG&C. 
+## Once the board of surgery field is added to vascular module we will be 
+## asking board to change result outcome to 15 or 16 (and data will be 
+## collated by board of surgery rather than board of residence so it will be 
+## counted under GG&C)
+rm(check)
+####
+
+## Appropriate for surgery records
+extract <- extract |> 
+  filter(result_outcome %in% c("15", "16"))
+
+table(extract$surg_method)
+# 327 EVAR (01), 372 open (02), Sep 2023
+## Check this against the total number of operations as identified in
+## KPI 4.1/4.2 Additional A
+check <- read_rds(paste0(temp_path, "/6_kpi_4_202309.rds")) |> 
+  filter(financial_year == "Cumulative",
+         group == "procedures_n")
+View(check)
+rm(check)
+
+
+#### 8: Create Tables ####
+## These tables are used by HBs to look which type of surgical method was used 
+# to treat their patients, not identify which HBs use each type of surgery. 
+# Therefore, hbres is used instead of hb_surgery to create tables
+## First, create table of surgical methods used each year (by FY of surgery) ---
+# Surgery method -- Health boards
+method <- extract %>% 
+  group_by(hbres, fy_surgery, surg_method) %>% 
+  count(surg_method) %>% 
+  ungroup()
+
+# Surgery method -- Scotland
+method_scot <- extract %>% 
+  group_by(fy_surgery, surg_method) %>% 
+  count(surg_method) %>% 
+  ungroup() %>% 
+  mutate(hbres = "Scotland", .before = fy_surgery)
+
+# Surgery method -- Combine
+method <- rbind(method_scot, method)
+
+## Next, create table of total surgeries performed by hbres (by FY of surgery) ---
+# Total repairs -- Health boards
+repair <- extract %>% 
+  group_by(hbres, fy_surgery) %>% 
+  count(hbres) %>% 
+  ungroup() %>% 
+  mutate(surg_method = "99", .after = fy_surgery)
+
+# Total repairs -- Scotland
+repair_scot <- extract %>% 
+  group_by(fy_surgery) %>% 
+  count(fy_surgery) %>% 
+  ungroup() %>% 
+  mutate(hbres = "Scotland", .before = fy_surgery) %>% 
+  mutate(surg_method = "99", .after = fy_surgery)
+
+# Total repairs -- combine
+repair <- rbind(repair_scot, repair)
+
+rm(method_scot, repair_scot)
+
+## Combine to create table of surgery types and total surgeries by hbres
+## Historical surgeries data ---
+repairs_all <- rbind(method, repair) %>% 
+  mutate(surg_method = case_when(surg_method == "01" ~ "EVAR",
+                                 surg_method == "02" ~ "Open",
+                                 surg_method == "99" ~ "Total AAA repairs"),
+         surg_method = fct_relevel(surg_method, c("Open", "EVAR",
+                                                  "Total AAA repairs"))) %>% 
+  arrange(fy_surgery, surg_method) %>% 
+  glimpse()
+
+# Programme cumulative totals
+repairs_cum <- repairs_all %>% 
+  group_by(hbres, surg_method) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(fy_surgery = "Cumulative", .after = hbres)
+
+repairs_all <- rbind(repairs_all, repairs_cum)
+
+## Should this be written out? And rewritten each year as a new historical file?
+repairs_hist <- hb_list |> 
+  left_join(repairs_all, by = c("hb" = "hbres")) |> 
+  rename(hbres = hb)
+
+## Current 3-year reporting period ---
+repairs_current <- repairs_all %>% 
+  filter(fy_surgery %in% kpi_report_years) 
+
+# Cumulative totals
+repairs_cum <- repairs_current %>% 
+  group_by(hbres, surg_method) %>% 
+  summarize(n = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(fy_surgery = "Cumulative", .after = hbres)
+
+repairs_current <- rbind(repairs_current, repairs_cum)
+
+repairs_current <- hb_list |> 
+  left_join(repairs_current, by = c("hb" = "hbres")) |> 
+  rename(hbres = hb)
+
+
+write_rds(repairs_current, paste0(temp_path, "/11_vasc_ref_repairs_", yymm, ".rds"))
 

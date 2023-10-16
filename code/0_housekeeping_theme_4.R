@@ -23,11 +23,11 @@ season <- "autumn" # options are "spring" or "autumn"
 kpi_report_years <- c("2020/21", "2021/22", "2022/23")
 
 # hbres_list
-hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
-                            "Dumfries & Galloway", "Fife", "Forth Valley", 
-                            "Grampian", "Greater Glasgow & Clyde", "Highland", 
-                            "Lanarkshire", "Lothian", "Orkney",
-                            "Shetland", "Tayside","Western Isles"))
+hb_list <- tibble(hb = c("Scotland","Ayrshire & Arran","Borders",
+                         "Dumfries & Galloway", "Fife", "Forth Valley", 
+                         "Grampian", "Greater Glasgow & Clyde", "Highland", 
+                         "Lanarkshire", "Lothian", "Orkney",
+                         "Shetland", "Tayside","Western Isles"))
 
 # financial year list (list of FYs covered by program from start)
 fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 

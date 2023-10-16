@@ -404,7 +404,6 @@ mortality_hb_surg <- mortality %>%
 # No need to add Scotland, as this will be same as for residence
 
 mortality_hb_surg <- mortality_hb_surg |>   
-  #bind_rows(mortality_scotland) %>% 
   mutate(surg_method = case_when(surg_method == "01" ~ "EVAR", 
                                  surg_method == "02" ~ "Open surgery"),
          surg_method = forcats::fct_relevel(surg_method, c("Open surgery", 
