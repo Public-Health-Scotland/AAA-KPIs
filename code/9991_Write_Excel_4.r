@@ -30,7 +30,7 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping_theme_4.R"))
 
-rm(hb_list, fy_tibble, fy_list, cut_off_date, extract_path)
+rm(hb_list, fy_tibble, fy_list, extract_path)
    
 
 ## File paths
@@ -39,25 +39,25 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 ### 2: Import data ----
 # KPI 3.1 and 3.2
-theme4_3 <- read_rds(paste0(temp_path, "/5_referral_outcomes_", yymm, ".rds"))
+theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 table(theme4_3$kpi, theme4_3$financial_year) 
 
 # KPI 4.1 and 4.2
-theme4_4 <- read_rds(paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
+theme4_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
 table(theme4_4$kpi, theme4_4$surg_method) # GO BACK AND CHANGE IN 9_4_kpi_4.R script
 
-theme4_4_hb <- read_rds(paste0(temp_path, "/7_kpi_4_HB_", yymm, ".rds"))
+theme4_4_hb <- read_rds(paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
 table(theme4_4_hb$kpi, theme4_4_hb$surg_method) 
 
-theme4_4_mort <- read_rds(paste0(temp_path, "/8_kpi_4_mortality_", yymm, ".rds"))
+theme4_4_mort <- read_rds(paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
 table(theme4_4_mort$kpi, theme4_4_mort$surg_method) 
 
 # Vascular Referrals
-theme4_referral <- read_rds(paste0(temp_path, "/9_vasc_referrals_", yymm, ".rds"))
+theme4_referral <- read_rds(paste0(temp_path, "/4_5_vasc_referrals_", yymm, ".rds"))
 
-theme4_outcomes <- read_rds(paste0(temp_path, "/10_vasc_outcomes_", yymm, ".rds"))
+theme4_outcomes <- read_rds(paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
 
-theme4_repairs <- read_rds(paste0(temp_path, "/11_vasc_ref_repairs_", yymm, ".rds"))
+theme4_repairs <- read_rds(paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
 
 # Unfit for Surgery
 theme4_unfit <- read_rds(paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
@@ -65,7 +65,7 @@ theme4_unfit <- read_rds(paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rd
 theme4_unfit_followup <- read_rds(paste0(temp_path, "/4_9_unfit_follow-up_", 
                                          yymm, ".rds"))
 
-theme4_unfit_deaths <- read_rds(paste0(temp_path, "/4_99_unfit_deaths_cause_", 
+theme4_unfit_deaths <- read_rds(paste0(temp_path, "/4_91_unfit_deaths_cause_", 
                                        yymm, ".rds"))
 
 
@@ -252,15 +252,18 @@ unfit_deaths3 <- theme4_unfit_deaths |>
   filter(section == "AAA-related causes") |> 
   select(category, count_n)
 
-rm(list=ls(pattern = "theme4_"))
-
 
 ### 4: Write to Excel (openxlsx) ----
 ### Setup workbook ---
 today <- paste0("Workbook created ", Sys.Date())
 
-wb <- loadWorkbook(paste0(template_path, "/4 Referral Treatment and Outcomes_",
+wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
                           season, ".xlsx"))
+## Source notes script
+source(here::here("code/9992_Source_Excel_4.R"))
+
+rm(list=ls(pattern = "theme4_"))
+
 
 ## Table of Contents ---
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
@@ -344,9 +347,9 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths1,
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths2, 
           startRow = 10, colNames = FALSE)
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3, 
-          startRow = 22, colNames = FALSE)
+          startRow = 24, colNames = FALSE)
 
 ## Save ----
-saveWorkbook(wb, paste0(output_path, "/4 Referral Treatment and Outcomes_", 
+saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
                         yymm, ".xlsx"), overwrite = TRUE)
 

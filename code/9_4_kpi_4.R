@@ -5,7 +5,9 @@
 # 
 # KPI 4.1 - 30-day mortality rate following open elective surgery 
 # KPI 4.2 - 30-day mortality rate following EVAR elective surgery
-# 1, 3 and 5 year mortality following EVAR and open AAA surgery
+# KPI 4.1 - 1-year mortality rate following open elective surgery 
+# KPI 4.2 - 1-year mortality rate following EVAR elective surgery
+# 1, 3 and 5-year mortality following EVAR and open AAA surgery
 #
 # Written/run on R Studio Server, R version 3.6.1
 # Revised/Run on Posit WB (R version 4.1.2)
@@ -127,9 +129,9 @@ open_hb_screen_scot <- kpi_4_1 %>%
 open_hb_screen <- bind_rows(open_hb_screen, open_hb_screen_scot) |> 
   pivot_wider(names_from = hb_screen, values_from = deaths)
   
-open_hb_screen <- fy_list |> left_join(open_hb_screen, 
-                                       by = c("financial_year" = 
-                                                "financial_year_surg")) |> 
+open_hb_screen <- fy_tibble |> left_join(open_hb_screen, 
+                                         by = c("financial_year" = 
+                                                  "financial_year_surg")) |> 
   # cumulative totals for HBs  
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
@@ -149,7 +151,7 @@ open_hb_surgery_scot <- kpi_4_1 %>%
 open_hb_surgery <- bind_rows(open_hb_surgery, open_hb_surgery_scot) |> 
   pivot_wider(names_from = hb_surgery, values_from = deaths)
 
-open_hb_surgery <- fy_list |> left_join(open_hb_surgery, 
+open_hb_surgery <- fy_tibble |> left_join(open_hb_surgery, 
                                         by = c("financial_year" = 
                                                  "financial_year_surg")) |> 
   # cumulative totals for HBs  
@@ -203,9 +205,9 @@ evar_hb_screen_scot <- kpi_4_2 %>%
 evar_hb_screen <- bind_rows(evar_hb_screen, evar_hb_screen_scot) |> 
   pivot_wider(names_from = hb_screen, values_from = deaths)
 
-evar_hb_screen <- fy_list |> left_join(evar_hb_screen, 
-                                        by = c("financial_year" = 
-                                                 "financial_year_surg")) |> 
+evar_hb_screen <- fy_tibble |> left_join(evar_hb_screen, 
+                                         by = c("financial_year" = 
+                                                  "financial_year_surg")) |> 
   # cumulative totals for HBs  
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
@@ -225,7 +227,7 @@ evar_hb_surgery_scot <- kpi_4_2 %>%
 evar_hb_surgery <- bind_rows(evar_hb_surgery, evar_hb_surgery_scot) |> 
   pivot_wider(names_from = hb_surgery, values_from = deaths)
 
-evar_hb_surgery <- fy_list |> left_join(evar_hb_surgery, 
+evar_hb_surgery <- fy_tibble |> left_join(evar_hb_surgery, 
                                        by = c("financial_year" = 
                                                 "financial_year_surg")) |> 
   # cumulative totals for HBs  
@@ -234,9 +236,11 @@ evar_hb_surgery <- fy_list |> left_join(evar_hb_surgery,
   mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
   mutate(surg_method = "EVAR", .before = financial_year)
 
-rm(fy_list, hb_list, open_hb_screen_scot, open_hb_surgery_scot, 
+rm(fy_tibble, fy_list, hb_list, open_hb_screen_scot, open_hb_surgery_scot, 
    kpi_4_1, kpi_4_2, evar_hb_screen_scot, evar_hb_surgery_scot)
 
+
+#----------------------Cumulative Mortality Rates------------------------------#
 
 ### 5: Import Deaths Data ----
 ## Call in Deaths data ---
@@ -450,7 +454,7 @@ table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
 
 ###
-write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
-write_rds(kpi_4_hb, paste0(temp_path, "/7_kpi_4_HB_", yymm, ".rds"))
-write_rds(kpi_4_mortality, paste0(temp_path, "/8_kpi_4_mortality_", yymm, ".rds"))
+write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
+write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
+write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
 

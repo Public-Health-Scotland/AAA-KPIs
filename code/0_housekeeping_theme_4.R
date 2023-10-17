@@ -23,24 +23,21 @@ season <- "autumn" # options are "spring" or "autumn"
 kpi_report_years <- c("2020/21", "2021/22", "2022/23")
 
 # hbres_list
-hb_list <- tibble(hb = c("Scotland","Ayrshire & Arran","Borders",
-                         "Dumfries & Galloway", "Fife", "Forth Valley", 
-                         "Grampian", "Greater Glasgow & Clyde", "Highland", 
-                         "Lanarkshire", "Lothian", "Orkney",
-                         "Shetland", "Tayside","Western Isles"))
+hb_list <- tibble::tibble(hb = c("Scotland","Ayrshire & Arran","Borders",
+                                 "Dumfries & Galloway", "Fife", "Forth Valley", 
+                                 "Grampian", "Greater Glasgow & Clyde", "Highland", 
+                                 "Lanarkshire", "Lothian", "Orkney",
+                                 "Shetland", "Tayside","Western Isles"))
 
 # financial year list (list of FYs covered by program from start)
 fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 
              "2018/19", "2019/20", "2020/21", "2021/22", "2022/23")
-fy_tibble <- tibble(financial_year = c(fy_list))
+fy_tibble <- tibble::tibble(financial_year = c(fy_list))
 
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
                        "/output/aaa_extract_", yymm, ".rds")
-
-# exclusions_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm, 
-#                           "/output/aaa_exclusions_", yymm, ".rds")
 
 temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                     "/temp")
@@ -49,11 +46,6 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 94_4_mortality_1_3_5_years.R
-# Define date values
-
 
 
 

@@ -99,7 +99,7 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-write_rds(vascular_referral_count, paste0(temp_path, "/9_vasc_referrals_", 
+write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
                                           yymm, ".rds"))
 
 rm(vascular_referral_count, aaa_extract)
@@ -287,7 +287,7 @@ annual <- rbind(annual_great, annual_less) %>%
                                   result_outcome == "97" ~ "Total: non-final outcome",
                                   TRUE ~ outcome_type))
 
-write_rds(annual, paste0(temp_path, "/10_vasc_outcomes_", yymm, ".rds"))
+write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
 
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
@@ -350,7 +350,7 @@ table(extract$surg_method)
 # 327 EVAR (01), 372 open (02), Sep 2023
 ## Check this against the total number of operations as identified in
 ## KPI 4.1/4.2 Additional A
-check <- read_rds(paste0(temp_path, "/6_kpi_4_202309.rds")) |> 
+check <- read_rds(paste0(temp_path, "/4_2_kpi_4_202309.rds")) |> 
   filter(financial_year == "Cumulative",
          group == "procedures_n")
 View(check)
@@ -410,15 +410,6 @@ repairs_all <- rbind(method, repair) %>%
   arrange(fy_surgery, surg_method) %>% 
   glimpse()
 
-# Programme cumulative totals
-repairs_cum <- repairs_all %>% 
-  group_by(hbres, surg_method) %>% 
-  summarize(n = sum(n)) %>% 
-  ungroup() %>% 
-  mutate(fy_surgery = "Cumulative", .after = hbres)
-
-repairs_all <- rbind(repairs_all, repairs_cum)
-
 ## Should this be written out? And rewritten each year as a new historical file?
 repairs_hist <- hb_list |> 
   left_join(repairs_all, by = c("hb" = "hbres")) |> 
@@ -442,5 +433,5 @@ repairs_current <- hb_list |>
   rename(hbres = hb)
 
 
-write_rds(repairs_current, paste0(temp_path, "/11_vasc_ref_repairs_", yymm, ".rds"))
+write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
 

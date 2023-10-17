@@ -303,15 +303,14 @@ cause_of_death <- mortality %>%
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("C", str_pad(c(0:97), width = 2, side = "left", pad = "0")) ~ "Neoplasms", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("D", str_pad(c(0:48), width = 2, side = "left", pad = "0")) ~ "Neoplasms",   
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("F0", c(0:3)) ~ "Dementia", 
-    str_sub(underlying_cause_of_death, 1, 3) %in% "G20" ~ "Movement disorder", 
     str_sub(underlying_cause_of_death, 1, 3) %in% "G30" ~ "Dementia", 
-    str_sub(underlying_cause_of_death, 1, 3) %in% paste0("G", c(31:99)) ~ "Diseases of the nervous system", 
+    str_sub(underlying_cause_of_death, 1, 3) %in% paste0("G", c(20, 31:99)) ~ "Diseases of the nervous system", 
     str_sub(str_pad(underlying_cause_of_death, width = 4, side = "right", pad = "0"), 1, 4) %in% paste0("I", str_pad(c(0:712), width = 3, side = "left", pad = "0")) ~ "Heart and circulatory disease (excl. AAA)", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("I", c(72:99)) ~ "Heart and circulatory disease (excl. AAA)", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("J", str_pad(c(0:99), width = 2, side = "left", pad = "0")) ~ "Respiratory disease", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("K", c(70:77)) ~ "Liver disease", 
     # COVID label doesn't seemt o be working...
-    str_sub(underlying_cause_of_death, 1, 3) %in% "U071" ~ "COVID-19", 
+    str_sub(underlying_cause_of_death, 1, 3) %in% "U07" ~ "COVID-19", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("V", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("W", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("X", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
@@ -350,6 +349,7 @@ aaa_deaths <- cause_of_death %>%
   # reorder to match Excel
   mutate(category = fct_relevel(category, c("Ruptured AAA", "Ruptured TAAA",
                                             "AAA without mention of rupture",
+                                            "TAAA without mention of rupture",
                                             "Ruptured Aortic Aneurysm, unspecified site",
                                             "Total AAA-related deaths"))) |> 
   arrange(category) |> 
@@ -392,5 +392,5 @@ total_unfit <- unfit_current |>
 ### 6: Combine and save ----
 all_deaths <- bind_rows(total_unfit, total_deaths, non_aaa_deaths, aaa_deaths)
 
-write_rds(all_deaths, paste0(temp_path, "/4_99_unfit_deaths_cause_", yymm, ".rds"))
+write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
 
