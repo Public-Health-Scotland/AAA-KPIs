@@ -140,7 +140,7 @@ operations_title <- paste0("Operations in five-year period ",
                            kpi_4_1yr$financial_year)
 note_mort <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
                     "for five-year rolling periods and are presented at Scotland ",
-                    "level. The 30-day mortality rates for the two previous ",
+                    "level. The 1-year mortality rates for the two previous ",
                     "five-year rolling periods were: Open surgery ", rate_41_1yr[1,5], 
                     "% (", rate_41_1yr[1,3], ") and ", rate_41_1yr[2,5], "% (", 
                     rate_41_1yr[2,3], "); EVAR ", rate_42_1yr[1,5], "% (", 
