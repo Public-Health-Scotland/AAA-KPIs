@@ -13,49 +13,32 @@
 ### 1 Housekeeping ----
 
 # Load packages
-
-library(here)
 library(dplyr)
-library(haven)
-library(stringr)
 library(readr)
 library(janitor)
-library(phsmethods)
-library(openxlsx)
 library(tidylog)
 
-# Define date values for filepath
 
-year <- 2023
-month <- "03"
+rm(list = ls())
+gc()
+
+
+source(here::here("code/0_housekeeping.R"))
+
+rm(exclusions_path, cutoff_date, cut_off_12m, cut_off_3m, 
+   prev_year, current_year, current_year_start, next_year_start,
+   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
+
 
 # Define dob cut-offs for each year
-
-dob_one_start <- as.Date("1954-04-01")
+# WHAT DEFINES THESE YEARS???
+dob_one_start <- as.Date("1954-04-01") # 69 years
 dob_one_end <- as.Date("1955-03-31")
-dob_two_start <- as.Date("1955-04-01")
+dob_two_start <- as.Date("1955-04-01") # 68 years
 dob_two_end <- as.Date("1956-03-31")
-dob_three_start <- as.Date("1956-04-01")
+dob_three_start <- as.Date("1956-04-01") # 67 years
 dob_three_end <- as.Date("1957-03-31")
 
-# Define years
-
-year_one <- "2020/21"
-year_two <- "2021/22"
-year_three <- "2022/23"
-
-# Define extract name
-
-extract_name <- paste0("aaa_extract_", year, month, ".rds")
-
-# Define file paths
-
-extracts_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", year, 
-                        month, "/output")
-
-output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", year, month, 
-                      "/output/5. Results for Eligible Cohort & Self Referrals", 
-                      "_", year, month, ".xlsx")
 
 # Functions
 
@@ -75,7 +58,7 @@ calculate_totals <- function(data, row_var, col_var){
   
   row_counts <- data %>% 
     count({{row_var}}, year_screen, name = "n") %>% 
-    mutate({{col_var}} := "total")
+    mutate({{col_var}} := "cohort_n")
   
   # Bind row_col_counts and row_counts together
   
@@ -110,16 +93,17 @@ calculate_totals <- function(data, row_var, col_var){
 }
 
 
-
 ### 2 Processing ----
-
 # Read in latest extract
+aaa_extract <- read_rds(extract_path)
 
-aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
+aaa_filtered <- aaa_extract %>% 
+  # select if screen_type is initial or QA initial
+  filter(screen_type %in% c("01", "03") & 
+           # keep where men tested (result of +ve, -ve or non-visualisation)
+           screen_result %in% c("01", "02", "04"))
 
-# Only want initial screens so select if screen type is initial or QA initial
-# Include records where men were tested only (ie. result of +ve, -ve or 
-# non-visualisation)
+## What does this mean? Doesn't seem to be included in analysis...
 # Derive measurements for the PHS screen result categories
 # A measurement category is derived for definitive screen results i.e. positive, 
 # negative, external postive or external negative results unless the follow up 
@@ -127,24 +111,21 @@ aaa_extract <- read_rds(paste0(extracts_path, "/", extract_name))
 # This means a measurement category is not derived for technical fails, non 
 # visualisations and immediate recalls. 
 
-aaa_filtered <- aaa_extract %>% 
-  filter(screen_type %in% c("01", "03") & 
-           screen_result %in% c("01", "02", "04"))
-
 aaa_filtered %>% count(aaa_size_group)
 
 # There are 2 screens assigned to the category very large error - one was 
 # investigated in May 2021 and found to be legitimate, recode to large group
-
+# What about the other one?? These are recoded to "large" for KPI 1, as well, 
+# so maybe this should be moved to an initial script? Should this be in quarterly?
 aaa_filtered <- aaa_filtered %>% 
   mutate(aaa_size_group = recode(aaa_size_group, "very large error" = "large"))
 
 # Aggregate to one record per UPI
 # Initial screens with a result of non-visualisation, positive, negative 
-# (including those with immediate recall) are included in this file so take the 
-# last screen result based on the screen date.
+# (including those with immediate recall) are included in this file, so take  
+# the last screen result based on the screen date.
 
-last_results_initial_screens_output <- aaa_filtered %>% 
+last_results <- aaa_filtered %>% 
   arrange(upi, date_screen) %>% 
   group_by(upi) %>% 
   slice(n()) %>% 
@@ -153,24 +134,23 @@ last_results_initial_screens_output <- aaa_filtered %>%
          followup_recom, aaa_size_group)
 
 # Count screen_result
+# 01 - Positive AAA ≥ 3.0cm)
+# 02 - Negative (AAA < 3.0cm)
+# 04 - Non Visualisation
+last_results %>% count(screen_result)
 
-last_results_initial_screens_output %>% count(screen_result)
-
-# Tidy enviroment
-
+# Tidy environment
 rm(aaa_filtered)
 
 
-
 ### 3 First Offer ----
-
 # Remove records where no offer has been sent
 # These records have a screen type and a screen date because the clinic 
-# appointment invitation has been set up but it has not been sent yet 
-# e.g. on 1 Sept 2016 extract there are records with a clinic date of October 
+# appointment invitation has been set up, but it has not been sent yet 
+# For example: 1 Sept 2016 extract may have records with a clinic date of October 
 # 2016 (invite not sent yet).
-
-first_offer_initial_screens <- aaa_extract %>% 
+first_offer <- aaa_extract %>% 
+  # select if screen_type is initial or QA initial
   filter(screen_type %in% c("01", "03") & !is.na(date_offer_sent)) %>% 
   arrange(upi, date_offer_sent) %>% 
   group_by(upi) %>% 
@@ -178,183 +158,141 @@ first_offer_initial_screens <- aaa_extract %>%
   ungroup() %>% 
   select(upi, first_date_offer_sent = date_offer_sent)
 
-# Join first_offer_initial_screens and last_results_initial_screens_output
-
-fo_lr_initial_screens <- first_offer_initial_screens %>% 
-  full_join(last_results_initial_screens_output)
+# Join first_offer and last_result
+fo_lr_initial_screens <- first_offer %>% 
+  full_join(last_results)
 
 fo_lr_initial_screens %>% count(screen_result)
 
 # Tidy environment
-
-rm(aaa_extract, first_offer_initial_screens, 
-   last_results_initial_screens_output)
-
+rm(aaa_extract, first_offer, last_results)
 
 
 ### 4 Join on Invite and Uptake Data ----
-
 # Read in invite and uptake data
-
-invite_and_uptake <- read_rds(paste0("/PHI_conf/AAA/Topics/Screening/KPI/", 
-                                     year, month, "/temp/", 
-                                     "1_inviteanduptake_initial.rds")) %>% 
+invite_uptake <- read_rds(paste0(temp_path, 
+                                 "/1_inviteanduptake_initial.rds")) %>% 
   select(upi, ca2019, simd2020v2_sc_quintile, hbres, dob_eligibility, dob)
 
 # Join invite_and_uptake and fo_lr_initial_screens
 # Define a result_type, showing positive or negative depending on result
 # Define a screening year based on dob
 # Filter to keep screen_result 01, 02 or 04
-
-combined_output <- invite_and_uptake %>% 
+combined_output <- invite_uptake %>% 
   left_join(fo_lr_initial_screens) %>% 
   mutate(result_type = if_else(screen_result == "01" & followup_recom != "05", 
                                "positive", "negative"), 
          year_screen = case_when(dob >= dob_one_start & 
-                                   dob <= dob_one_end ~ year_one, 
+                                   dob <= dob_one_end ~ kpi_report_years[1], 
                                  dob >= dob_two_start & 
-                                   dob <= dob_two_end ~ year_two, 
+                                   dob <= dob_two_end ~ kpi_report_years[2], 
                                  dob >= dob_three_start & 
-                                   dob <= dob_three_end ~ year_three, 
+                                   dob <= dob_three_end ~ kpi_report_years[3], 
                                  dob < dob_one_start ~ "older")) %>% 
   filter(screen_result %in% c("01", "02", "04"))
 
+table(combined_output$year_screen, useNA = "ifany")
+
 # Tidy environment
-
-rm(fo_lr_initial_screens, invite_and_uptake)
-
+rm(fo_lr_initial_screens, invite_uptake)
 
 
-### 5 Table One ----
-
-# Define table_one_data by removing any blank year_screen values
+### 5 Table One: Eligible cohort Results ----
+# Define by removing any blank year_screen values
 # This removed screenings beyond cut-off point
-
 table_one_data <- combined_output %>% 
   filter(!is.na(year_screen))
+
+table(table_one_data$year_screen, useNA = "ifany")
 
 table_one_data %>% count(result_type)
 
 # Calculate totals for table_one_data by hbres and result_type
-# Remove negative results and older screenings
-# Pivot data into wider format, using names from result_type and values from n
-# Calculate a percentage positive value
-# Pivot data into wider format, using names from year_screen and values from
-# total, positive and pc
-# Select column order to match output file specification
-# Arrange data to put Scotland row first and then alphabetical below
-
 table_one <- calculate_totals(table_one_data, hbres, result_type) %>% 
+  # Remove negative results and older screenings
   filter(result_type != "negative" & year_screen != "older") %>% 
   pivot_wider(names_from = result_type,
               values_from = n) %>% 
-  mutate(pc = round_half_up(positive * 100 / total, 1)) %>% 
-  pivot_wider(names_from = year_screen, 
-              values_from = c(total, positive, pc), 
-              names_glue = "{year_screen}_{.value}") %>% 
-  select(hbres, starts_with(year_one), starts_with(year_two), 
-         starts_with(year_three), 
-         starts_with("Cumulative")) %>% 
-  arrange(hbres != "Scotland", hbres)
+  mutate(positive_p = round_half_up(positive * 100 / cohort_n, 1)) %>% 
+  select(hbres, year_screen, cohort_n, positive_n = positive, positive_p) |> 
+  pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
+  mutate(table = "Table 1", .after = hbres) |> 
+  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
+  arrange(hbres)
 
 
-
-### 6 Table Two ----
-
-# Define table_two_data by keeping posititve results and removing blank years
-
+### 6 Table Two: Eligible Cohort AAA Size ----
+# Define by keeping positive results and removing blank years
 table_two_data <- combined_output %>% 
   filter(result_type == "positive" & !is.na(year_screen))
 
 table_two_data %>% count(aaa_size_group)
 
 # Calculate totals for table_two_data by hbres and aaa_size_group
-# Pivot data into wider format, using names from aaa_size_group and values 
-# from n
-# Calculate a percentage positive value across large, medium and small columns
-# Pivot data into wider format, using names from year_screen and values from
-# total, small, medium and large, including pc cols too
-# Select column order to match output file specification
-# Arrange data to put Scotland row first and then alphabetical below
-
 table_two <- calculate_totals(table_two_data, hbres, aaa_size_group) %>% 
   pivot_wider(names_from = aaa_size_group,
               values_from = n) %>% 
-  mutate(across(c(large, medium, small), 
-                ~ round_half_up(. * 100 / total, 1), 
-                .names = "{col}_pc")) %>% 
-  pivot_wider(names_from = year_screen, 
-              values_from = c(total, small, small_pc, medium, medium_pc, large, 
-                              large_pc), 
-              names_glue = "{year_screen}_{.value}") %>% 
-  select(hbres, starts_with(year_one), starts_with(year_two), 
-         starts_with(year_three), 
-         starts_with("Cumulative")) %>% 
-  arrange(hbres != "Scotland", hbres)
+  mutate(across(c(large, medium, small), ~ round_half_up(. * 100 / cohort_n, 1), 
+                .names = "{col}_p"))  |> 
+  select(hbres, year_screen, cohort_n, 
+         small_n = small, small_p,
+         medium_n = medium, medium_p,
+         large_n = large, large_p) |> 
+  pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
+  mutate(table = "Table 2", .after = hbres) |> 
+  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
+  arrange(hbres)
 
-
-
-### 7 Table Three ----
-
-# Define table_three_data by setting simd as a character
-# Set NAs as unknown and add most and least to 1 and 5
+  
+### 7 Table Three: Positive Results by SIMD ----
+# Define table_three_data by setting SIMD as a character and set NAs as unknown 
 # Remove rows with blank year_screen
-
 table_three_data <- combined_output %>% 
   mutate(simd2020v2_sc_quintile = 
-           case_when(simd2020v2_sc_quintile == 1 ~ "1=most", 
-                     simd2020v2_sc_quintile == 5 ~ "5=least",
-                     is.na(simd2020v2_sc_quintile) ~ "unknown", 
+           case_when(simd2020v2_sc_quintile == 1 ~ "1=most deprived", 
+                     simd2020v2_sc_quintile == 5 ~ "5=least deprived",
+                     is.na(simd2020v2_sc_quintile) ~ "Unknown", 
                      TRUE ~ as.character(simd2020v2_sc_quintile))) %>% 
   filter(!is.na(year_screen))
 
 table_three_data %>% count(simd2020v2_sc_quintile)
 
 # Calculate totals for table_three_data by SIMD and result_type
-# Pivot data into wider format, using names from result_type and values from n
-# Calculate a percentage positive value
-# Pivot data into wider format, using names from year_screen and values from
-# total, positive and pc
-# Select column order to match output file specification
-# Arrange data to put Scotland row first and then numerical below
-
 table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile, 
                                 result_type) %>% 
   filter(result_type != "negative" & year_screen != "older") %>% 
   pivot_wider(names_from = result_type,
               values_from = n) %>% 
-  mutate(pc = round_half_up(positive * 100 / total, 1)) %>% 
-  pivot_wider(names_from = year_screen, 
-              values_from = c(total, positive, pc), 
-              names_glue = "{year_screen}_{.value}") %>% 
-  select(simd2020v2_sc_quintile, starts_with(year_one), starts_with(year_two), 
-         starts_with(year_three), 
-         starts_with("Cumulative")) %>% 
-  arrange(simd2020v2_sc_quintile != "Scotland", simd2020v2_sc_quintile)
+  mutate(positive_p = round_half_up(positive * 100 / cohort_n, 1))  |> 
+  select(simd2020v2_sc_quintile, year_screen, cohort_n, 
+         positive_n = positive, positive_p) |> 
+  pivot_longer(!simd2020v2_sc_quintile:year_screen, 
+               names_to = "group", values_to = "value") |> 
+  mutate(hbres = NA, .before = simd2020v2_sc_quintile) |> 
+  mutate(table = "Table 3", .after = hbres) |> 
+  arrange(hbres)
+
+
+### 7 Table Five: Self-referral Results ----
 
 
 
-### 8 Output ----
 
-# Load bowel template
 
-bowel_template <- loadWorkbook(output_path)
 
-# Add table one to workbook
 
-writeData(bowel_template, sheet = "Eligible cohort results", table_one, 
-          startCol = 1, startRow = 8, colNames = F)
+### 8 Combine and Save ----
+# Combine tables
+theme5_tables <- bind_rows(table_one, table_two, table_three)
 
-# Add table two to workbook
+# Save
+write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables.rds"))
 
-writeData(bowel_template, sheet = "Eligible cohort AAA size", table_two, 
-          startCol = 1, startRow = 9, colNames = F)
 
-# Add table three to workbook
 
-writeData(bowel_template, sheet = "Positive Results by Deprivation", table_three, 
-          startCol = 1, startRow = 8, colNames = F)
 
-# Save workbook
 
-saveWorkbook(bowel_template, output_path, overwrite = TRUE)
+
+
+
+
