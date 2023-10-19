@@ -13,6 +13,11 @@
 ## Ubiquitous Variables
 yymm <- 202309
 
+# Years needed from the historical extract for current KPI report
+# This includes the three most recent *complete* years of data (including 
+# current year of analysis) and the year in current screening process)
+kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
+
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
@@ -52,40 +57,41 @@ year2_end <- dmy("31-03-1958")
 # May Cut-Off Dates
 ## Cut off dates for the spring report generate a 10-month view to
 # account for missing data
-cut_off_12m <- "2022-01-31" # This is the end of the 10th month of the last
-         # financial year (i.e., if run for May 23, this is end of January 22)
-cut_off_3m <- "2022-10-31" # This is the end of the 10th month of the last
-         # calendar year (i.e., if run for May 23, this is end of October 22)
+# cut_off_12m <- "2022-01-31" # This is the end of the 10th month of the last
+#          # financial year (i.e., if run for May 23, this is end of January 22)
+# cut_off_3m <- "2022-10-31" # This is the end of the 10th month of the last
+#          # calendar year (i.e., if run for May 23, this is end of October 22)
 
 
 # # September Cut-Off Dates
-# cut_off_12m <- "2022-03-31" # This is the end of the financial year 2 years ago 
-#            # (i.e., if run for September 23, this is end of March 22)
-# cut_off_3m <- "2022-12-31" # This is the end of the last calendar year 
-#            # (i.e., if run for September 23, this is end of December 22)
+cut_off_12m <- "2022-03-31" # This is the end of the financial year 2 years ago
+           # (i.e., if run for September 23, this is end of March 22)
+cut_off_3m <- "2022-12-31" # This is the end of the last calendar year
+           # (i.e., if run for September 23, this is end of December 22)
 
 
 ## May 2023
 # Define dates
-prev_year <- "2020/21"# year preceding current_year
+# prev_year <- "2020/21"# year preceding current_year
+# current_year <- "2021/22" # last year of full data (previous to current analysis)
+# current_year_start <- "2021-03-01" # 1st March of prev_year 
+# next_year_start <- "2022-03-01" # 1st March of current_year 
+# financial_year_due <- "2022/23" # current data being analyzed
+# financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
+# last_date <- "2023-09-01" # current extract
+
+
+# # ## September 2023
+# # # Define dates
+prev_year <- "2020/21" # year preceding current_year
 current_year <- "2021/22" # last year of full data (previous to current analysis)
-current_year_start <- "2021-03-01" # 1st March of prev_year 
-next_year_start <- "2022-03-01" # 1st March of current_year 
+current_year_start <- "2022-03-01" # 1st March of prev_year
+next_year_start <- "2023-03-01" # 1st March of current_year
 financial_year_due <- "2022/23" # current data being analyzed
-financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
+financial_quarters <- c("2022/23_1","2022/23_2","2022/23_3", 
+                        "2022/23_4")
 last_date <- "2023-09-01" # current extract
 
-
-# # ## September 2022
-# # # Define dates
-# prev_year <- "2019/20" # year preceding current_year
-# current_year <- "2020/21" # last year of full data (previous to current analysis)
-# current_year_start <- "2020-03-01" # 1st March of prev_year 
-# next_year_start <- "2021-03-01" # 1st March of current_year
-# financial_year_due <- "2021/22" # current data being analyzed
-# financial_quarters <- c("2020/21_4", "2021/22_1","2021/22_2","2021/22_3")
-# last_date <- "2022-09-01" # current extract
-#
 
 
 ###

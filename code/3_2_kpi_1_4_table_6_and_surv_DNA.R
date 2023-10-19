@@ -106,14 +106,16 @@ aaa_extract %<>%
 screened_cohort <- aaa_extract %>% 
   # Can remove those screened more than a year prior to the period of interest
   # GC - issue - add to housekeeping script
-  filter(date_screen >= as.Date(cut_off_12m)) |>
+  # GC - or remove if we are taking last three years
+  #filter(date_screen >= as.Date(cut_off_12m)) |>
   mutate(screen_flag = ifelse(screen_result %in% c("01","02","04") &
                                 (screen_type %in% c("02","04")), 1, 0)) %>%
   filter(screen_flag == 1) |>
   # These will be the attendance at the follow-up screening appointment
   # hence renaming as date_next_screen
   rename(date_next_screen = date_screen) %>%
-  select(upi, date_next_screen, next_screen_result = screen_result)
+  select(upi, hbres, date_next_screen, 
+         next_screen_result = screen_result, screen_type)
 
 ## Step 3: Create surveillance cohort ----
 
@@ -128,7 +130,7 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(followup_recom == "02") %>% 
   mutate(date_next_screen_due = date_screen + 365,
          fy_due = extract_fin_year(date_next_screen_due)) %>%
-  filter(fy_due == financial_year_due
+  filter(fy_due %in% kpi_report_years
          ) %>%
   # This is the appointment where the recommendation was surveillance
   # so renaming to make this clear
@@ -136,20 +138,36 @@ annual_surveillance_cohort <- aaa_extract %>%
 
 ## Check for duplicates, check the dates of screening to see how far apart
 check_dups <- annual_surveillance_cohort %>%
-  group_by(upi) %>%
+  group_by(upi, fy_due) %>%
   mutate(
     n = n()
   ) %>%
   ungroup() %>%
   filter(n > 1)
-# 14, all have an appointment within six months, believe these should
-# be dropped
+# 50, mixture of date ranges, though most are close together
 
-# Remove duplicates, keeping the earlier screening appointment (arbitrarily)
-annual_surveillance_cohort %<>%
-  arrange(upi, date_screen_surv) %>%
-  distinct(upi, .keep_all = TRUE)
-# Removed 7
+# Remove those where the appointment is within less than six months
+# (arbitrary value)
+annual_surveillance_cohort <- annual_surveillance_cohort |>
+  arrange(upi, date_next_screen_due) |>
+  group_by(upi) |>
+    mutate(
+      appt_less_6m = if_else(
+        date_next_screen_due - lag(date_next_screen_due) < 180, 1, 0
+      )
+    ) |>
+    ungroup() |>
+  filter(is.na(appt_less_6m)|appt_less_6m == 0)
+
+## Check again for duplicates, check the dates of screening to see how far apart
+check_dups <- annual_surveillance_cohort %>%
+  group_by(upi, fy_due) %>%
+  mutate(
+    n = n()
+  ) %>%
+  ungroup() %>%
+  filter(n > 1)
+# 10, look more reasonable
 
 ### 3.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -209,13 +227,13 @@ annual_surveillance_w_excl <- annual_surveillance_cohort |>
 
 # Check for duplicates  
 check_dups <- annual_surveillance_w_excl %>%
-  group_by(upi) %>%
+  group_by(upi, fy_due) %>%
   mutate(
     n = n()
   ) %>%
   ungroup() %>%
   filter(n > 1)
-# No duplicates
+# 8 duplicates, look ok
 
 # Save annual surveillance cohort
 saveRDS(annual_surveillance_w_excl, 
@@ -235,7 +253,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   # GC - 3 months is not a consistent number, going with 91
   mutate(date_next_screen_due = date_screen + 91,
          fy_due = extract_fin_year(date_next_screen_due)) %>%
-  filter(fy_due == financial_year_due
+  filter(fy_due %in% kpi_report_years
   ) %>%
   rename(date_screen_surv = date_screen) |>
   select(upi, hbres, fy_due, date_screen_surv, date_next_screen_due)
@@ -325,6 +343,7 @@ check_interval <- quarterly_surveillance_w_excl %>%
     interval_3_4 = min(interval_3_4, na.rm = TRUE),
     interval_4_5 = min(interval_4_5, na.rm = TRUE)
   ) 
+# 36 days is minimum
 
 # Save quarterly surveillance file
 saveRDS(quarterly_surveillance_w_excl, 
@@ -353,48 +372,52 @@ write_csv(tayside_fife_quarterly, "temp/tayside_fife_quarterly_for_checking.csv"
 
 ## Step 5: Supplementary table 6 ----
 
-sup_tab_6_cohort <- annual_surveillance_cohort <- aaa_extract |> 
+sup_tab_6_cohort <- screened_cohort |>
+  rename(date_screen = date_next_screen) |>
+  mutate(fy_screen = extract_fin_year(date_screen),
+         surveillance_interval = case_when(
+           screen_type == "01" ~ "quarterly",
+           followup_recom == "02" ~ "annual",
+           TRUE ~ "error"
+         )) |>
+  filter(fy_screen %in% kpi_report_years)
+
+sup_tab_6_cohort <- aaa_extract |> 
+  # GC TO DO - think through and put into housekeeping
   filter(!is.na(financial_year),followup_recom %in% c("01", "02")) |>
-  mutate(date_next_screen_due = case_when(
-    followup_recom == "01" ~ date_screen + 91,
-    followup_recom == "02" ~ date_screen + 365)) |>
-  # GC TO DO - add to housekeeping, going with three months prior to start of 
-  # financial year of interest, so that all screenings in the FY of interest are
-  # captured. Ultimately selection is on the basis of date screened rather than
-  # screen due.
-  filter(date_next_screen_due > as.Date("2022-12-31")) |>
-  select(upi, hbres, date_next_screen_due, followup_recom) |>
+  mutate(date_next_screen = case_when(
+    # Create dates with large tolerance to allow for early appointments
+    followup_recom == "01" ~ date_screen + 60,
+    followup_recom == "02" ~ date_screen + 180),
+    fy_due = extract_fin_year(date_next_screen)
+    ) |> 
+  filter(fy_due %in% kpi_report_years) |>
+  select(upi, date_screen_last = date_screen, followup_recom) |>
   # Link screened cohort to see who attended
   inner_join(screened_cohort, by = "upi") |>
   rename(date_screen = date_next_screen) |>
-  mutate(fy_screen = extract_fin_year(date_screen),
+  filter(date_screen > date_screen_last) |>
+  mutate(
+    interval = date_screen - date_screen_last,
+    fy_screen = extract_fin_year(date_screen),
          surveillance_interval = case_when(
            followup_recom == "01" ~ "quarterly",
            followup_recom == "02" ~ "annual",
            TRUE ~ "error"
          )) |>
-  filter(fy_screen == financial_year_due) |>
-  distinct(upi, surveillance_interval, .keep_all = TRUE)
-  
-sup_tab_6_cohort |> count(surveillance_interval)
-
-sup_tab_6 <- sup_tab_6_cohort |>
-  group_by(hbres, surveillance_interval) |>
-  summarise(
-    n = n()
+  filter(fy_screen %in% kpi_report_years) |>
+  group_by(upi, date_screen_last, surveillance_interval) |>
+  mutate(
+    min_interval = min(interval)
   ) |>
   ungroup() |>
-  pivot_wider(
-    names_from = surveillance_interval,
-    values_from = n
-  )  |>
-  adorn_totals("row") |>
-  mutate(hbres = if_else(
-    hbres == "Total", "Scotland", hbres),
-    hbres = forcats::fct_relevel(
-      hbres,
-      "Scotland")) |>
-  arrange(hbres)
+  filter(interval == min_interval) |>
+  distinct(upi, fy_screen, surveillance_interval, .keep_all = TRUE) |>
+  select(upi, hbres, fy_screen, surveillance_interval)
+  
+
+
+
 
 ### Next section taken directly from previous script 
 ### 6_2_Supplementary_Surveillance
@@ -410,14 +433,9 @@ dna_excluded_surveillance <- aaa_exclusions %>%
   mutate(financial_year = extract_fin_year(as.Date(date_start)))
 # 85 rows 2022/09
 # 94 rows 2023/03
+# 97 rows 2023/09
 
-# summarise by pat_inelig and financial_year
-# reformat the table
-# rename row names
-dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
-  group_by(pat_inelig, financial_year) %>% 
-  summarise(count = n()) %>% 
-  arrange(financial_year) %>% 
+ %>% 
   pivot_wider(names_from = financial_year,
               values_from = count) %>% 
   mutate(pat_inelig = case_when(pat_inelig == "08" ~ "Non Responder Surveillance",
@@ -429,32 +447,85 @@ dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
 
 kpi_1_4a <- annual_surveillance_w_excl %>% 
     group_by(fy_due, hbres) %>% 
-    summarise(cohort_ac = n(), met_kpi_1_4a = sum(met_kpi_1_4a)) %>% 
+    summarise(cohort_n = n(), met_kpi_1_4a_n = sum(met_kpi_1_4a)) %>% 
     group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
     ungroup() %>% 
-    mutate(pc = met_kpi_1_4a * 100 / cohort_ac) %>%
-    mutate(pc = round_half_up(pc, 1))
-  
-  #reorder rows
-kpi_1_4a <- template %>% left_join(kpi_1_4a,  
-                                     by = c("fy_due", "hbres" = "hbres"))
-  
-  View(kpi_1_4a)
-  
+    mutate(met_kpi_1_4a_p = 
+             round_half_up(met_kpi_1_4a_n * 100 / cohort_n,1),
+           kpi = "kpi 1.4a") |>
+  pivot_longer(
+    cols = cohort_n:met_kpi_1_4a_p,
+    names_to = "group",
+    values_to = "value"
+  ) |>
+  select(
+    hbres,
+    kpi,
+    fin_year = fy_due,
+    group,
+    value)
   
 kpi_1_4b <- quarterly_surveillance_w_excl %>% 
   group_by(fy_due, hbres) %>% 
-  summarise(cohort_ac = n(), met_kpi_1_4b = sum(met_kpi_1_4b)) %>% 
+  summarise(cohort_n = n(), met_kpi_1_4b_n = sum(met_kpi_1_4b)) %>% 
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() %>% 
-  mutate(pc = met_kpi_1_4b * 100 / cohort_ac) %>%
-  mutate(pc = round_half_up(pc, 1))
+  mutate(met_kpi_1_4b_p = 
+           round_half_up(met_kpi_1_4b_n * 100 / cohort_n,1),
+         kpi = "kpi 1.4b") |>
+  pivot_longer(
+    cols = cohort_n:met_kpi_1_4b_p,
+    names_to = "group",
+    values_to = "value"
+  ) |>
+  select(
+    hbres,
+    kpi,
+    fin_year = fy_due,
+    group,
+    value)
 
-#reorder rows
-kpi_1_4b <- template %>% left_join(kpi_1_4b,  
-                                   by = c("fy_due", "hbres" = "hbres"))
+sup_tab_6_hb <- sup_tab_6_cohort |>
+  group_by(fy_screen, hbres, surveillance_interval) |>
+  summarise(
+    tested_n = n()
+  ) |>
+  ungroup()
 
-View(kpi_1_4b)
+sup_tab_6_scotland <- sup_tab_6_hb |>
+  group_by(fy_screen, surveillance_interval) |>
+  summarise(
+    tested_n = sum(tested_n)
+  ) |>
+  ungroup() |>
+  mutate(
+    hbres = "Scotland"
+  )
+
+sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
+  pivot_longer(
+    tested_n,
+    names_to = "group",
+    values_to = "value"
+  ) |>
+  mutate(
+    kpi = "supplementary table 6"
+  )
+
+# summarise by pat_inelig and financial_year
+# reformat the table
+# rename row names
+dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
+  group_by(pat_inelig, financial_year) %>% 
+  summarise(count = n()) %>% 
+  mutate(pat_inelig = case_when(pat_inelig == "08" ~ "Non Responder Surveillance",
+                                pat_inelig == "02" ~ "Opted Out Surveillance")
+         kpi = "DNA"
+         ) |>
+  arrange(financial_year) |>
+  rename(
+    fin_year = fin_year()
+  )
 
 # Write to csv
 write_csv(kpi_1_4a, "temp/kpi_1_4a.csv")
