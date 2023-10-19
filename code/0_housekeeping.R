@@ -84,13 +84,11 @@ year2_end <- "31-03-1958"
 # cut_off_3m <- "2022-10-31" # This is the end of the 10th month of the last
 #          # calendar year (i.e., if run for May 23, this is end of October 22)
 
-
 # September Cut-Off Dates
 cut_off_12m <- "2022-03-31" # This is the end of the financial year 2 years ago
            # (i.e., if run for September 23, this is end of March 22)
 cut_off_3m <- "2022-12-31" # This is the end of the last calendar year
            # (i.e., if run for September 23, this is end of December 22)
-
 
 ## September 2023
 # Define dates
@@ -129,15 +127,4 @@ last_date <- "2023-09-01" # current extract (September)
 # Define dates
 next_year <- "2022/23"
 date_cut_off <- "2023-03-31"
-
-
-
-
-
-
-
-
-
-
-
 
