@@ -1,13 +1,12 @@
 ###############################################################################
-# table_1_to_3_screen_results.R
-# Calum Purdie
+# 99_5_screen_result_tables.R
+# Calum Purdie & Karen Hotopp
 # 19/10/2022
 # 
 # Processes extract and generates tables 1 to 3 for results for eligible cohort 
 # and self-referrals
 # 
-# Written/run on Posit Workbench
-# R version 4.1.2
+# Written/run on Posit WB, R 4.1.2
 ###############################################################################
 
 ### 1 Housekeeping ----
@@ -16,6 +15,7 @@
 library(dplyr)
 library(readr)
 library(janitor)
+library(phsmethods)
 library(tidylog)
 
 
@@ -27,7 +27,7 @@ source(here::here("code/0_housekeeping.R"))
 
 rm(exclusions_path, cutoff_date, cut_off_12m, cut_off_3m, 
    prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
+   financial_year_due, financial_quarters, last_date, next_year)
 
 
 # Define dob cut-offs for each year
@@ -40,12 +40,11 @@ dob_three_start <- as.Date("1956-04-01") # 67 years
 dob_three_end <- as.Date("1957-03-31")
 
 
-# Functions
+## Functions
 
-# Define function for calculating totals for tables
+# Calculating totals for tables 1, 2, 3 ---
 # row_var is the variable to breakdown by in rows (e.g. hbres or SIMD)
 # col_var is the variable to spread across columns (e.g. positivity or n tested)
-
 calculate_totals <- function(data, row_var, col_var){
   
   # Count data by row_var, year_screen and col_var
@@ -89,6 +88,46 @@ calculate_totals <- function(data, row_var, col_var){
   # Bind counts and cumulative_totals together
   
   final_output <- bind_rows(counts, cumulative_totals)
+  
+}
+
+# Calculating rates for table 5 ---
+# Input dataframe and then an optional year grouping (...)
+
+calculate_rates <- function(data, ...){
+  
+  # Count number of people tested within data
+  
+  tested_df <- data %>% 
+    count(hbres, ..., name = "tested")
+  
+  # Filter for positive results excluding those with immediate recall
+  # Count number of people positive within data
+  
+  positive_df <- data %>% 
+    filter(screen_result == "01" & followup_recom != "05") %>% 
+    count(hbres, ..., name = "positive")
+  
+  # Combine tested and positive and set NAs to 0
+  # Calculate positivity rate
+  
+  combine_df <- full_join(tested_df, positive_df) %>% 
+    mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
+    mutate(rate = round_half_up(positive / tested * 100, 1))
+  
+  # Define Scotland totals by year grouping (if applicable)
+  # Summarise positive and tested and calculate rate
+  # Set hbres value as Scotland
+  
+  scotland_totals <- combine_df %>% 
+    group_by(...) %>% 
+    summarise(across(c(positive, tested), ~ sum(.))) %>% 
+    mutate(rate = round_half_up(positive / tested * 100, 1), 
+           hbres = "Scotland")
+  
+  # Bind output together
+  
+  output <- bind_rows(combine_df, scotland_totals)
   
 }
 
@@ -165,7 +204,7 @@ fo_lr_initial_screens <- first_offer %>%
 fo_lr_initial_screens %>% count(screen_result)
 
 # Tidy environment
-rm(aaa_extract, first_offer, last_results)
+rm(first_offer, last_results)
 
 
 ### 4 Join on Invite and Uptake Data ----
@@ -208,7 +247,7 @@ table(table_one_data$year_screen, useNA = "ifany")
 table_one_data %>% count(result_type)
 
 # Calculate totals for table_one_data by hbres and result_type
-table_one <- calculate_totals(table_one_data, hbres, result_type) %>% 
+table_1 <- calculate_totals(table_one_data, hbres, result_type) %>% 
   # Remove negative results and older screenings
   filter(result_type != "negative" & year_screen != "older") %>% 
   pivot_wider(names_from = result_type,
@@ -217,8 +256,7 @@ table_one <- calculate_totals(table_one_data, hbres, result_type) %>%
   select(hbres, year_screen, cohort_n, positive_n = positive, positive_p) |> 
   pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
   mutate(table = "Table 1", .after = hbres) |> 
-  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
-  arrange(hbres)
+  mutate(simd2020v2_sc_quintile = NA, .after = table)
 
 
 ### 6 Table Two: Eligible Cohort AAA Size ----
@@ -229,7 +267,8 @@ table_two_data <- combined_output %>%
 table_two_data %>% count(aaa_size_group)
 
 # Calculate totals for table_two_data by hbres and aaa_size_group
-table_two <- calculate_totals(table_two_data, hbres, aaa_size_group) %>% 
+table_2 <- calculate_totals(table_two_data, hbres, aaa_size_group) %>% 
+  filter(year_screen != "older") |> 
   pivot_wider(names_from = aaa_size_group,
               values_from = n) %>% 
   mutate(across(c(large, medium, small), ~ round_half_up(. * 100 / cohort_n, 1), 
@@ -240,8 +279,7 @@ table_two <- calculate_totals(table_two_data, hbres, aaa_size_group) %>%
          large_n = large, large_p) |> 
   pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
   mutate(table = "Table 2", .after = hbres) |> 
-  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
-  arrange(hbres)
+  mutate(simd2020v2_sc_quintile = NA, .after = table)
 
   
 ### 7 Table Three: Positive Results by SIMD ----
@@ -258,8 +296,8 @@ table_three_data <- combined_output %>%
 table_three_data %>% count(simd2020v2_sc_quintile)
 
 # Calculate totals for table_three_data by SIMD and result_type
-table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile, 
-                                result_type) %>% 
+table_3 <- calculate_totals(table_three_data, simd2020v2_sc_quintile, 
+                            result_type) %>% 
   filter(result_type != "negative" & year_screen != "older") %>% 
   pivot_wider(names_from = result_type,
               values_from = n) %>% 
@@ -269,30 +307,53 @@ table_three <- calculate_totals(table_three_data, simd2020v2_sc_quintile,
   pivot_longer(!simd2020v2_sc_quintile:year_screen, 
                names_to = "group", values_to = "value") |> 
   mutate(hbres = NA, .before = simd2020v2_sc_quintile) |> 
-  mutate(table = "Table 3", .after = hbres) |> 
-  arrange(hbres)
+  mutate(table = "Table 3", .after = hbres)
 
 
-### 7 Table Five: Self-referral Results ----
+### 8 Table Five: Self-referral Results ----
+## A: Reformat extract data
+# Remove screenings after cut_off_date
+# Filter for self referrals and initial screens (including QA initial screens)
+# Filter for tested (+ve, -ve, non-visualisation screen result)
+aaa_extract <- aaa_extract %>% 
+  filter(date_screen <= date_cut_off, 
+         pat_elig == "03" & screen_type %in% c("01", "03"), 
+         screen_result %in% c("01", "02", "04"))
+
+# Group by upi and hbres and take the last row for each group
+# This gives the most recent screening for each upi
+aaa_extract_recent <- aaa_extract  %>% 
+  arrange(upi, date_screen) %>% 
+  group_by(upi, hbres) %>% 
+  slice(n()) %>% 
+  ungroup() %>% 
+  # financial year of screening
+  mutate(year_screen = extract_fin_year(date_screen), 
+         age_at_screening = age_calculate(dob, date_screen)) %>% 
+  # set year as Other if not in one of the defined years for this analysis
+  mutate(year_screen = if_else(year_screen %in% c(kpi_report_years), 
+                               year_screen, "Other"))
+
+## B: Calculate Rates ---
+# Calculate rates for individual years
+individual_years <- calculate_rates(aaa_extract_recent, year_screen)
+
+# Calculate rates for all years and set year as Cumulative
+all_years <- calculate_rates(aaa_extract_recent) %>% 
+  mutate(year_screen = "Cumulative", .after = hbres)
+
+# Combine to create table 5 excerpt
+table_5 <- bind_rows(individual_years, all_years) |> 
+  pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
+  filter(year_screen != "Other") |> 
+  mutate(table = "Table 5", .after = hbres) |> 
+  mutate(simd2020v2_sc_quintile = NA, .after = table)
 
 
-
-
-
-
-
-### 8 Combine and Save ----
+### 9 Combine and Save ----
 # Combine tables
-theme5_tables <- bind_rows(table_one, table_two, table_three)
+theme5_tables <- bind_rows(table_1, table_2, table_3, table_5)
 
 # Save
-write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables.rds"))
-
-
-
-
-
-
-
-
+write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))
 
