@@ -349,7 +349,7 @@ check_interval <- quarterly_surveillance_w_excl %>%
 saveRDS(quarterly_surveillance_w_excl, 
           "temp/quarterly_surveillance_w_excl.rds")
 
-## Optional Step 4z: Create output file of CHIs for checking of methodology ----
+### Optional Step 4z: Create output file of CHIs for checking of methodology ----
 
 tayside_fife_annual <- annual_surveillance_w_excl |>
   filter(hbres %in% c("Tayside", "Fife")) |>
@@ -371,33 +371,33 @@ write_csv(tayside_fife_annual, "temp/tayside_fife_annual_for_checking.csv")
 write_csv(tayside_fife_quarterly, "temp/tayside_fife_quarterly_for_checking.csv")
 
 ## Step 5: Supplementary table 6 ----
-
-sup_tab_6_cohort <- screened_cohort |>
-  rename(date_screen = date_next_screen) |>
-  mutate(fy_screen = extract_fin_year(date_screen),
-         surveillance_interval = case_when(
-           screen_type == "01" ~ "quarterly",
-           followup_recom == "02" ~ "annual",
-           TRUE ~ "error"
-         )) |>
-  filter(fy_screen %in% kpi_report_years)
+## Count of number of men with a surveillance screen in the year of interest
 
 sup_tab_6_cohort <- aaa_extract |> 
-  # GC TO DO - think through and put into housekeeping
+  # Select those recommended for surveillance at next appointment, need the 
+  # followup_recom variable as this is the only one that says whether it is 
+  # quarterly or annual surveillance
   filter(!is.na(financial_year),followup_recom %in% c("01", "02")) |>
   mutate(date_next_screen = case_when(
-    # Create dates with large tolerance to allow for early appointments
+    # Create expected date of next screen with large tolerance to allow 
+    # for early appointments
     followup_recom == "01" ~ date_screen + 60,
     followup_recom == "02" ~ date_screen + 180),
     fy_due = extract_fin_year(date_next_screen)
     ) |> 
   filter(fy_due %in% kpi_report_years) |>
   select(upi, date_screen_last = date_screen, followup_recom) |>
-  # Link screened cohort to see who attended
+  # Link screened cohort to get those who attended the next appointment
   inner_join(screened_cohort, by = "upi") |>
   rename(date_screen = date_next_screen) |>
+  # Full cohort so remove those screening dates prior to the screening with
+  # the follow-up recommendation
   filter(date_screen > date_screen_last) |>
   mutate(
+    # To remove the multiple matched upis between the dataset, we want to keep
+    # the subsequent screening attendance to the follow-up recommendation.
+    # To do this, first calculate the interval between follow-up recommendation
+    # and date of screening attendance
     interval = date_screen - date_screen_last,
     fy_screen = extract_fin_year(date_screen),
          surveillance_interval = case_when(
@@ -406,6 +406,8 @@ sup_tab_6_cohort <- aaa_extract |>
            TRUE ~ "error"
          )) |>
   filter(fy_screen %in% kpi_report_years) |>
+  # For each instance of CHI, date of screen, and surveillance interval,
+  # Find the lowest interval to identify and filter on the next appointment
   group_by(upi, date_screen_last, surveillance_interval) |>
   mutate(
     min_interval = min(interval)
@@ -414,10 +416,9 @@ sup_tab_6_cohort <- aaa_extract |>
   filter(interval == min_interval) |>
   distinct(upi, fy_screen, surveillance_interval, .keep_all = TRUE) |>
   select(upi, hbres, fy_screen, surveillance_interval)
-  
-
-
-
+# GC NOTE - there are some very long intervals, leaving in at the moment as
+# they are being screened, and with AAA there are no repeat screenings other
+# than as part of surveillance. May be one to revisit
 
 ### Next section taken directly from previous script 
 ### 6_2_Supplementary_Surveillance
@@ -435,15 +436,7 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 94 rows 2023/03
 # 97 rows 2023/09
 
- %>% 
-  pivot_wider(names_from = financial_year,
-              values_from = count) %>% 
-  mutate(pat_inelig = case_when(pat_inelig == "08" ~ "Non Responder Surveillance",
-                                pat_inelig == "02" ~ "Opted Out Surveillance")) %>% 
-  rename(`Exclusion Type` = pat_inelig)
-
-
-## Step 5: Create KPI output ----
+## Step 7: Create KPI output ----
 
 kpi_1_4a <- annual_surveillance_w_excl %>% 
     group_by(fy_due, hbres) %>% 
@@ -510,6 +503,9 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
   ) |>
   mutate(
     kpi = "supplementary table 6"
+  ) |>
+  select(
+    hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value
   )
 
 # summarise by pat_inelig and financial_year
@@ -519,15 +515,21 @@ dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
   mutate(pat_inelig = case_when(pat_inelig == "08" ~ "Non Responder Surveillance",
-                                pat_inelig == "02" ~ "Opted Out Surveillance")
-         kpi = "DNA"
+                                pat_inelig == "02" ~ "Opted Out Surveillance"),
+         kpi = "DNA surveillance"
          ) |>
   arrange(financial_year) |>
-  rename(
-    fin_year = fin_year()
+  select(
+    kpi, pat_inelig, fin_year = financial_year, count
   )
 
-# Write to csv
-write_csv(kpi_1_4a, "temp/kpi_1_4a.csv")
-write_csv(kpi_1_4b, "temp/kpi_1_4b.csv")
+# Write to temp
+saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), "temp/kpi_1_4.rds")
+saveRDS(sup_tab_6, "temp/sup_tab_6")
+saveRDS(dna_excluded_surveillance_table, 
+        "temp/dna_excluded_surveillance_table")
+
+
+
+
 
