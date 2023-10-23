@@ -100,16 +100,50 @@ table_five <- theme_5 |>
 ### Setup workbook ---
 ## Notes and Headers
 today <- paste0("Workbook created ", Sys.Date())
-
-pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
-                   "supplementary information are planned for publication in March ", year_xx)
 meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
-note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
-                   " are released for data quality assurance and management ",
-                   "information purposes and should not be placed in the public ",
-                   "domain. The information can be shared locally with those who ",
-                   "have a legitimate need to review the data for quality assurance ",
-                   "or for managerial or operational purposes.")
+
+## Seasonal
+if (season == "spring") {
+  
+  # Spring
+  pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " is scheduled ",
+                     "to be published in March ", year_xx, ". Final data will be ",
+                     "produced from data extracted for PHS in September ", year_xx, ".")
+  report_type <- "Provisional/partial data"
+  report_type_style <- createStyle(fontSize = 12, fontName = "Arial",
+                                   textDecoration = "bold", fontColour = "#FF0000")
+  note_toc <- paste0("The provisional/partial data for the year ending 31 March ", 
+                     year_xx, " are released for data quality assurance and ",
+                     "management information purposes and should not be placed in ",
+                     "the public domain. The information can be shared locally with ",
+                     "those who have a legitimate need to review the data for ",
+                     "quality assurance, managerial or operational purposes.")
+  result_type <- "Management information -- provisional"
+  
+} else {
+  if (season == "autumn") {
+    
+    # Autumn
+    pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
+                       "supplementary information are planned for publication in March ", year_xx)
+    report_type <- "Due for publication"
+    report_type_style <- createStyle(fontSize = 12, fontName = "Arial",
+                                     textDecoration = "bold", fontColour = "#000000")
+    note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
+                       " are released for data quality assurance and management ",
+                       "information purposes and should not be placed in the public ",
+                       "domain. The information can be shared locally with those who ",
+                       "have a legitimate need to review the data for quality ",
+                       "assurance, managerial or operational purposes.")
+    result_type <- "Due for publication"
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
+
 
 # Tables 1, 2, & 3
 turn66_year_vv <- paste0("Turned 66 in year ending 31 March ", year_vv, '\n',
@@ -132,20 +166,26 @@ screened_year_cum <- paste0("Cumulative total from implementation to 31 March ",
                             year_xx)
 
 ## Load workbook
-wb <- loadWorkbook(paste0(template_path, "/5_Results_", season, ".xlsx"))
+wb <- loadWorkbook(paste0(template_path, "/5_Results.xlsx"))
 
-rm("theme_5")
+rm(theme_5, temp_path)
 
 
 ## Table of Contents ---
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
 writeData(wb, "Table of Contents", meg_review, startRow = 4)
+writeData(wb, "Table of Contents", report_type, startRow = 5)
 writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 16)
+
+addStyle(wb, "Table of Contents", style = report_type_style, rows = 5, cols = 1)
+
 
 ## Table 1 ---
 writeData(wb, sheet = "1) Eligible cohort results", table_one, 
           startRow = 9, colNames = FALSE)
+writeData(wb, "1) Eligible cohort results", result_type, startRow = 5, 
+          startCol = 8)
 writeData(wb, "1) Eligible cohort results", turn66_year_vv_r, startRow = 6, 
           startCol = 2)
 writeData(wb, "1) Eligible cohort results", turn66_year_ww_r, startRow = 6, 
@@ -158,6 +198,8 @@ writeData(wb, "1) Eligible cohort results", turn66_year_cum, startRow = 6,
 ## Table 2 ---
 writeData(wb, sheet = "2) Eligible cohort AAA size", table_two, 
           startRow = 10, colNames = FALSE)
+writeData(wb, "2) Eligible cohort AAA size", result_type, startRow = 5, 
+          startCol = 16)
 writeData(wb, "2) Eligible cohort AAA size", turn66_year_vv, startRow = 6, 
           startCol = 2)
 writeData(wb, "2) Eligible cohort AAA size", turn66_year_ww_r, startRow = 6, 
@@ -170,6 +212,8 @@ writeData(wb, "2) Eligible cohort AAA size", turn66_year_cum, startRow = 6,
 ## Table 3 ---
 writeData(wb, sheet = "3) Positive results by SIMD", table_three, 
           startRow = 9, colNames = FALSE)
+writeData(wb, "3) Positive results by SIMD", result_type, startRow = 5, 
+          startCol = 8)
 writeData(wb, "3) Positive results by SIMD", turn66_year_vv_r, startRow = 6, 
           startCol = 2)
 writeData(wb, "3) Positive results by SIMD", turn66_year_ww_r, startRow = 6, 
@@ -182,6 +226,8 @@ writeData(wb, "3) Positive results by SIMD", turn66_year_cum, startRow = 6,
 ## Table 5 ---
 writeData(wb, sheet = "5) Self-referral results", table_five, 
           startRow = 9, colNames = FALSE)
+writeData(wb, "5) Self-referral results", result_type, startRow = 5, 
+          startCol = 8)
 writeData(wb, "5) Self-referral results", screened_year_vv, startRow = 6, 
           startCol = 2)
 writeData(wb, "5) Self-referral results", screened_year_ww, startRow = 6, 
