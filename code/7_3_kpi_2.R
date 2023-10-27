@@ -1,150 +1,149 @@
 ##########################################################
-# theme_3_KPI_2_1_2_2.R
-# Gavin Clark
+# 7_3_kpi_2.R
+# Gavin Clark & Karen Hotopp
 # 19/10/2022
-# Data extraction/preparation
-# Written/run on R Studio Server
-# R version 3.6.1
-# Translation of the syntaxes associated with theme 4:
+
+# # Translation of the syntaxes associated with theme 4:
 #### KPIs - 4. KPI2.1-2.2 (Non Vis and QA)
 #### Management Information - 1. KPI 2.2 Additional - audit breakdown
 ####                        - 2a. Table 4 - Non Vis eligible cohort
 ####                        - 2b. Table 4 - Non Vis Self Ref
 ####                        - Audit fails (LSWG-reports)
+#
+# Written/run on R Studio Server, R version 3.6.1
+# Revised on Posit PWB, R Version 4.1.2
 ##########################################################
 
 #### Step 1: Housekeeping ----
 
-#   loading packages
+# loading packages
 library(dplyr)
-library(haven)
-library(janitor)
-library(tidyr)
-library(stringr)
-library(lubridate)
-library(here)
-library(ggplot2)
-library(forcats)
-library(readr)
-library(readxl)
-library(odbc)
-library(tidylog)
 library(phsmethods)
+# library(haven)
+library(janitor)
+# library(tidyr)
+# library(stringr)
+library(lubridate)
+# library(here)
+# library(ggplot2)
+# library(forcats)
+# library(readr)
+# library(readxl)
+# library(odbc)
+library(tidylog)
 
-# Extract file location
-extract_loc <- paste0('/PHI_conf/AAA/Topics/Screening/extracts/202303/output/',
-                      'aaa_extract_202303.rds')
+
+rm(list = ls())
+gc()
+
+
+source(here::here("code/0_housekeeping.R"))
+
+rm(exclusions_path, output_path)
 
 # Cover base file location
-coverage_basefile_loc <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202303/temp/",
-                                "1_coverage_basefile.rds")
+coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
 
-# Dates of first and last financial year
+# Dates of first and last financial year ##!! Just start and end dates of current FY?
 start_date <- "2022-04-01" #"2019-04-01"
 
 end_date <- "2023-03-31" #"2022-03-31"
 
+
 #### Step 2: Read in and process data ----
+extract <- read_rds(extract_path)
 
-extract <- readRDS(extract_loc)
+coverage_basefile <- read_rds(coverage_basefile_path)
 
-coverage_basefile <- readRDS(coverage_basefile_loc)
 
 ### Step 3: Create summary tables ----
-
 # Create relevant subset of data
 extract2 <- extract %>%
   # Filter for relevant dates and keep positive, negative and non-vis screens
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
          screen_result %in% c('01','02','04')) %>%
-  mutate(
-    fin_year = extract_fin_year(date_screen),
-    non_vis_n = if_else(screen_result == '04', 1, 0),
-    screened_n = if_else(screen_result %in% c('01','02','04'), 1, 0),
-    fin_year_66 = extract_fin_year(dob + years(66))
-  ) 
+  mutate(#fin_year = extract_fin_year(date_screen), # already in df
+         non_vis_n = if_else(screen_result == '04', 1, 0),
+         screened_n = if_else(screen_result %in% c('01','02','04'), 1, 0),
+         # year when patient turned 66
+         fin_year_66 = extract_fin_year(dob + years(66))) 
 
 #### Step 3a: KPI 2.1a ----
 #KPI 2.1a: Percentage of screening appointments, where the aorta could not be
 # visualised
-# Denominator = total number of attended scans (excluding technical failure) 
+# Denominator = Total number of attended scans (excluding technical failure) 
 # Numerator = Number of scans with a screening result of non-visualisation
-kpi_2_1_a_scotland <- extract2 %>%
-  mutate(hb_screen = "Scotland") %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    non_vis_n = sum(non_vis_n),
-    screened_n = sum(screened_n)
-  ) %>%
+# kpi_2_1a_scotland <- extract2 %>%
+#   mutate(hb_screen = "Scotland") %>%
+#   group_by(financial_year, hb_screen) %>%
+#   summarise(
+#     non_vis_n = sum(non_vis_n),
+#     screened_n = sum(screened_n)
+#   ) %>%
+#   ungroup()
+
+kpi_2_1a <- extract2 %>%
+  group_by(financial_year, hb_screen) %>%
+  summarise(non_vis_n = sum(non_vis_n),
+            screen_n = sum(screened_n)) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup()
 
-kpi_2_1_a_hb <- extract2 %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    non_vis_n = sum(non_vis_n),
-    screened_n = sum(screened_n)
-  ) %>%
-  ungroup()
-
-kpi_2_1_a <- bind_rows(kpi_2_1_a_scotland, kpi_2_1_a_hb) %>%
+kpi_2_1a <- kpi_2_1a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screened_n*100, 1)) %>%
-  arrange(fin_year, hb_screen) %>%
-  pivot_wider(names_from = fin_year,
-              values_from = c(screened_n, non_vis_n, non_vis_p),
-              names_vary = 'slowest'
-  )
+         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1)) %>%
+  arrange(hb_screen) |> 
+  mutate(kpi = "KPI 2.1a") |> 
+  select(hb_screen, kpi, financial_year, screen_n, non_vis_n, non_vis_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
 
 
 #### Step 3b: KPI 2.1b ----
-# KPI 2.1b: Percentage of men screened where aorta could not be visualised
+# KPI 2.1b: Percentage of MEN screened where aorta could not be visualised
 # Denominator = The number of MEN attended screening, excluding technical failure
 # Numerator = Number of MEN with at least 1 screen where the aorta could not be 
 # visualised
 
 extract2_dedup_hb <- extract2 %>%
   # GC - keeps non-visualised if there is one
-  arrange(upi, fin_year, hb_screen, desc(non_vis_n)) %>%
-  distinct(upi, fin_year, hb_screen, .keep_all = TRUE)
+  arrange(upi, financial_year, hb_screen, desc(non_vis_n)) %>%
+  distinct(upi, financial_year, hb_screen, .keep_all = TRUE)
 
 extract2_dedup_scotland <- extract2 %>%
   # GC - keeps non-visualised if there is one
-  arrange(upi, fin_year, desc(non_vis_n)) %>%
-  distinct(upi, fin_year, .keep_all = TRUE)
+  arrange(upi, financial_year, desc(non_vis_n)) %>%
+  distinct(upi, financial_year, .keep_all = TRUE)
 # GC TO DO
 # decide whether it is acceptable to have differing totals for scotland
 # vs. if adding the HBs individually
 
-kpi_2_1_b_scotland <- extract2_dedup_scotland %>%
+kpi_2_1b_scotland <- extract2_dedup_scotland %>%
   mutate(hb_screen = "Scotland") %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    non_vis_n = sum(non_vis_n),
-    screened_n = sum(screened_n)
-  ) %>%
+  group_by(financial_year, hb_screen) %>% ##!! Why financial_year? Should only be 2022/23...
+  summarise(non_vis_n = sum(non_vis_n),
+            screen_n = sum(screened_n)) %>%
   ungroup()
 
-
-kpi_2_1_b_hb <- extract2_dedup_hb %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    non_vis_n = sum(non_vis_n),
-    screened_n = sum(screened_n)
-  ) %>%
+kpi_2_1b_hb <- extract2_dedup_hb %>%
+  group_by(financial_year, hb_screen) %>%
+  summarise(non_vis_n = sum(non_vis_n),
+            screen_n = sum(screened_n)) %>%
   ungroup()
 
-kpi_2_1_b <- bind_rows(kpi_2_1_b_scotland, kpi_2_1_b_hb) %>%
-  mutate(
-    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-    non_vis_p = round_half_up(non_vis_n/screened_n*100, 1)) %>%
-  pivot_wider(names_from = fin_year,
-              values_from = c(screened_n, non_vis_n, non_vis_p),
-              names_vary = 'slowest')
+kpi_2_1b <- bind_rows(kpi_2_1b_scotland, kpi_2_1b_hb) %>%
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+         kpi = "KPI 2.1b") |> 
+  select(hb_screen, kpi, financial_year, screen_n, non_vis_n, non_vis_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
+
+rm(extract2_dedup_hb, extract2_dedup_scotland, kpi_2_1b_hb, kpi_2_1b_scotland)
 
 
 ### Step 3c: KPI 2.2 ----
-# KPI 2.2: Percentage of images that failed the AUDIT  AND required an immediate recall 
-
+# KPI 2.2: Percentage of images that failed the AUDIT AND required an immediate recall 
 extract_audit <- extract %>%
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
          audit_flag == '01') %>%
@@ -307,7 +306,7 @@ kpi_2_2_add_b <- bind_rows(kpi_2_2_add_b_scotland, kpi_2_2_add_b_hb) %>%
 
 coverage_basefile <- coverage_basefile %>%
   #filter(!is.na(screen_result)) %>%
-  mutate(    fin_year_66 = case_when(
+  mutate(fin_year_66 = case_when(
     age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
     age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
     age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",

@@ -64,8 +64,8 @@ aaa_2.1a <- aaa_2.1a |>
          fin_year = str_remove(fin_year, "_nonvi_n"),
          fin_year = str_remove(fin_year, "_rate_p"),
          group = case_when(str_detect(group, "_screen") ~ "screen_n",
-                           str_detect(group, "_nonvi") ~ "nonvi_n",
-                           str_detect(group, "_rate_p") ~ "rate_p"),
+                           str_detect(group, "_nonvi") ~ "non_vis_n",
+                           str_detect(group, "_rate_p") ~ "non_vis_p"),
          kpi = "KPI 2.1a", .after = hb) |>
   glimpse()
 
@@ -91,8 +91,8 @@ aaa_2.1b <- aaa_2.1b |>
          fin_year = str_remove(fin_year, "_nonvi_n"),
          fin_year = str_remove(fin_year, "_rate_p"),
          group = case_when(str_detect(group, "_screen") ~ "screen_n",
-                           str_detect(group, "_nonvi") ~ "nonvi_n",
-                           str_detect(group, "_rate_p") ~ "rate_p"),
+                           str_detect(group, "_nonvi") ~ "non_vis_n",
+                           str_detect(group, "_rate_p") ~ "non_vis_p"),
          kpi = "KPI 2.1b", .after = hb) |>
   glimpse()
 
