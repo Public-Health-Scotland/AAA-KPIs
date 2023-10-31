@@ -102,11 +102,11 @@ aaa_2.1b <- aaa_2.1b |>
 
 names_kpi2.2 <- c("hb", 
                   "FY_2019/20_audit_n", "FY_2019/20_recall_n",
-                  "FY_2019/20_rate_p",
+                  "FY_2019/20_recall_p",
                   "FY_2020/21_audit_n", "FY_2020/21_recall_n",
-                  "FY_2020/21_rate_p",
+                  "FY_2020/21_recall_p",
                   "FY_2021/22_audit_n", "FY_2021/22_recall_n",
-                  "FY_2021/22_rate_p")
+                  "FY_2021/22_recall_p")
 
 aaa_2.2 <- read.xlsx(paste0(kpi_path, 202209, temp_path,
                              "/KPI_2.2_Output_TABLE_20220927.xlsx"), 
@@ -125,30 +125,30 @@ aaa_2.2 <- aaa_2.2 |>
   mutate(fin_year = str_remove(fin_year, "FY_"),
          fin_year = str_remove(fin_year, "_audit_n"),
          fin_year = str_remove(fin_year, "_recall_n"),
-         fin_year = str_remove(fin_year, "_rate_p"),
+         fin_year = str_remove(fin_year, "_recall_p"),
          group = case_when(str_detect(group, "_audit") ~ "audit_n",
                            str_detect(group, "_recall") ~ "recall_n",
-                           str_detect(group, "_rate_p") ~ "rate_p"),
+                           str_detect(group, "_recall_p") ~ "recall_p"),
          kpi = "KPI 2.2", .after = hb) |>
   glimpse()
 
 ### kpi 2.2 additional (a) ----
 
 names_kpi2.2_add_a <- c("hb", 
-                        "FY_2019/20_selected_n",
-                        "FY_2019/20_no_result_n", "FY_2019/20_no_result_p",
-                        "FY_2019/20_std_met_n", "FY_2019/20_std_met_p",
-                        "FY_2019/20_std_not_met_n", "FY_2019/20_std_not_met_p",
+                        "FY_2019/20_audit_n",
+                        "FY_2019/20_no_audit_result_n", "FY_2019/20_no_audit_result_p",
+                        "FY_2019/20_standard_met_n", "FY_2019/20_standard_met_p",
+                        "FY_2019/20_standard_not_met_n", "FY_2019/20_standard_not_met_p",
                         
-                        "FY_2020/21_selected_n",
-                        "FY_2020/21_no_result_n", "FY_2020/21_no_result_p",
-                        "FY_2020/21_std_met_n", "FY_2020/21_std_met_p",
-                        "FY_2020/21_std_not_met_n", "FY_2020/21_std_not_met_p",
+                        "FY_2020/21_audit_n",
+                        "FY_2020/21_no_audit_result_n", "FY_2020/21_no_audit_result_p",
+                        "FY_2020/21_standard_met_n", "FY_2020/21_standard_met_p",
+                        "FY_2020/21_standard_not_met_n", "FY_2020/21_standard_not_met_p",
                         
-                        "FY_2021/22_selected_n",
-                        "FY_2021/22_no_result_n", "FY_2021/22_no_result_p",
-                        "FY_2021/22_std_met_n", "FY_2021/22_std_met_p",
-                        "FY_2021/22_std_not_met_n", "FY_2021/22_std_not_met_p")
+                        "FY_2021/22_audit_n",
+                        "FY_2021/22_no_audit_result_n", "FY_2021/22_no_audit_result_p",
+                        "FY_2021/22_standard_met_n", "FY_2021/22_standard_met_p",
+                        "FY_2021/22_standard_not_met_n", "FY_2021/22_standard_not_met_p")
 
 aaa_2.2_add_a <- read.xlsx(paste0(kpi_path, 202209, temp_3_path,
                                   "/Additional_KPI_2.2_all_auditresults.xlsx"), 
@@ -168,21 +168,21 @@ aaa_2.2_add_a <- aaa_2.2_add_a |>
   mutate(group = fin_year, .after = fin_year) |> 
   # clean variable levels
   mutate(fin_year = str_remove(fin_year, "FY_"),
-         fin_year = str_remove(fin_year, "_selected_n"),
-         fin_year = str_remove(fin_year, "_no_result_n"),
-         fin_year = str_remove(fin_year, "_no_result_p"),
-         fin_year = str_remove(fin_year, "_std_met_n"),
-         fin_year = str_remove(fin_year, "_std_met_p"),
-         fin_year = str_remove(fin_year, "_std_not_met_n"),
-         fin_year = str_remove(fin_year, "_std_not_met_p"),
-         group = case_when(str_detect(group, "_selected_n") ~ "selected_n",
-                           str_detect(group, "_no_result_n") ~ "no_result_n",
-                           str_detect(group, "_no_result_p") ~ "no_result_p",
-                           str_detect(group, "_std_met_n") ~ "std_met_n",
-                           str_detect(group, "_std_met_p") ~ "std_met_p",
-                           str_detect(group, "_std_not_met_n") ~ "std_not_met_n",
-                           str_detect(group, "_std_not_met_p") ~ "std_not_met_p"),
-         kpi = "KPI 2.2 additional (a)", .after = hb) |>
+         fin_year = str_remove(fin_year, "_audit_n"),
+         fin_year = str_remove(fin_year, "_no_audit_result_n"),
+         fin_year = str_remove(fin_year, "_no_audit_result_p"),
+         fin_year = str_remove(fin_year, "_standard_met_n"),
+         fin_year = str_remove(fin_year, "_standard_met_p"),
+         fin_year = str_remove(fin_year, "_standard_not_met_n"),
+         fin_year = str_remove(fin_year, "_standard_not_met_p"),
+         group = case_when(str_detect(group, "_audit_n") ~ "audit_n",
+                           str_detect(group, "_no_audit_result_n") ~ "no_audit_result_n",
+                           str_detect(group, "_no_audit_result_p") ~ "no_audit_result_p",
+                           str_detect(group, "_standard_met_n") ~ "standard_met_n",
+                           str_detect(group, "_standard_met_p") ~ "standard_met_p",
+                           str_detect(group, "_standard_not_met_n") ~ "standard_not_met_n",
+                           str_detect(group, "_standard_not_met_p") ~ "standard_not_met_p"),
+         kpi = "KPI 2.2 Additional A", .after = hb) |>
   glimpse()
 
 
@@ -278,35 +278,38 @@ eligible_non_vis <- bind_rows(eligible_non_vis, eligible_non_vis_1_screen)
 ### KPI 2.2 additional (b) ----
 
 names_kpi2.2_add_b <- c("hb", 
-                        "FY_2019/20_std_met_n",
-                        "FY_2019/20_im_recall_n", "FY_2019/20_im_recall_p",
-                        "FY_2019/20_recall_in_cycle_n",
-                        "FY_2019/20_recall_in_cycle_p",
-                        "FY_2019/20_nr_sat_scan_n", "FY_2019/20_nr_sat_scan_p",
-                        "FY_2019/20_nr_referred_n", "FY_2019/20_nr_referred_p",
-                        "FY_2019/20_nr_2nd_opinion_n",
-                        "FY_2019/20_nr_2nd_opinion_p",
-                        "FY_2019/20_no_outcome_n", "FY_2019/20_no_outcome_p",
+                        "FY_2019/20_standard_not_met_n",
+                        "FY_2019/20_imm_recall_n", "FY_2019/20_imm_recall_p",
+                        "FY_2019/20_recall_cc_n", "FY_2019/20_recall_cc_p",
+                        "FY_2019/20_no_recall_sat_interim_n", 
+                        "FY_2019/20_no_recall_sat_interim_p",
+                        "FY_2019/20_no_recall_refer_vasc_n", 
+                        "FY_2019/20_no_recall_refer_vasc_p",
+                        "FY_2019/20_no_recall_sec_opin_n",
+                        "FY_2019/20_no_recall_sec_opin_p",
+                        "FY_2019/20_no_audit_result_n", "FY_2019/20_no_audit_result_p",
                         
-                        "FY_2020/21_std_met_n",
-                        "FY_2020/21_im_recall_n", "FY_2020/21_im_recall_p",
-                        "FY_2020/21_recall_in_cycle_n",
-                        "FY_2020/21_recall_in_cycle_p",
-                        "FY_2020/21_nr_sat_scan_n", "FY_2020/21_nr_sat_scan_p",
-                        "FY_2020/21_nr_referred_n", "FY_2020/21_nr_referred_p",
-                        "FY_2020/21_nr_2nd_opinion_n",
-                        "FY_2020/21_nr_2nd_opinion_p",
-                        "FY_2020/21_no_outcome_n", "FY_2020/21_no_outcome_p",
+                        "FY_2020/21_standard_not_met_n",
+                        "FY_2020/21_imm_recall_n", "FY_2020/21_imm_recall_p",
+                        "FY_2020/21_recall_cc_n", "FY_2020/21_recall_cc_p",
+                        "FY_2020/21_no_recall_sat_interim_n", 
+                        "FY_2020/21_no_recall_sat_interim_p",
+                        "FY_2020/21_no_recall_refer_vasc_n", 
+                        "FY_2020/21_no_recall_refer_vasc_p",
+                        "FY_2020/21_no_recall_sec_opin_n",
+                        "FY_2020/21_no_recall_sec_opin_p",
+                        "FY_2020/21_no_audit_result_n", "FY_2020/21_no_audit_result_p",
                         
-                        "FY_2021/22_std_met_n",
-                        "FY_2021/22_im_recall_n", "FY_2021/22_im_recall_p",
-                        "FY_2021/22_recall_in_cycle_n",
-                        "FY_2021/22_recall_in_cycle_p",
-                        "FY_2021/22_nr_sat_scan_n", "FY_2021/22_nr_sat_scan_p",
-                        "FY_2021/22_nr_referred_n", "FY_2021/22_nr_referred_p",
-                        "FY_2021/22_nr_2nd_opinion_n",
-                        "FY_2021/22_nr_2nd_opinion_p",
-                        "FY_2021/22_no_outcome_n", "FY_2021/22_no_outcome_p")
+                        "FY_2021/22_standard_not_met_n",
+                        "FY_2021/22_imm_recall_n", "FY_2021/22_imm_recall_p",
+                        "FY_2021/22_recall_cc_n", "FY_2021/22_recall_cc_p",
+                        "FY_2021/22_no_recall_sat_interim_n", 
+                        "FY_2021/22_no_recall_sat_interim_p",
+                        "FY_2021/22_no_recall_refer_vasc_n", 
+                        "FY_2021/22_no_recall_refer_vasc_p",
+                        "FY_2021/22_no_recall_sec_opin_n",
+                        "FY_2021/22_no_recall_sec_opin_p",
+                        "FY_2021/22_no_audit_result_n", "FY_2021/22_no_audit_result_p")
 
 aaa_2.2_add_b <- read.xlsx(paste0(kpi_path, 202209, temp_3_path,
                                   "/Additional_KPI_2.2_all_auditresults.xlsx"), 
@@ -326,33 +329,39 @@ aaa_2.2_add_b <- aaa_2.2_add_b |>
   mutate(group = fin_year, .after = fin_year) |> 
   # clean variable levels
   mutate(fin_year = str_remove(fin_year, "FY_"),
-         fin_year = str_remove(fin_year, "_std_met_n"),
-         fin_year = str_remove(fin_year, "_im_recall_n"),
-         fin_year = str_remove(fin_year, "_im_recall_p"),
-         fin_year = str_remove(fin_year, "_recall_in_cycle_n"),
-         fin_year = str_remove(fin_year, "_recall_in_cycle_p"),
-         fin_year = str_remove(fin_year, "_nr_sat_scan_n"),
-         fin_year = str_remove(fin_year, "_nr_sat_scan_p"),
-         fin_year = str_remove(fin_year, "_nr_referred_n"),
-         fin_year = str_remove(fin_year, "_nr_referred_p"),
-         fin_year = str_remove(fin_year, "_nr_2nd_opinion_n"),
-         fin_year = str_remove(fin_year, "_nr_2nd_opinion_p"),
-         fin_year = str_remove(fin_year, "_no_outcome_n"),
-         fin_year = str_remove(fin_year, "_no_outcome_p"),
-         group = case_when(str_detect(group, "_std_met_n") ~ "std_met_n",
-                           str_detect(group, "_im_recall_n") ~ "im_recall_n",
-                           str_detect(group, "_im_recall_p") ~ "im_recall_p",
-                           str_detect(group, "_recall_in_cycle_n") ~ "recall_in_cycle_n",
-                           str_detect(group, "_recall_in_cycle_p") ~ "recall_in_cycle_p",
-                           str_detect(group, "_nr_sat_scan_n") ~ "nr_sat_scan_n",
-                           str_detect(group, "_nr_sat_scan_p") ~ "nr_sat_scan_p",
-                           str_detect(group, "_nr_referred_n") ~ "nr_referred_n",
-                           str_detect(group, "_nr_referred_p") ~ "nr_referred_p",
-                           str_detect(group, "_nr_2nd_opinion_n") ~ "nr_2nd_opinion_n",
-                           str_detect(group, "_nr_2nd_opinion_p") ~ "nr_2nd_opinion_p",
-                           str_detect(group, "_no_outcome_n") ~ "no_outcome_n",
-                           str_detect(group, "_no_outcome_p") ~ "no_outcome_p"),
-         kpi = "KPI 2.2 additional (b)", .after = hb) |>
+         fin_year = str_remove(fin_year, "_standard_not_met_n"),
+         fin_year = str_remove(fin_year, "_imm_recall_n"),
+         fin_year = str_remove(fin_year, "_imm_recall_p"),
+         fin_year = str_remove(fin_year, "_recall_cc_n"),
+         fin_year = str_remove(fin_year, "_recall_cc_p"),
+         fin_year = str_remove(fin_year, "_no_recall_sat_interim_n"),
+         fin_year = str_remove(fin_year, "_no_recall_sat_interim_p"),
+         fin_year = str_remove(fin_year, "_no_recall_refer_vasc_n"),
+         fin_year = str_remove(fin_year, "_no_recall_refer_vasc_p"),
+         fin_year = str_remove(fin_year, "_no_recall_sec_opin_n"),
+         fin_year = str_remove(fin_year, "_no_recall_sec_opin_p"),
+         fin_year = str_remove(fin_year, "_no_audit_result_n"),
+         fin_year = str_remove(fin_year, "_no_audit_result_p"),
+         group = case_when(str_detect(group, "_standard_not_met_n") ~ "standard_not_met_n",
+                           str_detect(group, "_imm_recall_n") ~ "imm_recall_n",
+                           str_detect(group, "_imm_recall_p") ~ "imm_recall_p",
+                           str_detect(group, "_recall_cc_n") ~ "recall_cc_n",
+                           str_detect(group, "_recall_cc_p") ~ "recall_,cc_p",
+                           str_detect(group, "_no_recall_sat_interim_n") ~ 
+                             "no_recall_sat_interim_n",
+                           str_detect(group, "_no_recall_sat_interim_p") ~ 
+                             "no_recall_sat_interim_p",
+                           str_detect(group, "_no_recall_refer_vasc_n") ~ 
+                             "no_recall_refer_vasc_n",
+                           str_detect(group, "_no_recall_refer_vasc_p") ~ 
+                             "no_recall_refer_vasc_p",
+                           str_detect(group, "_no_recall_sec_opin_n") ~ 
+                             "no_recall_sec_opin_n",
+                           str_detect(group, "_no_recall_sec_opin_p") ~ 
+                             "no_recall_sec_opin_p",
+                           str_detect(group, "_no_audit_result_n") ~ "no_audit_result_n",
+                           str_detect(group, "_no_audit_result_p") ~ "no_audit_result_p"),
+         kpi = "KPI 2.2 Additional B", .after = hb) |>
   glimpse()
 
 ### QA standard not met reason ----

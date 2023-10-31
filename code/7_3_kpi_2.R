@@ -17,6 +17,7 @@
 #### Step 1: Housekeeping ----
 
 # loading packages
+library(readr)
 library(dplyr)
 library(phsmethods)
 # library(haven)
@@ -26,8 +27,7 @@ library(janitor)
 library(lubridate)
 # library(here)
 # library(ggplot2)
-# library(forcats)
-# library(readr)
+library(forcats)
 # library(readxl)
 # library(odbc)
 library(tidylog)
@@ -59,7 +59,7 @@ coverage_basefile <- read_rds(coverage_basefile_path)
 ### Step 3: Create summary tables ----
 # Create relevant subset of data
 extract2 <- extract %>%
-  # Filter for relevant dates and keep positive, negative and non-vis screens
+  # filter for relevant dates and keep positive, negative and non-vis screens
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
          screen_result %in% c('01','02','04')) %>%
   mutate(#fin_year = extract_fin_year(date_screen), # already in df
@@ -68,22 +68,12 @@ extract2 <- extract %>%
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66))) 
 
-#### Step 3a: KPI 2.1a ----
-#KPI 2.1a: Percentage of screening appointments, where the aorta could not be
-# visualised
+#### KPI 2.1a ----
+# Percentage of screening appointments, where the aorta could not be visualised
 # Denominator = Total number of attended scans (excluding technical failure) 
 # Numerator = Number of scans with a screening result of non-visualisation
-# kpi_2_1a_scotland <- extract2 %>%
-#   mutate(hb_screen = "Scotland") %>%
-#   group_by(financial_year, hb_screen) %>%
-#   summarise(
-#     non_vis_n = sum(non_vis_n),
-#     screened_n = sum(screened_n)
-#   ) %>%
-#   ungroup()
-
 kpi_2_1a <- extract2 %>%
-  group_by(financial_year, hb_screen) %>%
+  group_by(financial_year, hb_screen) %>% 
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
@@ -99,12 +89,11 @@ kpi_2_1a <- kpi_2_1a %>%
                names_to = "group", values_to = "value")
 
 
-#### Step 3b: KPI 2.1b ----
-# KPI 2.1b: Percentage of MEN screened where aorta could not be visualised
+#### KPI 2.1b ----
+# Percentage of MEN screened where aorta could not be visualised
 # Denominator = The number of MEN attended screening, excluding technical failure
 # Numerator = Number of MEN with at least 1 screen where the aorta could not be 
 # visualised
-
 extract2_dedup_hb <- extract2 %>%
   # GC - keeps non-visualised if there is one
   arrange(upi, financial_year, hb_screen, desc(non_vis_n)) %>%
@@ -118,15 +107,15 @@ extract2_dedup_scotland <- extract2 %>%
 # decide whether it is acceptable to have differing totals for scotland
 # vs. if adding the HBs individually
 
-kpi_2_1b_scotland <- extract2_dedup_scotland %>%
-  mutate(hb_screen = "Scotland") %>%
-  group_by(financial_year, hb_screen) %>% ##!! Why financial_year? Should only be 2022/23...
+kpi_2_1b_hb <- extract2_dedup_hb %>%
+  group_by(financial_year, hb_screen) %>%
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
   ungroup()
 
-kpi_2_1b_hb <- extract2_dedup_hb %>%
-  group_by(financial_year, hb_screen) %>%
+kpi_2_1b_scotland <- extract2_dedup_scotland %>%
+  mutate(hb_screen = "Scotland") %>%
+  group_by(financial_year, hb_screen) %>% 
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
   ungroup()
@@ -142,116 +131,109 @@ kpi_2_1b <- bind_rows(kpi_2_1b_scotland, kpi_2_1b_hb) %>%
 rm(extract2_dedup_hb, extract2_dedup_scotland, kpi_2_1b_hb, kpi_2_1b_scotland)
 
 
-### Step 3c: KPI 2.2 ----
-# KPI 2.2: Percentage of images that failed the AUDIT AND required an immediate recall 
+### KPI 2.2 ----
+# Percentage of images that failed the audit and required an immediate recall 
+# Create subset of extract focused on audited records
 extract_audit <- extract %>%
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
+         # keep records sampled for QA audit
          audit_flag == '01') %>%
-  mutate(
-    fin_year = extract_fin_year(date_screen),
-    audit_n = if_else(audit_flag == '01', 1, 0),
-    fail_im_recall_n = if_else(audit_result == '02' & 
-                                 audit_outcome == '01', 1, 0),
-    no_audit_result_n = case_when(
-      is.na(audit_result) ~ 1,
-      !audit_result %in% c("01", "02") ~ 1,
-      TRUE ~ 0),
-    standard_met_n = if_else(
-      audit_result == '01', 1, 0)
-  )
+  mutate(audit_n = if_else(audit_flag == '01', 1, 0),
+         # failed audit and immediate recall
+         recall_n = if_else(audit_result == '02' & 
+                              audit_outcome == '01', 1, 0),
+         # either not audited or no audit result 
+         no_audit_result_n = case_when(is.na(audit_result) ~ 1,
+                                       !audit_result %in% c("01", "02") ~ 1,
+                                       TRUE ~ 0),
+         # passed audit
+         standard_met_n = if_else(audit_result == '01', 1, 0),
+         # immediate recall
+         imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
+         # recall in current cycle
+         recall_cc_n = case_when(audit_outcome == '02' ~ 1, TRUE ~ 0),
+         # no recall: satisfactory interim scan
+         no_recall_sat_interim_n = case_when(audit_outcome == '03' ~ 1, TRUE ~ 0),
+         # no recall: referred to vascular
+         no_recall_refer_vasc_n = case_when(audit_outcome == '04' ~ 1, TRUE ~ 0),
+         # no recall: verified by second opinion
+         no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
+                                          is.na(audit_outcome) ~ 0, TRUE ~ 0))
 
-kpi_2_2_hb <- extract_audit %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    fail_im_recall_n = sum(fail_im_recall_n),
-    audit_n = sum(audit_n),
-    fail_im_recall_p = round_half_up(fail_im_recall_n/audit_n*100, 1)
-  ) %>%
+kpi_2_2 <- extract_audit %>%
+  group_by(financial_year, hb_screen) %>%
+  summarise(audit_n = sum(audit_n),
+            recall_n = sum(recall_n),
+            recall_p = round_half_up(recall_n/audit_n*100, 1)) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup()
 
-kpi_2_2_scotland <- extract_audit %>%
-  group_by(fin_year) %>%
-  summarise(
-    fail_im_recall_n = sum(fail_im_recall_n),
-    audit_n = sum(audit_n),
-    fail_im_recall_p = round_half_up(fail_im_recall_n/audit_n*100, 1)
-  ) %>%
-  ungroup() %>%
-  mutate(hb_screen = "Scotland")
-
-kpi_2_2 <- bind_rows(kpi_2_2_scotland, kpi_2_2_hb) %>%
+kpi_2_2 <- kpi_2_2 %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  arrange(fin_year, hb_screen) %>%
-  pivot_wider(names_from = fin_year,
-              values_from = c(audit_n, fail_im_recall_n, fail_im_recall_p),
-              names_vary = 'slowest')
+  arrange(financial_year, hb_screen) %>%
+  mutate(kpi = "KPI 2.2") |> 
+  select(hb_screen, kpi, financial_year, audit_n, recall_n, recall_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
 
 
-### Step 3d: KPI 2.2 additional ----
-
-kpi_2_2_add_hb <- extract_audit %>%
-  group_by(fin_year, hb_screen) %>%
-  summarise(
-    no_audit_result_n = sum(no_audit_result_n),
-    audit_n = sum(audit_n),
-    no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
-    audit_n2 = sum(audit_n),
-    standard_met_n = sum(standard_met_n),
-    standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_n = audit_n - standard_met_n,
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) %>%
+### KPI 2.2 Additional A ----
+## Number of screens selected for the QA audit by audit result
+kpi_2_2_add_a <- extract_audit %>%
+  group_by(financial_year, hb_screen) %>%
+  summarise(audit_n = sum(audit_n),
+            no_audit_result_n = sum(no_audit_result_n),
+            no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
+            audit_n2 = sum(audit_n),
+            standard_met_n = sum(standard_met_n),
+            standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
+            standard_not_met_n = audit_n - standard_met_n,
+            standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup()
 
-kpi_2_2_add_scotland <- extract_audit %>%
-  group_by(fin_year) %>%
-  summarise(
-    no_audit_result_n = sum(no_audit_result_n),
-    audit_n = sum(audit_n),
-    no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
-    audit_n2 = sum(audit_n),
-    standard_met_n = sum(standard_met_n),
-    standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_n = audit_n - standard_met_n,
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)
-  ) %>%
-  ungroup() %>%
-  mutate(hb_screen = "Scotland")
-
-kpi_2_2_add <- bind_rows(kpi_2_2_add_scotland, kpi_2_2_add_hb) %>%
+kpi_2_2_add_a <- kpi_2_2_add_a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  arrange(fin_year, hb_screen) %>%
-  pivot_wider(names_from = fin_year,
-              values_from = c(audit_n, no_audit_result_n, audit_n, no_audit_result_p,
-                              audit_n2, standard_met_n, standard_met_p,
-                              standard_not_met_n, standard_not_met_p),
-              names_vary = 'slowest')
+  arrange(financial_year, hb_screen) %>%
+  mutate(kpi = "KPI 2.2 Additional A") |> 
+  select(hb_screen, kpi, financial_year, audit_n, no_audit_result_n, 
+         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
+         standard_not_met_n, standard_not_met_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
 
-### Step 3?: KPI 2.2 additional (b)
 
-extract_audit_b <- extract %>%
-  filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
-         audit_flag == '01') %>%
-  mutate(
-    fin_year = extract_fin_year(date_screen),
-    audit_n = if_else(audit_flag == '01', 1, 0),
-    fail_im_recall_n = if_else(audit_result == '02' & 
-                                 audit_outcome == '01', 1, 0),
-    no_audit_result_n = case_when(
-      is.na(audit_result) ~ 1,
-      !audit_result %in% c("01", "02") ~ 1,
-      TRUE ~ 0),
-    standard_met_n = if_else(
-      audit_result == '01', 1, 0),
-    imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
-    recall_cc_n = case_when(audit_outcome == '02' ~ 1, TRUE ~ 0),
-    no_recall_sat_interim_n = case_when(audit_outcome == '03' ~ 1, TRUE ~ 0),
-    no_recall_refer_vasc_n = case_when(audit_outcome == '04' ~ 1, TRUE ~ 0),
-    no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
-                                     is.na(audit_outcome) ~ 0, TRUE ~ 0)
-  )
+### KPI 2.2 Additional B ----
+## Number of screens that did not meet the QA audit standard by audit outcome
+## (recall advice)
+# extract_audit_b <- extract %>%
+#   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
+#          # keep records sampled for QA audit
+#          audit_flag == '01') %>%
+#   mutate(audit_n = if_else(audit_flag == '01', 1, 0),
+#          # failed audit and immediate recall
+#          recall_n = if_else(audit_result == '02' & 
+#                               audit_outcome == '01', 1, 0),
+#          # either not audited or no audit result 
+#          no_audit_result_n = case_when(is.na(audit_result) ~ 1,
+#                                        !audit_result %in% c("01", "02") ~ 1,
+#                                        TRUE ~ 0),
+#          # passed audit
+#          standard_met_n = if_else(audit_result == '01', 1, 0),
+#          # immediate recall
+#          imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
+#          # recall in current cycle
+#          recall_cc_n = case_when(audit_outcome == '02' ~ 1, TRUE ~ 0),
+#          # no recall: satisfactory interim scan
+#          no_recall_sat_interim_n = case_when(audit_outcome == '03' ~ 1, TRUE ~ 0),
+#          # no recall: referred to vascular
+#          no_recall_refer_vasc_n = case_when(audit_outcome == '04' ~ 1, TRUE ~ 0),
+#          # no recall: verified by second opinion
+#          no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
+#                                           is.na(audit_outcome) ~ 0, TRUE ~ 0))
 
-kpi_2_2_add_b_hb <- extract_audit_b %>%
-  group_by(fin_year, hb_screen) %>%
+kpi_2_2_add_b <- extract_audit %>%
+  group_by(financial_year, hb_screen) %>%
   summarise(
     audit_n = sum(audit_n),
     standard_met_n = sum(standard_met_n),
@@ -266,82 +248,60 @@ kpi_2_2_add_b_hb <- extract_audit_b %>%
     no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
     no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
     no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
-    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1)
+    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
+    no_audit_result_n = sum(no_audit_result_n),
+    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1)
     ) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup()
 
-kpi_2_2_add_b_scotland <- extract_audit_b %>%
-  group_by(fin_year) %>%
-  summarise(
-    no_audit_result_n = sum(no_audit_result_n),
-    audit_n = sum(audit_n),
-    standard_met_n = sum(standard_met_n),
-    standard_not_met_n = audit_n - standard_met_n,
-    imm_recall_n = sum(imm_recall_n),
-    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
-    recall_cc_n = sum(recall_cc_n),
-    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
-    no_recall_sat_interim_n = sum(no_recall_sat_interim_n),
-    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
-    no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
-    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
-    no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
-    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1)
-  ) %>%
-  ungroup() %>%
-  mutate(hb_screen = "Scotland")
-
-kpi_2_2_add_b <- bind_rows(kpi_2_2_add_b_scotland, kpi_2_2_add_b_hb) %>%
+kpi_2_2_add_b <- kpi_2_2_add_b %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  arrange(fin_year, hb_screen) %>%
-  pivot_wider(names_from = fin_year,
-              values_from = c(audit_n, standard_not_met_n, imm_recall_n, imm_recall_p,
-                              recall_cc_n, recall_cc_p, recall_cc_n,
-                              recall_cc_p, no_recall_sat_interim_n, no_recall_sat_interim_p,
-                              no_recall_refer_vasc_n, no_recall_refer_vasc_p, no_recall_sec_opin_n,
-                              no_recall_sec_opin_p),
-              names_vary = 'slowest')
-    
-### Step 3e: Supplementary table 4 ----
+  arrange(financial_year, hb_screen) %>%
+  mutate(kpi = "KPI 2.2 Additional B") |> 
+  select(hb_screen, kpi, financial_year, standard_not_met_n, imm_recall_n, 
+         imm_recall_p, recall_cc_n, recall_cc_p, recall_cc_n, recall_cc_p, 
+         no_recall_sat_interim_n, no_recall_sat_interim_p, no_recall_refer_vasc_n, 
+         no_recall_refer_vasc_p, no_recall_sec_opin_n, no_recall_sec_opin_p,
+         no_audit_result_n, no_audit_result_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
 
-coverage_basefile <- coverage_basefile %>%
+    
+### Supplementary table 4 ----
+## Percentage of men tested who had no conclusive final result from initial 
+# screening as aorta could not be fully visualized
+coverage_basefile_a <- coverage_basefile %>%
   #filter(!is.na(screen_result)) %>%
-  mutate(fin_year_66 = case_when(
+  # create new variable for FY when patient turned 66
+  mutate(fin_year_66 = case_when(  ##!! LOOK AT CHANGING BELOW AWAY FROM DATES!!
     age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
-    age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
-    age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
-    age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
+    age_calculate(dob, as.Date("2021-03-31")) == 66 ~ kpi_report_years[[1]],
+    age_calculate(dob, as.Date("2022-03-31")) == 66 ~ kpi_report_years[[2]],
+    age_calculate(dob, as.Date("2023-03-31")) == 66 ~ kpi_report_years[[3]],
     TRUE ~ "66 in a different year"))
 
 extract_sup_4 <- extract %>%
   # Filter for relevant dates and keep positive, negative and non-vis screens
   filter(!is.na(screen_result)) %>%
-  mutate(
-    non_vis_n = if_else(screen_result == '04', 1, 0)
-  ) %>%
+  mutate(non_vis_n = if_else(screen_result == '04', 1, 0)) %>%
   group_by(upi) %>%
-  mutate(
-    non_vis_any = max(non_vis_n)
-  ) %>%
+  mutate(non_vis_any = max(non_vis_n)) %>%
   ungroup() %>%
   filter(non_vis_any == 1) %>%
   # total nonvis matches SPSS at this point
-  mutate(
-    non_vis_n = 1,
-    result_temp = case_when(
-      audit_outcome == "01" ~ 0,
-      screen_result %in% c("01", "02", "05", "06") ~ 1,
-      TRUE ~ 0
-    )
-  ) %>%
+  mutate(non_vis_n = 1,
+         result_temp = case_when(
+           audit_outcome == "01" ~ 0,
+           screen_result %in% c("01", "02", "05", "06") ~ 1,
+           TRUE ~ 0)) %>%
   group_by(upi) %>%
   mutate(flag_result = max(result_temp)) %>%
   ungroup() %>%
   filter(flag_result == 0, 
          pat_elig != '03', 
          screen_type %in% c('01', '03'),
-         screen_result != '03'
-  )
+         screen_result != '03')
 
 extract_sup_4 %>% count(flag_result)
 
@@ -744,13 +704,13 @@ standard_not_met_hb <- extract2 %>%
   pivot_wider(names_from = c(financial_year, std_not_met),
               values_from = n)
 
-write_rds(standard_not_met_hb, "standard_not_met_hb.rds")
-
-#### Step 4: Write tables out to R ----
-write_rds(kpi_2_1_a, "temp/kpi_2_1_a.rds")
-write_rds(kpi_2_1_b, "temp/kpi_2_1_b.rds")
-write_rds(kpi_2_2, "temp/kpi_2_2.rds")
-write_rds(sup_tab_4_eligible, "temp/sup_tab_4_eligible.rds")
-write_rds(sup_tab_4_sr, "temp/sup_tab_4_sr.rds")
-write_rds(qa_standard_not_met, "temp/qa_standard_not_met.rds")
-write_rds(qa_std_not_met_detail, "temp/qa_std_not_met_detail.rds")
+# write_rds(standard_not_met_hb, "standard_not_met_hb.rds")
+# 
+# #### Step 4: Write tables out to R ----
+# write_rds(kpi_2_1_a, "temp/kpi_2_1_a.rds")
+# write_rds(kpi_2_1_b, "temp/kpi_2_1_b.rds")
+# write_rds(kpi_2_2, "temp/kpi_2_2.rds")
+# write_rds(sup_tab_4_eligible, "temp/sup_tab_4_eligible.rds")
+# write_rds(sup_tab_4_sr, "temp/sup_tab_4_sr.rds")
+# write_rds(qa_standard_not_met, "temp/qa_standard_not_met.rds")
+# write_rds(qa_std_not_met_detail, "temp/qa_std_not_met_detail.rds")
