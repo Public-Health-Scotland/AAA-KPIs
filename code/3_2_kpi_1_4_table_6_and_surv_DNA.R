@@ -185,7 +185,7 @@ annual_surveillance_f_up <- annual_surveillance_cohort |>
               date_screen_surv,
               date_next_screen_due + 6 * 7), 1, 0)) %>%
   # Create list of compliant CHIs for linking to cohort
-  group_by(upi) |>
+  group_by(upi, fy_due) |>
   summarise(
     met_kpi_1_4a = max(met_kpi_1_4a)
   ) %>%
@@ -219,7 +219,7 @@ annual_exclusions <- annual_surveillance_cohort |>
 ### 3.4: Create final annual surveillance file and save ----
 
 annual_surveillance_w_excl <- annual_surveillance_cohort |>
-  left_join(annual_surveillance_f_up, by = "upi") |>
+  left_join(annual_surveillance_f_up, by = c("upi", "fy_due")) |>
   mutate(met_kpi_1_4a = replace_na(met_kpi_1_4a, 0)) |>
   # Join creates duplicates, but they are excluded anyway so doesn't matter?
   left_join(annual_exclusions, by = c("upi", "date_screen_surv")) %>%
