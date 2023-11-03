@@ -378,14 +378,6 @@ sup_tab_6_cohort <- aaa_extract |>
   # followup_recom variable as this is the only one that says whether it is 
   # quarterly or annual surveillance
   filter(!is.na(financial_year),followup_recom %in% c("01", "02")) |>
-  mutate(date_next_screen = case_when(
-    # Create expected date of next screen with large tolerance to allow 
-    # for early appointments
-    followup_recom == "01" ~ date_screen + 60,
-    followup_recom == "02" ~ date_screen + 180),
-    fy_due = extract_fin_year(date_next_screen)
-    ) |> 
-  filter(fy_due %in% kpi_report_years) |>
   select(upi, date_screen_last = date_screen, followup_recom) |>
   # Link screened cohort to get those who attended the next appointment
   inner_join(screened_cohort, by = "upi") |>
@@ -400,15 +392,15 @@ sup_tab_6_cohort <- aaa_extract |>
     # and date of screening attendance
     interval = date_screen - date_screen_last,
     fy_screen = extract_fin_year(date_screen),
-         surveillance_interval = case_when(
-           followup_recom == "01" ~ "quarterly",
-           followup_recom == "02" ~ "annual",
-           TRUE ~ "error"
-         )) |>
+    surveillance_interval = case_when(
+      followup_recom == "01" ~ "quarterly",
+      followup_recom == "02" ~ "annual",
+      TRUE ~ "error"
+    )) |>
   filter(fy_screen %in% kpi_report_years) |>
   # For each instance of CHI, date of screen, and surveillance interval,
   # Find the lowest interval to identify and filter on the next appointment
-  group_by(upi, date_screen_last, surveillance_interval) |>
+  group_by(upi, date_screen) |>
   mutate(
     min_interval = min(interval)
   ) |>
