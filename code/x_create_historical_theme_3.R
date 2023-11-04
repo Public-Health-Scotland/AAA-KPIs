@@ -187,16 +187,15 @@ aaa_2.2_add_a <- aaa_2.2_add_a |>
 
 
 ### Eligible no final result ----
-
+## Table 4
 # total
-
 names_elig_non_vis_total <- c("hb", 
-                              "FY_2019/20_tested_n", "FY_2019/20_non_vis_total_n",
-                              "FY_2019/20_non_vis_total_p",
-                              "FY_2020/21_tested_n", "FY_2020/21_non_vis_total_n",
-                              "FY_2020/21_non_vis_total_p",
-                              "FY_2021/22_tested_n", "FY_2021/22_non_vis_total_n",
-                              "FY_2021/22_non_vis_total_p")
+                              "FY_2019/20_tested_n", "FY_2019/20_non_vis_n",
+                              "FY_2019/20_non_vis_p",
+                              "FY_2020/21_tested_n", "FY_2020/21_non_vis_n",
+                              "FY_2020/21_non_vis_p",
+                              "FY_2021/22_tested_n", "FY_2021/22_non_vis_n",
+                              "FY_2021/22_non_vis_p")
 
 elig_non_vis_total <- read.xlsx(paste0(kpi_path, 202209, temp_3_path,
                                        "/KPI_2.1_additional_TotalNonVis.xlsx"), 
@@ -215,23 +214,23 @@ elig_non_vis_total <- elig_non_vis_total |>
   # clean variable levels
   mutate(fin_year = str_remove(fin_year, "FY_"),
          fin_year = str_remove(fin_year, "_tested_n"),
-         fin_year = str_remove(fin_year, "_non_vis_total_n"),
-         fin_year = str_remove(fin_year, "_non_vis_total_p"),
+         fin_year = str_remove(fin_year, "_non_vis_n"),
+         fin_year = str_remove(fin_year, "_non_vis_p"),
          group = case_when(str_detect(group, "_tested") ~ "tested_n",
-                           str_detect(group, "_non_vis_total_n") ~ "non_vis_total_n",
-                           str_detect(group, "_non_vis_total_p") ~ "non_vis_total_p"),
-         kpi = "Eligible No Result", .after = hb) |>
+                           str_detect(group, "_non_vis_n") ~ "non_vis_n",
+                           str_detect(group, "_non_vis_p") ~ "non_vis_p"),
+         kpi = "Table 4", .after = hb) |>
   glimpse()
 
 # 2 Screens
 
 names_elig_non_vis_2_screens <- c("hb", 
-                              "FY_2019/20_non_vis_2_screens_n",
-                              "FY_2019/20_non_vis_2_screens_p",
-                              "FY_2020/21_non_vis_2_screens_n",
-                              "FY_2020/21_non_vis_2_screens_p",
-                              "FY_2021/22_non_vis_2_screens_n",
-                              "FY_2021/22_non_vis_2_screens_p")
+                                  "FY_2019/20_non_vis_2_more_n",
+                                  "FY_2019/20_non_vis_2_more_p",
+                                  "FY_2020/21_non_vis_2_more_n",
+                                  "FY_2020/21_non_vis_2_more_p",
+                                  "FY_2021/22_non_vis_2_more_n",
+                                  "FY_2021/22_non_vis_2_more_p")
 
 elig_non_vis_2_screens <- read.xlsx(paste0(kpi_path, 202209, temp_3_path,
                                        "/KPI_2.1_additional_TwoPlusNonVis.xlsx"), 
@@ -249,11 +248,11 @@ elig_non_vis_2_screens <- elig_non_vis_2_screens |>
   mutate(group = fin_year, .after = fin_year) |> 
   # clean variable levels
   mutate(fin_year = str_remove(fin_year, "FY_"),
-         fin_year = str_remove(fin_year, "_non_vis_2_screens_n"),
-         fin_year = str_remove(fin_year, "_non_vis_2_screens_p"),
-         group = case_when(str_detect(group, "_non_vis_2_screens_n") ~ "non_vis_2_screens_n",
-                           str_detect(group, "_non_vis_2_screens_p") ~ "non_vis_2_screens_p"),
-         kpi = "Eligible No Result", .after = hb) |>
+         fin_year = str_remove(fin_year, "_non_vis_2_more_n"),
+         fin_year = str_remove(fin_year, "_non_vis_2_more_p"),
+         group = case_when(str_detect(group, "_non_vis_2_more_n") ~ "non_vis_2_more_n",
+                           str_detect(group, "_non_vis_2_more_p") ~ "non_vis_2_more_p"),
+         kpi = "Table 4", .after = hb) |>
   glimpse()
 
 # combine total and 2 screen
@@ -266,11 +265,11 @@ eligible_non_vis_1_screen <- eligible_non_vis |>
   summarise(hb = hb,
             kpi = kpi,
             fin_year = fin_year,
-            non_vis_1_screen_n = non_vis_total_n-non_vis_2_screens_n,
-            non_vis_1_screen_p = (non_vis_1_screen_n/tested_n)*100) |> 
+            non_vis_1_n = non_vis_n-non_vis_2_more_n,
+            non_vis_1_p = (non_vis_1_n/tested_n)*100) |> 
   ungroup() |> 
-  select(hb, kpi, fin_year, non_vis_1_screen_n, non_vis_1_screen_p) |> 
-  pivot_longer(cols = c("non_vis_1_screen_n", "non_vis_1_screen_p"),
+  select(hb, kpi, fin_year, non_vis_1_n, non_vis_1_p) |> 
+  pivot_longer(cols = c("non_vis_1_n", "non_vis_1_p"),
                names_to = "group", values_to = "value")
 
 eligible_non_vis <- bind_rows(eligible_non_vis, eligible_non_vis_1_screen)
@@ -423,16 +422,16 @@ not_met_reason <- not_met_reason |>
          fin_year = str_remove(fin_year, "_image_quality_p"),
          fin_year = str_remove(fin_year, "_anatomy_n"),
          fin_year = str_remove(fin_year, "_anatomy_p"),
-         group = case_when(str_detect(group, "_not_met_n") ~ "std_met_n",
-                           str_detect(group, "_calliper_n") ~ "im_recall_n",
-                           str_detect(group, "_calliper_p") ~ "im_recall_p",
-                           str_detect(group, "_angle_n") ~ "recall_in_cycle_n",
-                           str_detect(group, "_angle_p") ~ "recall_in_cycle_p",
-                           str_detect(group, "_image_quality_n") ~ "nr_sat_scan_n",
-                           str_detect(group, "_image_quality_p") ~ "nr_sat_scan_p",
-                           str_detect(group, "_anatomy_n") ~ "nr_referred_n",
-                           str_detect(group, "_anatomy_p") ~ "nr_referred_p"),
-         kpi = "QA standard not met reason", .after = hb) |>
+         group = case_when(str_detect(group, "_not_met_n") ~ "standard_not_met_n",
+                           str_detect(group, "_calliper_n") ~ "calliper_n",
+                           str_detect(group, "_calliper_p") ~ "calliper_p",
+                           str_detect(group, "_angle_n") ~ "angle_n",
+                           str_detect(group, "_angle_p") ~ "angle_p",
+                           str_detect(group, "_image_quality_n") ~ "image_quality_n",
+                           str_detect(group, "_image_quality_p") ~ "image_quality_p",
+                           str_detect(group, "_anatomy_n") ~ "anatomy_n",
+                           str_detect(group, "_anatomy_p") ~ "anatomy_p"),
+         kpi = "QA Not Met: Reason", .after = hb) |>
   glimpse()
 
 ### QA standard not met detail ----

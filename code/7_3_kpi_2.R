@@ -23,11 +23,11 @@ library(phsmethods)
 # library(haven)
 library(janitor)
 # library(tidyr)
-# library(stringr)
 library(lubridate)
 # library(here)
 # library(ggplot2)
 library(forcats)
+library(stringr)
 # library(readxl)
 # library(odbc)
 library(tidylog)
@@ -45,9 +45,18 @@ rm(exclusions_path, output_path)
 coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
 
 # Dates of first and last financial year ##!! Just start and end dates of current FY?
+##!! Also, what are the two dates that are commented out?? 
 start_date <- "2022-04-01" #"2019-04-01"
 
 end_date <- "2023-03-31" #"2022-03-31"
+
+# Table 4 variables
+finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
+
+end_current <- as.Date("2023-03-31") # combine w above date to remove excess variables
+end_minus_1 <- end_current %m-% years(1) 
+end_minus_2 <- end_current %m-% years(2)
+end_minus_3 <- end_current %m-% years(3) ## But why?
 
 
 #### Step 2: Read in and process data ----
@@ -206,6 +215,7 @@ kpi_2_2_add_a <- kpi_2_2_add_a %>%
 ### KPI 2.2 Additional B ----
 ## Number of screens that did not meet the QA audit standard by audit outcome
 ## (recall advice)
+## Any reason this can't sit with above extract reformatting (line 137)?
 # extract_audit_b <- extract %>%
 #   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
 #          # keep records sampled for QA audit
@@ -267,116 +277,106 @@ kpi_2_2_add_b <- kpi_2_2_add_b %>%
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
+rm(extract_audit)
     
 ### Supplementary table 4 ----
 ## Percentage of men tested who had no conclusive final result from initial 
 # screening as aorta could not be fully visualized
-coverage_basefile_a <- coverage_basefile %>%
-  #filter(!is.na(screen_result)) %>%
-  # create new variable for FY when patient turned 66
-  mutate(fin_year_66 = case_when(  ##!! LOOK AT CHANGING BELOW AWAY FROM DATES!!
-    age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
-    age_calculate(dob, as.Date("2021-03-31")) == 66 ~ kpi_report_years[[1]],
-    age_calculate(dob, as.Date("2022-03-31")) == 66 ~ kpi_report_years[[2]],
-    age_calculate(dob, as.Date("2023-03-31")) == 66 ~ kpi_report_years[[3]],
-    TRUE ~ "66 in a different year"))
 
+##!! This doesn't seem to be used again... what is it for?? To delete...?
+# coverage_basefile_a <- coverage_basefile %>%
+#   #filter(!is.na(screen_result)) %>%
+#   # create new variable for FY when patient turned 66
+#   mutate(fin_year_66 = case_when(  ##!! LOOK AT CHANGING BELOW AWAY FROM DATES!!
+#     age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
+#     age_calculate(dob, as.Date("2021-03-31")) == 66 ~ kpi_report_years[[1]],
+#     age_calculate(dob, as.Date("2022-03-31")) == 66 ~ kpi_report_years[[2]],
+#     age_calculate(dob, as.Date("2023-03-31")) == 66 ~ kpi_report_years[[3]],
+#     TRUE ~ "66 in a different year"))
+
+## Eligible cohort ---
 extract_sup_4 <- extract %>%
-  # Filter for relevant dates and keep positive, negative and non-vis screens
   filter(!is.na(screen_result)) %>%
+  # create flag for non-vis screens
   mutate(non_vis_n = if_else(screen_result == '04', 1, 0)) %>%
   group_by(upi) %>%
+  # create flag for any UPIs that have had a non-visualization
   mutate(non_vis_any = max(non_vis_n)) %>%
   ungroup() %>%
   filter(non_vis_any == 1) %>%
-  # total nonvis matches SPSS at this point
   mutate(non_vis_n = 1,
-         result_temp = case_when(
-           audit_outcome == "01" ~ 0,
-           screen_result %in% c("01", "02", "05", "06") ~ 1,
-           TRUE ~ 0)) %>%
+         # create flag where screens were not immediate recall,
+         result_temp = case_when(audit_outcome == "01" ~ 0,
+                                 # and were positive or negative for AAA >= 3.0cm
+                                 screen_result %in% c("01", "02", "05", "06") ~ 1,
+                                 TRUE ~ 0)) %>%
   group_by(upi) %>%
+  # create flag for any UPIs that fit result_temp flag
   mutate(flag_result = max(result_temp)) %>%
   ungroup() %>%
   filter(flag_result == 0, 
-         pat_elig != '03', 
-         screen_type %in% c('01', '03'),
-         screen_result != '03')
+         pat_elig != '03', # not a self-referral
+         screen_type %in% c('01', '03'), # initial/QA initial screen
+         screen_result != '03') # not a tech fail
 
 extract_sup_4 %>% count(flag_result)
 
-# create lookup
+# Create look-up of total non-visualizations per individual
 non_vis_lookup <- extract_sup_4 %>%
   group_by(upi) %>%
   summarise(non_vis = n()) %>%
   ungroup()
-# 2,516, same as SPSS line 171
 
-non_vis_lookup_2 <- non_vis_lookup %>%
-  filter(non_vis >= 2)
-# 1,675 matches SPSS line 176
+# # Create 2nd look-up of individuals with multiple non-visualizations 
+# ## NEEDED?? Don't think this is used anywhere...
+# non_vis_lookup_2 <- non_vis_lookup %>% 
+#   filter(non_vis >= 2)
 
 non_vis_match <- coverage_basefile %>%
   filter(!is.na(screen_result)) %>%
   left_join(non_vis_lookup, by = "upi") %>%
   mutate(
-    #non_vis_n = if_else(screen_result == '04', 1, 0),
+    #non_vis_n = if_else(screen_result == '04', 1, 0), ## NEEDED??
     non_vis = replace_na(non_vis, 0),
+    # create new variable for FY when patient turned 66
     fin_year_66 = case_when(
-      age_calculate(dob, as.Date("2020-03-31")) == 66 ~ "2019/20",
-      age_calculate(dob, as.Date("2021-03-31")) == 66 ~ "2020/21",
-      age_calculate(dob, as.Date("2022-03-31")) == 66 ~ "2021/22",
-      age_calculate(dob, as.Date("2023-03-31")) == 66 ~ "2022/23",
+      age_calculate(dob, end_minus_3) == 66 ~ finyear_minus_3, ## NEEDED??
+      age_calculate(dob, end_minus_2) == 66 ~ kpi_report_years[[1]],
+      age_calculate(dob, end_minus_1) == 66 ~ kpi_report_years[[2]],
+      age_calculate(dob, end_current) == 66 ~ kpi_report_years[[3]],
       TRUE ~ "66 in a different year"
     )) %>%
   filter(fin_year_66 != "66 in a different year")
 
-non_vis_sum_scot <- non_vis_match %>%
-  group_by(fin_year_66) %>%
-  summarise(
-    n = n(),
-    non_vis_n = sum(non_vis >= 1),
-    non_vis_2_more_n = sum(non_vis >= 2),
-    non_vis_1_n = sum(non_vis == 1)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    non_vis_p = round_half_up(non_vis_n/n*100, 1),
-    non_vis_2_more_p = round_half_up(non_vis_2_more_n/n*100, 1),
-    non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1),
-    hbres = "Scotland"
-  )
-
-non_vis_sum_hb <- non_vis_match %>%
-  # hb_screen not on coverage basefile, try hbres
+# Create summary tables
+sup_tab_4_eligible <- non_vis_match %>%
+  # hb_screen not on coverage basefile, try hbres ##!! GO BACK AND FIX THIS!!
   group_by(fin_year_66, hbres) %>%
-  # hbres giving same as SPSS output
-  summarise(
-    n = n(),
-    non_vis_n = sum(non_vis >= 1),
-    non_vis_2_more_n = sum(non_vis >= 2),
-    non_vis_1_n = sum(non_vis == 1)
-  ) %>%
+  summarise(n = n(),
+            non_vis_n = sum(non_vis >= 1),
+            non_vis_2_more_n = sum(non_vis >= 2),
+            non_vis_1_n = sum(non_vis == 1)) %>%
   ungroup() %>%
-  mutate(
-    non_vis_p = round_half_up(non_vis_n/n*100, 1),
-    non_vis_2_more_p = round_half_up(non_vis_2_more_n/n*100, 1),
-    non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1)
-  )
+  group_by(fin_year_66) |> 
+  group_modify(~ adorn_totals(.x, where = "row",
+                              name = "Scotland")) |>
+  ungroup() |> 
+  mutate(non_vis_p = round_half_up(non_vis_n/n*100, 1),
+         non_vis_2_more_p = round_half_up(non_vis_2_more_n/n*100, 1),
+         non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1))
 
-sup_tab_4_eligible <- bind_rows(non_vis_sum_scot, non_vis_sum_hb) %>%
+sup_tab_4_eligible <- sup_tab_4_eligible %>%
   mutate(hbres = fct_relevel(as.factor(hbres), "Scotland")) %>%
-  arrange(fin_year_66, hbres) %>%
-  pivot_wider(names_from = fin_year_66,
-              values_from = c(
-                n, non_vis_n, non_vis_p,
-                non_vis_2_more_n, non_vis_2_more_p,
-                non_vis_1_n, non_vis_1_p),
-              names_vary = 'slowest')
+  select(health_board = hbres,
+         financial_year = fin_year_66,
+         tested_n = n,
+         non_vis_n, non_vis_p,
+         non_vis_2_more_n, non_vis_2_more_p,
+         non_vis_1_n, non_vis_1_p) %>%
+  mutate(kpi = "Table 4: Eligible cohort", .after = health_board)
+  
 
-
-
-# 
+## CAN THIS BE DELETED?? LOOKS LIKE DUPLICATION? 
 # non_vis_2_match <- coverage_basefile %>%
 #   left_join(non_vis_lookup_2, by = "upi") %>%
 #   mutate(
@@ -413,176 +413,164 @@ sup_tab_4_eligible <- bind_rows(non_vis_sum_scot, non_vis_sum_hb) %>%
 #   ) %>%
 #   ungroup()
 
-### Step 3f: Self-referrals ----
-
-extract_sup_4_sr <- extract %>%
-  # Filter for relevant dates and keep positive, negative and non-vis screens
+## Self-referrals ---
+sup_tab_4_sr <- extract %>%
   filter(!is.na(screen_result)) %>%
-  mutate(
-    non_vis_n = if_else(screen_result == '04', 1, 0)
-  ) %>%
+  # create flag for non-vis screens
+  mutate(non_vis_n = if_else(screen_result == '04', 1, 0)) %>%
   group_by(upi) %>%
-  mutate(
-    non_vis_count = sum(non_vis_n),
-    non_vis_any = max(non_vis_n)
-  ) %>%
+  # create flag for total number of non-visualizations for each UPI and 
+  # another for any UPIs that have had a non-visualization
+  mutate(non_vis_count = sum(non_vis_n),
+         non_vis_any = max(non_vis_n)) %>%
   ungroup() %>%
   filter(non_vis_any == 1) %>%
-  # total nonvis matches SPSS at this point
-  mutate(
-    non_vis_n == 1,
-    result_temp = case_when(
-      audit_outcome == "01" ~ 0,
-      screen_result %in% c("01", "02", "05", "06") ~ 1,
-      TRUE ~ 0
-    )
-  ) %>%
+  mutate(non_vis_n == 1,
+         # create flag where screens were not immediate recall,
+         result_temp = case_when(audit_outcome == "01" ~ 0,
+                                 # and were positive or negative for AAA >= 3.0cm
+                                 screen_result %in% c("01", "02", "05", "06") ~ 1,
+                                 TRUE ~ 0)) %>%
   group_by(upi) %>%
   mutate(flag_result = max(result_temp)) %>%
   ungroup() %>%
   filter(flag_result == 0, 
-         pat_elig == '03', 
-         screen_type %in% c('01', '03'),
-         screen_result != '03'
-  ) %>%
+         pat_elig == '03', # not a self-referral 
+         screen_type %in% c('01', '03'), # initial/QA initial screen
+         screen_result != '03') %>% # not tech fail
   distinct(upi, .keep_all = TRUE) %>%
   group_by() %>%
-  summarise(
-    non_vis_n = n(),
-    non_vis_1_n = sum(non_vis_count == 1),
-    non_vis_2_more_n = sum(non_vis_count >= 2)
-  ) %>%
+  # create variable counts
+  summarise(non_vis_n = n(),
+            non_vis_2_more_n = sum(non_vis_count >= 2),
+            non_vis_1_n = sum(non_vis_count == 1)) %>%
   ungroup()
 
-
-# Get total no. of self-referrals
+# Total number self-referrals
 extract_sr <- extract %>%
-  filter(pat_elig == '03', 
+  filter(pat_elig == '03', # eligible: self-referral
+         # want cumulative total
          date_screen <= as.Date(end_date),
-         screen_type %in% c('01', '03'),
+         screen_type %in% c('01', '03'), # initial/QA initial screen
          !is.na(screen_result),
-         screen_result != '03'
-  ) %>% 
+         screen_result != '03') %>% # not tech fail
   distinct(upi) %>% 
-  count() %>%
-  rename(self_referrals = n)
+  count()
 
-sup_tab_4_sr <- bind_cols(extract_sr, extract_sup_4_sr)
+sup_tab_4_sr <- bind_cols(extract_sr, sup_tab_4_sr) |> 
+  mutate(non_vis_p = round_half_up(non_vis_n/n*100, 1),
+         non_vis_2_more_p = round_half_up(non_vis_2_more_n/n*100, 1),
+         non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1)) |> 
+  mutate(health_board = "Scotland",
+         kpi = "Table 4: Self-referral",
+         financial_year = kpi_report_years[[3]]) |> 
+  select(health_board, kpi, financial_year,
+         tested_n = n,
+         non_vis_n, non_vis_p,
+         non_vis_2_more_n, non_vis_2_more_p,
+         non_vis_1_n, non_vis_1_p)
+
+# Combine eligible cohort and self-referrals and reshape
+table_4 <- bind_rows(sup_tab_4_eligible, sup_tab_4_sr) |> 
+  pivot_longer(!health_board:financial_year, 
+               names_to = "group", values_to = "value")
+
+rm(extract_sup_4, non_vis_lookup, non_vis_lookup_2, non_vis_match, extract_sr,
+   sup_tab_4_eligible, sup_tab_4_sr)
 
 
-
-### Step 3g: Batch QA standard not met ----
-
+### QA standard not met REASON ---- 
+## Number of screens that did not meet the QA audit standard by reason
 qa_standard <- extract %>%
-  filter(!(screen_result %in% c('05','06')),
-         audit_result == '02',
-         financial_year  %in% c("2019/20", "2020/21", "2021/22", "2022/23")) %>%
-  # GC - add to issues
+  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
+         audit_result == '02', # standard not met
+         financial_year  %in% c(finyear_minus_3, kpi_report_years)) %>% #Why 4 years? Report only uses 3.
+  # GC - add to issues (Which part?)
   mutate(
-    
     audit_n = if_else(audit_flag == '01', 1, 0),
-    standard_met_n = if_else(
-      audit_result == '01', 1, 0),
-    audit_fail_reason_text = case_when(
-      audit_fail_reason == '01' ~ "Calliper",
-      audit_fail_reason == "02" ~ "Angle",
-      audit_fail_reason == '03' ~ "Image quality",
-      audit_fail_reason == '04' ~ "Anatomy",
-      TRUE ~ "No audit fail"
-    ),
+    standard_met_n = if_else(audit_result == '01', 1, 0), # Haven't these been removed?
+    audit_fail_reason_text = case_when(audit_fail_reason == '01' ~ "calliper",
+                                       audit_fail_reason == "02" ~ "angle",
+                                       audit_fail_reason == '03' ~ "image quality",
+                                       audit_fail_reason == '04' ~ "anatomy",
+                                       TRUE ~ "No audit fail"),
     audit_fail_reason_text = fct_relevel(audit_fail_reason_text,
-                                         "Calliper",
-                                         "Angle",
-                                         "Image quality",
-                                         "Anatomy",
-                                         "No audit fail"
-    )
-  )
+                                         "calliper",
+                                         "angle",
+                                         "image quality",
+                                         "anatomy",
+                                         "no audit fail"))
 
-qa_standard_hb_sum <- qa_standard %>%
+qa_standard_sum <- qa_standard %>%
   group_by(financial_year, hb_screen, audit_fail_reason_text) %>%
-  summarise(
-    standard_not_met_n = sum(audit_n) - sum(standard_met_n)
-  ) %>%
-  ungroup()
-
-qa_standard_scot_sum <- qa_standard_hb_sum %>%
-  group_by(financial_year, audit_fail_reason_text) %>%
-  summarise(standard_not_met_n = sum(standard_not_met_n)) %>%
+  ##!! Would it not make more sense to sum(audit_result) below?
+  summarise(standard_not_met_n = sum(audit_n) - sum(standard_met_n)) |>  
   ungroup() %>%
-  mutate(hb_screen = "Scotland")
+  group_by(financial_year, audit_fail_reason_text) |> 
+  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |> 
+  ungroup() |> 
+  select(financial_year, hb_screen, standard_not_met_n, audit_fail_reason_text)
 
-# Combine 
-qa_standard_sum <- bind_rows(qa_standard_scot_sum, qa_standard_hb_sum)
 
 # Calculate total where standard not met
 qa_standard_totals <- qa_standard_sum %>%
   group_by(financial_year, hb_screen) %>%
   summarise(standard_not_met_n = sum(standard_not_met_n)) %>%
   ungroup() %>%
-  mutate(audit_fail_reason_text = "Standard not met")
+  mutate(audit_fail_reason_text = "standard not met")
 
 qa_standard_not_met <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
-  # GC - move to KH code?
+  # GC - move to KH code? ##!! Which part? Can move fct_relevel for hb_screen
   mutate(hb_screen = fct_relevel(hb_screen, "Scotland"),
          audit_fail_reason_text = fct_relevel(audit_fail_reason_text, 
-                                              "Standard not met",
-                                              "Calliper",
-                                              "Angle",
-                                              "Image quality",
-                                              "Anatomy",
-                                              "No audit fail")
-  ) %>%
+                                              "standard not met",
+                                              "calliper",
+                                              "angle",
+                                              "image quality",
+                                              "anatomy",
+                                              "no audit fail")) %>%
   arrange(financial_year, hb_screen, audit_fail_reason_text) %>%
-  pivot_wider(
-    values_from = standard_not_met_n,
-    names_from = c(audit_fail_reason_text),
-    names_glue = "{audit_fail_reason_text}_n"
-  ) %>%
-  clean_names() %>%
+  pivot_wider(values_from = standard_not_met_n,
+              names_from = c(audit_fail_reason_text),
+              names_glue = "{audit_fail_reason_text}_n") |> 
+  clean_names()
+  
+qa_standard_not_met <- qa_standard_not_met |> 
   mutate(calliper_p = round_half_up(calliper_n/standard_not_met_n*100, 1),
          angle_p = round_half_up(angle_n/standard_not_met_n*100, 1),
          image_quality_p = round_half_up(image_quality_n/standard_not_met_n*100, 1),
-         anatomy_p = round_half_up(anatomy_n/standard_not_met_n*100, 1)
-  ) %>%
-  select(
-    hb_screen, financial_year, 
-    standard_not_met_n, calliper_n, calliper_p,
-    angle_n, angle_p, image_quality_n, image_quality_p,
-    anatomy_n, anatomy_p
-  ) %>%
-  pivot_wider(names_from = financial_year,
-              names_vary = "slowest",
-              values_from = standard_not_met_n:anatomy_p)
+         anatomy_p = round_half_up(anatomy_n/standard_not_met_n*100, 1)) %>%
+  mutate(kpi = "QA Not Met: Reason") |> 
+  select(hb_screen, kpi, financial_year, standard_not_met_n,
+         calliper_n, calliper_p, angle_n, angle_p, 
+         image_quality_n, image_quality_p, anatomy_n, anatomy_p) |> 
+  pivot_longer(!hb_screen:financial_year, 
+               names_to = "group", values_to = "value")
 
-### Step 3h: Standard not met detail ----
+rm(qa_standard_sum, qa_standard_totals)  
+  
 
+### QA standard not met DETAIL ----
+## Screens that did not meet the quality assurance standard by detailed reason
 detail <- qa_standard %>%
-  select(
-    financial_year, audit_fail_1:audit_fail_5
-  ) %>%
-  pivot_longer(
-    cols = audit_fail_1:audit_fail_5,
-    names_to = "column"
-  ) %>%
+  select(financial_year, audit_fail_1:audit_fail_5) %>%
+  pivot_longer(cols = audit_fail_1:audit_fail_5,
+               names_to = "column") %>%
   filter(!is.na(value)) %>%
-  mutate(
-    detail_text = case_when(
-      value == "01" ~ "Calliper - APL",
-      value == "02" ~ "Calliper - APT",
-      value == "03" ~ "Calliper - Anterior Calliper",
-      value == "04" ~ "Calliper - Posterior Calliper",
-      value == "05" ~ "Angle - APL",
-      value == "06" ~ "Angle - APT",
-      value == "07" ~ "Angle - Image Angle",
-      value == "08" ~ "Angle - Measurement Angle",
-      value == "09" ~ "Image Quality - Gain",
-      value == "10" ~ "Image Quality - Depth",
-      value == "11" ~ "Image Quality - Focus",
-      value == "12" ~ "Image Quality - Section Width",
-      value == "13" ~ "Image Quality - Image Size",
-      value == "14" ~ "Anatomy - see QA notes" 
-    ),
+  mutate(detail_text = case_when(value == "01" ~ "Calliper - APL",
+                                 value == "02" ~ "Calliper - APT",
+                                 value == "03" ~ "Calliper - Anterior Calliper",
+                                 value == "04" ~ "Calliper - Posterior Calliper",
+                                 value == "05" ~ "Angle - APL",
+                                 value == "06" ~ "Angle - APT",
+                                 value == "07" ~ "Angle - Image Angle",
+                                 value == "08" ~ "Angle - Measurement Angle",
+                                 value == "09" ~ "Image Quality - Gain",
+                                 value == "10" ~ "Image Quality - Depth",
+                                 value == "11" ~ "Image Quality - Focus",
+                                 value == "12" ~ "Image Quality - Section Width",
+                                 value == "13" ~ "Image Quality - Image Size",
+                                 value == "14" ~ "Anatomy - see QA notes"),
     detail_text = fct_relevel(detail_text,
                               "Calliper - APL",
                               "Calliper - APT",
@@ -597,30 +585,25 @@ detail <- qa_standard %>%
                               "Image Quality - Focus",
                               "Image Quality - Section Width",
                               "Image Quality - Image Size",
-                              "Anatomy - see QA notes" 
-    ),
+                              "Anatomy - see QA notes"),
     summary_text = case_when(
       str_detect(detail_text, "Calliper") ~ "Total - Calliper",
       str_detect(detail_text, "Angle") ~ "Total - Angle",
       str_detect(detail_text, "Image Quality") ~ "Total - Quality",
       str_detect(detail_text, "Anatomy") ~ "Total - Anatomy"),
-    summary_text = fct_relevel(
-      summary_text,
-      "Total - Calliper",
-      "Total - Angle",
-      "Total - Quality",
-      "Total - Anatomy"
-    )) 
+    summary_text = fct_relevel(summary_text,
+                               "Total - Calliper",
+                               "Total - Angle",
+                               "Total - Quality",
+                               "Total - Anatomy")) 
 
 summary_detail_text <- detail %>%
   group_by(financial_year, detail_text) %>%
-  summarise(
-    n = n()
-  ) %>%
-  ungroup() %>%
+  summarise(n = n()) %>%
+  ungroup() #%>%
   pivot_wider(names_from = financial_year,
               values_from = n) %>%
-  clean_names() %>%
+  clean_names() #%>%
   rename(detail = detail_text) %>%
   mutate(
     # GC - this not perfect as years will have to be changed manually
