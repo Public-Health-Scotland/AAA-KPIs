@@ -39,7 +39,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, output_path)
+rm(hb_list, exclusions_path, output_path)
 
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
@@ -57,6 +57,27 @@ end_current <- as.Date("2023-03-31") # combine w above date to remove excess var
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
 end_minus_3 <- end_current %m-% years(3) ## But why?
+
+# QA standard not met detailed reasons list
+qa_detail_list <- tibble(detail = c("Calliper - APL",
+                                    "Calliper - APT",
+                                    "Calliper - Anterior Calliper",
+                                    "Calliper - Posterior Calliper",
+                                    "Total (Calliper)",
+                                    "Angle - APL",
+                                    "Angle - APT",
+                                    "Angle - Image Angle",
+                                    "Angle - Measurement Angle",
+                                    "Total (Angle)",
+                                    "Image Quality - Gain",
+                                    "Image Quality - Depth",
+                                    "Image Quality - Focus",
+                                    "Image Quality - Section Width",
+                                    "Image Quality - Image Size",
+                                    "Total (Quality)",
+                                    "Anatomy - see QA notes",
+                                    "Total (Anatomy)",
+                                    "Total (Overall)"))
 
 
 #### Step 2: Read in and process data ----
@@ -484,7 +505,8 @@ rm(extract_sup_4, non_vis_lookup, non_vis_lookup_2, non_vis_match, extract_sr,
 qa_standard <- extract %>%
   filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
          audit_result == '02', # standard not met
-         financial_year  %in% c(finyear_minus_3, kpi_report_years)) %>% #Why 4 years? Report only uses 3.
+         #financial_year  %in% c(finyear_minus_3, kpi_report_years)) %>% # Why 4 years? Report only uses 3.
+         financial_year  %in% c(kpi_report_years)) %>%
   # GC - add to issues (Which part?)
   mutate(
     audit_n = if_else(audit_flag == '01', 1, 0),
@@ -519,7 +541,7 @@ qa_standard_totals <- qa_standard_sum %>%
   ungroup() %>%
   mutate(audit_fail_reason_text = "standard not met")
 
-qa_standard_not_met <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
+qa_reason <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
   # GC - move to KH code? ##!! Which part? Can move fct_relevel for hb_screen
   mutate(hb_screen = fct_relevel(hb_screen, "Scotland"),
          audit_fail_reason_text = fct_relevel(audit_fail_reason_text, 
@@ -535,7 +557,7 @@ qa_standard_not_met <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
               names_glue = "{audit_fail_reason_text}_n") |> 
   clean_names()
   
-qa_standard_not_met <- qa_standard_not_met |> 
+qa_reason <- qa_reason |> 
   mutate(calliper_p = round_half_up(calliper_n/standard_not_met_n*100, 1),
          angle_p = round_half_up(angle_n/standard_not_met_n*100, 1),
          image_quality_p = round_half_up(image_quality_n/standard_not_met_n*100, 1),
@@ -551,7 +573,7 @@ rm(qa_standard_sum, qa_standard_totals)
   
 
 ### QA standard not met DETAIL ----
-## Screens that did not meet the quality assurance standard by detailed reason
+## Screens that did not meet the quality assurance standard by detailed reasons
 detail <- qa_standard %>%
   select(financial_year, audit_fail_1:audit_fail_5) %>%
   pivot_longer(cols = audit_fail_1:audit_fail_5,
@@ -587,83 +609,110 @@ detail <- qa_standard %>%
                               "Image Quality - Image Size",
                               "Anatomy - see QA notes"),
     summary_text = case_when(
-      str_detect(detail_text, "Calliper") ~ "Total - Calliper",
-      str_detect(detail_text, "Angle") ~ "Total - Angle",
-      str_detect(detail_text, "Image Quality") ~ "Total - Quality",
-      str_detect(detail_text, "Anatomy") ~ "Total - Anatomy"),
+      str_detect(detail_text, "Calliper") ~ "Total (Calliper)",
+      str_detect(detail_text, "Angle") ~ "Total (Angle)",
+      str_detect(detail_text, "Image Quality") ~ "Total (Quality)",
+      str_detect(detail_text, "Anatomy") ~ "Total (Anatomy)"),
     summary_text = fct_relevel(summary_text,
-                               "Total - Calliper",
-                               "Total - Angle",
-                               "Total - Quality",
-                               "Total - Anatomy")) 
+                               "Total (Calliper)",
+                               "Total (Angle)",
+                               "Total (Quality)",
+                               "Total (Anatomy)")) 
 
-summary_detail_text <- detail %>%
+# Change FY variable to generalized level
+detail <- detail |> 
+  mutate(financial_year = case_when(financial_year == kpi_report_years[[1]] ~ "year1",
+                                    financial_year == kpi_report_years[[2]] ~ "year2",
+                                    financial_year == kpi_report_years[[3]] ~ "year3",
+                                    TRUE ~ financial_year))
+
+table(detail$financial_year)
+
+## Calculate percent for each year
+# Detailed categories
+summary_detail <- detail %>%
   group_by(financial_year, detail_text) %>%
   summarise(n = n()) %>%
-  ungroup() #%>%
-  pivot_wider(names_from = financial_year,
-              values_from = n) %>%
-  clean_names() #%>%
-  rename(detail = detail_text) %>%
-  mutate(
-    # GC - this not perfect as years will have to be changed manually
-    x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
-    x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
-    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
-  )
-
-summary_text <- detail %>%
-  group_by(financial_year, summary_text) %>%
-  summarise(
-    n = n()
-  ) %>%
   ungroup() %>%
   pivot_wider(names_from = financial_year,
               values_from = n) %>%
-  clean_names() %>%
+  rename(detail = detail_text) %>%
+  mutate(year1_p = round_half_up(year1/sum(year1)*100, 1),
+         year2_p = round_half_up(year2/sum(year2)*100, 1),
+         year3_p = round_half_up(year3/sum(year3)*100, 1))
+
+# Totaled categories
+summary_text <- detail %>%
+  group_by(financial_year, summary_text) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = financial_year,
+              values_from = n) %>%
   rename(detail = summary_text) %>%
-  mutate(
-    # GC - this not perfect as years will have to be changed manually
-    x2019_20_p = round_half_up(x2019_20/sum(x2019_20)*100, 1),
-    x2020_21_p = round_half_up(x2020_21/sum(x2020_21)*100, 1),
-    x2021_22_p = round_half_up(x2021_22/sum(x2021_22)*100, 1),
-    x2022_23_p = round_half_up(x2022_23/sum(x2022_23)*100, 1)
-  )
+  mutate(year1_p = round_half_up(year1/sum(year1)*100, 1),
+         year2_p = round_half_up(year2/sum(year2)*100, 1),
+         year3_p = round_half_up(year3/sum(year3)*100, 1))
 
+# Total standard not met
+summary <- detail %>%
+  group_by(financial_year) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = financial_year,
+              values_from = n) %>%
+  mutate(detail = "Total (Overall)", .before = year1) |> 
+  mutate(year1_p = round_half_up(year1/sum(year1)*100, 1),
+         year2_p = round_half_up(year2/sum(year2)*100, 1),
+         year3_p = round_half_up(year3/sum(year3)*100, 1))
 
-qa_std_not_met_detail <- bind_rows(summary_text, summary_detail_text) %>%
+# Combine and reorganize
+qa_detail <- bind_rows(summary_text, summary_detail, summary) %>%
   mutate(detail = fct_relevel(detail,
                               "Calliper - APL",
                               "Calliper - APT",
                               "Calliper - Anterior Calliper",
                               "Calliper - Posterior Calliper",
-                              "Total - Calliper",
+                              "Total (Calliper)",
                               "Angle - APL",
                               "Angle - APT",
                               "Angle - Image Angle",
                               "Angle - Measurement Angle",
-                              "Total - Angle",
+                              "Total (Angle)",
                               "Image Quality - Gain",
                               "Image Quality - Depth",
                               "Image Quality - Focus",
                               "Image Quality - Section Width",
                               "Image Quality - Image Size",
-                              "Total - Quality",
+                              "Total (Quality)",
                               "Anatomy - see QA notes",
-                              "Total - Anatomy")) %>%
-  arrange(detail) %>%
-  select(
-    detail,
-    x2019_20_n = x2019_20,
-    x2019_20_p,
-    x2020_21_n = x2020_21,
-    x2020_21_p,
-    x2021_22_n = x2021_22,
-    x2021_22_p,
-    x2022_23_n = x2022_23,
-    x2022_23_p,
-  )
+                              "Total (Anatomy)",
+                              "Total (Overall)")) %>%
+  select(detail,
+         year1_n = year1,
+         year1_p,
+         year2_n = year2,
+         year2_p,
+         year3_n = year3,
+         year3_p)
+
+# Insert any missing detail categories and arrange
+qa_detail <- qa_detail_list |> left_join(qa_detail, by = "detail")
+
+  # Reformat
+qa_detail <- qa_detail |> 
+  pivot_longer(!detail, names_to = "group", values_to = "value") |> 
+  mutate(financial_year = group, .after = detail) |> 
+  mutate(kpi = "QA Not Met: Detail", .after = detail) |> 
+  mutate(financial_year = case_when(str_detect(financial_year, "year1") ~ kpi_report_years[[1]],
+                                    str_detect(financial_year, "year2") ~ kpi_report_years[[2]],
+                                    str_detect(financial_year, "year3") ~ kpi_report_years[[3]]),
+         group = case_when(str_detect(group, "_n") ~ "n",
+                           str_detect(group, "_p") ~ "p")) |> 
+  mutate(value = ifelse(is.na(value), 0, value))
+
+rm(qa_standard, detail, summary_detail, summary_text, summary, qa_detail_list)
+
+
 
 ### Step 3i: MI Batch QA standard not met health board ----
 
