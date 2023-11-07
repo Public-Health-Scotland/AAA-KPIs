@@ -20,16 +20,10 @@
 library(readr)
 library(dplyr)
 library(phsmethods)
-# library(haven)
 library(janitor)
-# library(tidyr)
 library(lubridate)
-# library(here)
-# library(ggplot2)
 library(forcats)
 library(stringr)
-# library(readxl)
-# library(odbc)
 library(tidylog)
 
 
@@ -78,6 +72,16 @@ qa_detail_list <- tibble(detail = c("Calliper - APL",
                                     "Anatomy - see QA notes",
                                     "Total (Anatomy)",
                                     "Total (Overall)"))
+
+qa_batch_list <- tibble(std_not_met = c("Screener", "Equipment", "Location",
+                                        "Other with notes", "Total"))
+
+qa_recall_list <- tibble(recall_advice = c("Immediate recall", 
+                                           "Recall in current cycle",
+                                           "No recall: Satisfactory interim scan",
+                                           "No recall: Referred to vascular",
+                                           "No recall: Verified by 2nd opinion",
+                                           "Total"))
 
 
 #### Step 2: Read in and process data ----
@@ -136,6 +140,7 @@ extract2_dedup_scotland <- extract2 %>%
 # GC TO DO
 # decide whether it is acceptable to have differing totals for scotland
 # vs. if adding the HBs individually
+# ##!! Can we talk through this?
 
 kpi_2_1b_hb <- extract2_dedup_hb %>%
   group_by(financial_year, hb_screen) %>%
@@ -388,7 +393,7 @@ sup_tab_4_eligible <- non_vis_match %>%
 
 sup_tab_4_eligible <- sup_tab_4_eligible %>%
   mutate(hbres = fct_relevel(as.factor(hbres), "Scotland")) %>%
-  select(health_board = hbres,
+  select(health_board = hbres, 
          financial_year = fin_year_66,
          tested_n = n,
          non_vis_n, non_vis_p,
@@ -621,6 +626,7 @@ detail <- qa_standard %>%
 
 # Change FY variable to generalized level
 detail <- detail |> 
+  filter(financial_year %in% c(kpi_report_years)) |> # should already be filtered
   mutate(financial_year = case_when(financial_year == kpi_report_years[[1]] ~ "year1",
                                     financial_year == kpi_report_years[[2]] ~ "year2",
                                     financial_year == kpi_report_years[[3]] ~ "year3",
@@ -667,26 +673,27 @@ summary <- detail %>%
 
 # Combine and reorganize
 qa_detail <- bind_rows(summary_text, summary_detail, summary) %>%
-  mutate(detail = fct_relevel(detail,
-                              "Calliper - APL",
-                              "Calliper - APT",
-                              "Calliper - Anterior Calliper",
-                              "Calliper - Posterior Calliper",
-                              "Total (Calliper)",
-                              "Angle - APL",
-                              "Angle - APT",
-                              "Angle - Image Angle",
-                              "Angle - Measurement Angle",
-                              "Total (Angle)",
-                              "Image Quality - Gain",
-                              "Image Quality - Depth",
-                              "Image Quality - Focus",
-                              "Image Quality - Section Width",
-                              "Image Quality - Image Size",
-                              "Total (Quality)",
-                              "Anatomy - see QA notes",
-                              "Total (Anatomy)",
-                              "Total (Overall)")) %>%
+  # # this step (mutate) can be removed b/c of qa_detail_list step below
+  # mutate(detail = fct_relevel(detail,
+  #                             "Calliper - APL",
+  #                             "Calliper - APT",
+  #                             "Calliper - Anterior Calliper",
+  #                             "Calliper - Posterior Calliper",
+  #                             "Total (Calliper)",
+  #                             "Angle - APL",
+  #                             "Angle - APT",
+  #                             "Angle - Image Angle",
+  #                             "Angle - Measurement Angle",
+  #                             "Total (Angle)",
+  #                             "Image Quality - Gain",
+  #                             "Image Quality - Depth",
+  #                             "Image Quality - Focus",
+  #                             "Image Quality - Section Width",
+  #                             "Image Quality - Image Size",
+  #                             "Total (Quality)",
+  #                             "Anatomy - see QA notes",
+  #                             "Total (Anatomy)",
+  #                             "Total (Overall)")) %>%
   select(detail,
          year1_n = year1,
          year1_p,
@@ -698,7 +705,7 @@ qa_detail <- bind_rows(summary_text, summary_detail, summary) %>%
 # Insert any missing detail categories and arrange
 qa_detail <- qa_detail_list |> left_join(qa_detail, by = "detail")
 
-  # Reformat
+# Reformat
 qa_detail <- qa_detail |> 
   pivot_longer(!detail, names_to = "group", values_to = "value") |> 
   mutate(financial_year = group, .after = detail) |> 
@@ -713,36 +720,140 @@ qa_detail <- qa_detail |>
 rm(qa_standard, detail, summary_detail, summary_text, summary, qa_detail_list)
 
 
-
-### Step 3i: MI Batch QA standard not met health board ----
-
-standard_not_met_hb <- extract2 %>%
-  filter(!(screen_result %in% c('05','06')),
+### Batch QA standard not met ----
+## Batch QA standard not met by reason by Scotland total and HB of screening, 
+## and batch standard not met screens by recall advice by HB of screening
+# Scotland total ---
+qa_batch_scot <- extract2 %>%
+  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
          !is.na(audit_batch_fail)) %>%
-  
-  mutate(
-    std_not_met = case_when(
-      audit_batch_fail == "01" ~ "Screener",
-      audit_batch_fail == "02" ~ "Equipment",
-      audit_batch_fail == "03" ~ "Location",
-      audit_batch_fail == "04" ~ "Other with notes"
-    )
-  ) %>%
-  group_by(hb_screen, financial_year, std_not_met) %>%
-  summarise(
-    n = n()
-  ) %>%
-  ungroup() %>%
-  pivot_wider(names_from = c(financial_year, std_not_met),
-              values_from = n)
+  mutate(std_not_met = case_when(audit_batch_fail == "01" ~ "Screener",
+                                 audit_batch_fail == "02" ~ "Equipment",
+                                 audit_batch_fail == "03" ~ "Location",
+                                 audit_batch_fail == "04" ~ "Other with notes")) %>%
+  group_by(std_not_met) %>%
+  summarise(n = n()) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
+  ungroup()
 
-# write_rds(standard_not_met_hb, "standard_not_met_hb.rds")
-# 
-# #### Step 4: Write tables out to R ----
-# write_rds(kpi_2_1_a, "temp/kpi_2_1_a.rds")
-# write_rds(kpi_2_1_b, "temp/kpi_2_1_b.rds")
-# write_rds(kpi_2_2, "temp/kpi_2_2.rds")
-# write_rds(sup_tab_4_eligible, "temp/sup_tab_4_eligible.rds")
-# write_rds(sup_tab_4_sr, "temp/sup_tab_4_sr.rds")
-# write_rds(qa_standard_not_met, "temp/qa_standard_not_met.rds")
-# write_rds(qa_std_not_met_detail, "temp/qa_std_not_met_detail.rds")
+# Insert any missing detail categories and arrange
+qa_batch_scot <- qa_batch_list |> left_join(qa_batch_scot, by = "std_not_met") |> 
+  mutate(n = ifelse(is.na(n), 0, n)) |> 
+  mutate(hb_screen = "Scotland", 
+         kpi = "QA Batch standard not met: Reason",
+         financial_year = kpi_report_years[[3]]) |> 
+  select(hb_screen, kpi, financial_year, 
+         group = std_not_met,
+         value = n)
+  
+# HB of screening total ---
+qa_batch_hb <- extract2 %>%
+  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
+         !is.na(audit_batch_fail)) %>%
+  mutate(std_not_met = case_when(audit_batch_fail == "01" ~ "Screener",
+                                 audit_batch_fail == "02" ~ "Equipment",
+                                 audit_batch_fail == "03" ~ "Location",
+                                 audit_batch_fail == "04" ~ "Other with notes")) %>%
+  group_by(std_not_met, hb_screen) %>%
+  summarise(n = n()) %>%
+  ungroup() |> 
+  group_by(hb_screen) |> 
+  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
+  ungroup()
+
+# Insert any missing detail categories and arrange
+qa_batch_hb <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
+  mutate(n = ifelse(is.na(n), 0, n)) |> 
+  ##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
+  ## be rewritten to take multiple HBs into account; just time-saving for now,
+  ## sorry to the next person who runs this code...
+  mutate(hb_screen = "Tayside", 
+         kpi = "QA Batch standard not met: Reason",
+         financial_year = kpi_report_years[[3]]) |> 
+  select(hb_screen, kpi, financial_year, 
+         group = std_not_met,
+         value = n)
+
+# HB of screening recall advice ---
+qa_batch_recall <- extract2 %>%
+  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
+         !is.na(audit_batch_outcome)) %>%
+  mutate(recall_advice = case_when(audit_batch_outcome == "01" ~ 
+                                     "Immediate recall",
+                                   audit_batch_outcome == "02" ~ 
+                                     "Recall in current cycle",
+                                   audit_batch_outcome == "03" ~ 
+                                     "No recall: Satisfactory interim scan",
+                                   audit_batch_outcome == "04" ~ 
+                                     "No recall: Referred to vascular",
+                                   audit_batch_outcome == "05" ~ 
+                                     "No recall: Verified by 2nd opinion")) %>%
+  group_by(recall_advice, hb_screen) %>%
+  summarise(n = n()) %>%
+  ungroup() |> 
+  group_by(hb_screen) |> 
+  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
+  ungroup()
+
+# Insert any missing detail categories and arrange
+qa_batch_recall <- qa_recall_list |> left_join(qa_batch_recall, by = "recall_advice") |> 
+  mutate(n = ifelse(is.na(n), 0, n)) |> 
+  ##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
+  ## be rewritten to take multiple HBs into account; just time-saving for now,
+  ## sorry to the next person who runs this code...
+  mutate(hb_screen = "Tayside", 
+         kpi = "QA Batch standard not met: Recall Advice",
+         financial_year = kpi_report_years[[3]]) |> 
+  select(hb_screen, kpi, financial_year, 
+         group = recall_advice,
+         value = n)
+
+
+
+# #### Step 4: Combine and Output ----
+## Check names of variables to see if they can be combined
+names(kpi_2_1a)
+names(kpi_2_1b)
+names(kpi_2_2)
+names(kpi_2_2_add_a)
+names(table_4)
+names(kpi_2_2_add_b)
+names(qa_reason)
+names(qa_detail)
+names(qa_batch_scot)
+names(qa_batch_hb)
+names(qa_batch_recall)
+
+## Temporarily change table_4 from "health_board" to "hb_screen"; Eventually,
+## should go back and change variable (will need to go back into scripts 1 & 2.)
+table_4 <- rename(table_4, hb_screen = health_board)
+
+## This doesn't really work, but I want a nice, neat package at the moment, 
+## so I'm doing it anyway.
+qa_detail <- rename(qa_detail, hb_screen = detail)
+
+# Combine
+kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, table_4,
+                   kpi_2_2_add_b, qa_reason, qa_detail, qa_batch_scot, 
+                   qa_batch_hb, qa_batch_recall)
+
+
+
+########
+check <- read_rds(paste0(hist_path, "/aaa_kpi_historical_theme_3.rds"))
+write_csv(check, paste0(temp_path, "/check.csv"))
+write_csv(kpi_2, paste0(temp_path, "/kpi_2.csv"))
+
+
+
+
+table(check$kpi, check$group)
+
+
+
+
+hist_batch <- check[check$kpi == "Batch QA standard not met",]
+hist_detail <- check[check$kpi == "QA standard not met detail",]
+hist_reason <- check[check$kpi == "QA standard not met reason",]
+
+
