@@ -741,7 +741,7 @@ qa_batch_scot <- qa_batch_list |> left_join(qa_batch_scot, by = "std_not_met") |
   mutate(n = ifelse(is.na(n), 0, n)) |> 
   mutate(hb_screen = "Scotland", 
          kpi = "QA Batch standard not met: Reason",
-         financial_year = kpi_report_years[[3]]) |> 
+         financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
          value = n)
@@ -769,7 +769,7 @@ qa_batch_hb <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |>
   ## sorry to the next person who runs this code...
   mutate(hb_screen = "Tayside", 
          kpi = "QA Batch standard not met: Reason",
-         financial_year = kpi_report_years[[3]]) |> 
+         financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
          value = n)
@@ -787,7 +787,10 @@ qa_batch_recall <- extract2 %>%
                                    audit_batch_outcome == "04" ~ 
                                      "No recall: Referred to vascular",
                                    audit_batch_outcome == "05" ~ 
-                                     "No recall: Verified by 2nd opinion")) %>%
+                                     "No recall: Verified by 2nd opinion")) #%>%
+
+# Health Board total  
+qa_batch_recall_hb <- qa_batch_recall |> 
   group_by(recall_advice, hb_screen) %>%
   summarise(n = n()) %>%
   ungroup() |> 
@@ -796,21 +799,48 @@ qa_batch_recall <- extract2 %>%
   ungroup()
 
 # Insert any missing detail categories and arrange
-qa_batch_recall <- qa_recall_list |> left_join(qa_batch_recall, by = "recall_advice") |> 
+qa_batch_recall_hb <- qa_recall_list |> left_join(qa_batch_recall_hb, 
+                                               by = "recall_advice") |> 
   mutate(n = ifelse(is.na(n), 0, n)) |> 
   ##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
   ## be rewritten to take multiple HBs into account; just time-saving for now,
   ## sorry to the next person who runs this code...
   mutate(hb_screen = "Tayside", 
          kpi = "QA Batch standard not met: Recall Advice",
-         financial_year = kpi_report_years[[3]]) |> 
+         financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = recall_advice,
          value = n)
 
+# Scotland total  
+qa_batch_recall_scot <- qa_batch_recall |> 
+  group_by(recall_advice) %>%
+  summarise(n = n()) %>%
+  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
+  ungroup() |> 
+  mutate(hb_screen = "Scotland", .before = recall_advice)
 
+# Insert any missing detail categories and arrange
+qa_batch_recall_scot <- qa_recall_list |> left_join(qa_batch_recall_scot, 
+                                                    by = "recall_advice") |> 
+  mutate(n = ifelse(is.na(n), 0, n)) |> 
+##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
+## be rewritten to take multiple HBs into account; just time-saving for now,
+## sorry to the next person who runs this code...
+mutate(hb_screen = "Scotland", 
+       kpi = "QA Batch standard not met: Recall Advice",
+       financial_year = kpi_report_years[3]) |> 
+  select(hb_screen, kpi, financial_year, 
+         group = recall_advice,
+         value = n)
+  
+# Combine
+qa_batch_recall <- bind_rows(qa_batch_recall_hb, qa_batch_recall_scot)
 
-# #### Step 4: Combine and Output ----
+rm(qa_batch_recall_hb, qa_batch_recall_scot) 
+  
+
+#### Step 4: Combine and Output ----
 ## Check names of variables to see if they can be combined
 names(kpi_2_1a)
 names(kpi_2_1b)
@@ -829,7 +859,9 @@ names(qa_batch_recall)
 table_4 <- rename(table_4, hb_screen = health_board)
 
 ## This doesn't really work, but I want a nice, neat package at the moment, 
-## so I'm doing it anyway.
+## so I'm doing it anyway. It would make sense to concatenate the "detail" variable 
+## with the "group" variable and add Scotland as the hb_screen, but that would 
+## mean having to undo that in the Excel output script, creating more unecessary work.
 qa_detail <- rename(qa_detail, hb_screen = detail)
 
 # Combine
@@ -838,22 +870,25 @@ kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, table_4,
                    qa_batch_hb, qa_batch_recall)
 
 
+### Historical database
+## Full records (currently only from 2019/20; need to add full historical)
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme_3.rds"))
+# save a backup of hist_db
+write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme_3_bckp.rds"))
+# change permissions to give the group read/write
+Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme_3_bckp.rds"),
+          mode = "664", use_umask = FALSE)
 
-########
-check <- read_rds(paste0(hist_path, "/aaa_kpi_historical_theme_3.rds"))
-write_csv(check, paste0(temp_path, "/check.csv"))
-write_csv(kpi_2, paste0(temp_path, "/kpi_2.csv"))
+table(hist_db$kpi, hist_db$fin_year) 
+table(kpi_2$kpi, kpi_2$financial_year) 
+
+## Combine data from current to historical
+current_kpi <- kpi_2 |> 
+  filter(financial_year == "2022/23") |> 
+  filter(kpi != str_detect(kpi, "Table 4:"))
+  
+table(current_kpi$kpi, current_kpi$financial_year) 
 
 
-
-
-table(check$kpi, check$group)
-
-
-
-
-hist_batch <- check[check$kpi == "Batch QA standard not met",]
-hist_detail <- check[check$kpi == "QA standard not met detail",]
-hist_reason <- check[check$kpi == "QA standard not met reason",]
 
 
