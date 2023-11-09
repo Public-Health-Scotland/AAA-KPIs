@@ -2,13 +2,9 @@
 # 7_3_kpi_2.R
 # Gavin Clark & Karen Hotopp
 # 19/10/2022
-
-# # Translation of the syntaxes associated with theme 4:
-#### KPIs - 4. KPI2.1-2.2 (Non Vis and QA)
-#### Management Information - 1. KPI 2.2 Additional - audit breakdown
-####                        - 2a. Table 4 - Non Vis eligible cohort
-####                        - 2b. Table 4 - Non Vis Self Ref
-####                        - Audit fails (LSWG-reports)
+#
+# Processing data for Theme 3 workbook of AAA KPIs for MEG
+# KPI 2: Quality Assurance and Audit of Scans
 #
 # Written/run on R Studio Server, R version 3.6.1
 # Revised on Posit PWB, R Version 4.1.2
@@ -865,30 +861,79 @@ table_4 <- rename(table_4, hb_screen = health_board)
 qa_detail <- rename(qa_detail, hb_screen = detail)
 
 # Combine
-kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, table_4,
-                   kpi_2_2_add_b, qa_reason, qa_detail, qa_batch_scot, 
-                   qa_batch_hb, qa_batch_recall)
+# Note: Table 4 not added until after new historical file has been created,
+# as data is recalculated for each report and not retained in historical file
+kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, 
+                   kpi_2_2_add_b, qa_reason, qa_detail,  
+                   qa_batch_scot, qa_batch_hb, qa_batch_recall)
 
 
-### Historical database
+### Historical database ---
 ## Full records (currently only from 2019/20; need to add full historical)
-hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme_3.rds"))
-# save a backup of hist_db
-write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme_3_bckp.rds"))
-# change permissions to give the group read/write
-Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme_3_bckp.rds"),
-          mode = "664", use_umask = FALSE)
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 
-table(hist_db$kpi, hist_db$fin_year) 
-table(kpi_2$kpi, kpi_2$financial_year) 
-
-## Combine data from current to historical
-current_kpi <- kpi_2 |> 
-  filter(financial_year == "2022/23") |> 
-  filter(kpi != str_detect(kpi, "Table 4:"))
+if (season == "spring") {
+  table(hist_db$kpi, hist_db$fin_year) 
   
-table(current_kpi$kpi, current_kpi$financial_year) 
+  print("Don't add to the history file. Move along to next step")
+
+    } else {
+
+      if (season == "autumn") {
+        # save a backup of hist_db
+        write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
+        # change permissions to give the group read/write
+        Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
+                  mode = "664", use_umask = FALSE)
+        
+        print(table(hist_db$kpi, hist_db$fin_year)) 
+        print(table(kpi_2$kpi, kpi_2$financial_year)) 
+        
+        ## Combine data from current to historical
+        current_kpi <- kpi_2 |> 
+          filter(financial_year == kpi_report_years[3]) |> 
+          rename(fin_year = financial_year, ## decide how these should be standardized
+                 hb = hb_screen) ## move this higher up
+        
+        print(table(current_kpi$kpi, current_kpi$fin_year)) 
+
+        hist_db <- bind_rows(hist_db, current_kpi)
+        print(table(hist_db$kpi, hist_db$fin_year)) 
+        
+        ## Write out new historic file
+        write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+        # change permissions to give the group read/write
+        Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
+                  mode = "664", use_umask = FALSE)
+        
+        print("You made history! Proceed to the next step")
+        
+      } else {
+      
+      print("Go check your calendar!")
+      
+    }}
 
 
+### Current database ---
+## Take current reporting years from new historic
+kpi_2_full <- hist_db |> 
+  filter(fin_year %in% c(kpi_report_years))
 
+## Add in Table 4 data
+table(table_4$kpi, table_4$financial_year)
 
+# Should be able to remove next chunk once variables are standardized
+table_4 <- table_4 |> 
+  rename(fin_year = financial_year, ## decide how these should be standardized
+         hb = hb_screen) |> ## move this higher up
+  filter(fin_year %in% c(kpi_report_years)) ## go back and remove year-1 (2019/20) when creating df
+
+table(table_4$kpi, table_4$fin_year)
+
+kpi_2_full <- bind_rows(kpi_2_full, table_4)
+
+table(kpi_2_full$kpi, kpi_2_full$fin_year)
+
+## Save data block
+write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
