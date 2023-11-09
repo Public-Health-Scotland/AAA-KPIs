@@ -127,8 +127,8 @@ aaa_2.2 <- aaa_2.2 |>
          fin_year = str_remove(fin_year, "_audit_n"),
          fin_year = str_remove(fin_year, "_recall_n"),
          fin_year = str_remove(fin_year, "_recall_p"),
-         group = case_when(str_detect(group, "_audit") ~ "audit_n",
-                           str_detect(group, "_recall") ~ "recall_n",
+         group = case_when(str_detect(group, "_audit_n") ~ "audit_n",
+                           str_detect(group, "_recall_n") ~ "recall_n",
                            str_detect(group, "_recall_p") ~ "recall_p"),
          kpi = "KPI 2.2", .after = hb) |>
   glimpse()
@@ -645,8 +645,8 @@ table(aaa_kpi_historic$kpi)
 
 #### 4: Write out ----
 write_rds(aaa_kpi_historic, paste0(kpi_path, 
-                                   "historical/aaa_kpi_historical_theme_3.rds"))
+                                   "historical/aaa_kpi_historical_theme3.rds"))
 # change permissions to give the group read/write
-Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_theme_3.rds"),
+Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_theme3.rds"),
           mode = "664", use_umask = FALSE)
 

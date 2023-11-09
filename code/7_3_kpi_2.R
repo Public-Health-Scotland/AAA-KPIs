@@ -872,6 +872,10 @@ kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a,
 ## Full records (currently only from 2019/20; need to add full historical)
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 
+table(hist_db$kpi, hist_db$fin_year)
+table(kpi_2$kpi, kpi_2$financial_year)
+
+
 if (season == "spring") {
   table(hist_db$kpi, hist_db$fin_year) 
   
@@ -885,9 +889,6 @@ if (season == "spring") {
         # change permissions to give the group read/write
         Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
                   mode = "664", use_umask = FALSE)
-        
-        print(table(hist_db$kpi, hist_db$fin_year)) 
-        print(table(kpi_2$kpi, kpi_2$financial_year)) 
         
         ## Combine data from current to historical
         current_kpi <- kpi_2 |> 
