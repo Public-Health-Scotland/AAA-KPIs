@@ -275,20 +275,22 @@ kpi_2_2_add_b <- extract_audit %>%
     standard_not_met_n = (audit_n - standard_met_n),
     standard_not_met_n = sum(standard_not_met_n),
     imm_recall_n = sum(imm_recall_n),
-    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
     recall_cc_n = sum(recall_cc_n),
-    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
     no_recall_sat_interim_n = sum(no_recall_sat_interim_n),
-    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
     no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
-    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
     no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
-    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
-    no_audit_result_n = sum(no_audit_result_n),
-    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1)
+    no_audit_result_n = sum(no_audit_result_n)
     ) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup()
+  ungroup() |>
+  mutate(
+    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
+    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
+    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
+    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
+    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
+    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1)
+  )
 
 kpi_2_2_add_b <- kpi_2_2_add_b %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
