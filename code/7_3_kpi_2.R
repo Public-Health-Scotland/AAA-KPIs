@@ -194,10 +194,10 @@ extract_audit <- extract %>%
 kpi_2_2 <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%
   summarise(audit_n = sum(audit_n),
-            recall_n = sum(recall_n),
-            recall_p = round_half_up(recall_n/audit_n*100, 1)) %>%
+            recall_n = sum(recall_n)) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup()
+  ungroup() |>
+  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1))
 
 kpi_2_2 <- kpi_2_2 %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
