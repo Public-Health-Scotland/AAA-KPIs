@@ -214,14 +214,17 @@ kpi_2_2_add_a <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%
   summarise(audit_n = sum(audit_n),
             no_audit_result_n = sum(no_audit_result_n),
-            no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
             audit_n2 = sum(audit_n),
             standard_met_n = sum(standard_met_n),
-            standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
             standard_not_met_n = audit_n - standard_met_n,
-            standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) %>%
+            ) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup()
+  ungroup() |>
+  mutate(
+    no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
+    standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
+    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)
+  )
 
 kpi_2_2_add_a <- kpi_2_2_add_a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
