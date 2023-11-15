@@ -31,7 +31,7 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, fy_tibble, fy_list, extract_path, current_year, current_year_start,
+rm(hb_list, extract_path, current_year, current_year_start,
    cut_off_12m, cut_off_3m, cutoff_date, exclusions_path, financial_quarters,
    financial_year_due, hist_path, last_date, next_year, next_year_start, prev_year,
    year1, year1_end, year1_start, year2, year2_end, year2_start, simd_path)
