@@ -180,6 +180,7 @@ writeData(wb, "Table of Contents", note_toc, startRow = 16)
 
 addStyle(wb, "Table of Contents", style = report_type_style, rows = 5, cols = 1)
 
+showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## Table 1 ---
 writeData(wb, sheet = "1) Eligible cohort results", table_one, 
@@ -195,6 +196,8 @@ writeData(wb, "1) Eligible cohort results", turn66_year_xx, startRow = 6,
 writeData(wb, "1) Eligible cohort results", turn66_year_cum, startRow = 6, 
           startCol = 11)
 
+showGridLines(wb, "1) Eligible cohort results", showGridLines = FALSE)
+
 ## Table 2 ---
 writeData(wb, sheet = "2) Eligible cohort AAA size", table_two, 
           startRow = 10, colNames = FALSE)
@@ -208,6 +211,8 @@ writeData(wb, "2) Eligible cohort AAA size", turn66_year_xx, startRow = 6,
           startCol = 16)
 writeData(wb, "2) Eligible cohort AAA size", turn66_year_cum, startRow = 6, 
           startCol = 23)
+
+showGridLines(wb, "2) Eligible cohort AAA size", showGridLines = FALSE)
 
 ## Table 3 ---
 writeData(wb, sheet = "3) Positive results by SIMD", table_three, 
@@ -223,6 +228,8 @@ writeData(wb, "3) Positive results by SIMD", turn66_year_xx, startRow = 6,
 writeData(wb, "3) Positive results by SIMD", turn66_year_cum, startRow = 6, 
           startCol = 11)
 
+showGridLines(wb, "3) Positive results by SIMD", showGridLines = FALSE)
+
 ## Table 5 ---
 writeData(wb, sheet = "5) Self-referral results", table_five, 
           startRow = 9, colNames = FALSE)
@@ -237,7 +244,10 @@ writeData(wb, "5) Self-referral results", screened_year_xx, startRow = 6,
 writeData(wb, "5) Self-referral results", screened_year_cum, startRow = 6, 
           startCol = 11)
 
+showGridLines(wb, "5) Self-referral results", showGridLines = FALSE)
 
 ## Save ----
-saveWorkbook(wb, paste0(output_path, "/5_Results_", yymm, ".xlsx"), 
+saveWorkbook(wb, paste0(output_path,
+                        "/5_Results for Eligible",
+                        "and Self-referrals_", yymm, ".xlsx"), 
              overwrite = TRUE)
