@@ -12,7 +12,7 @@
 
 ## Ubiquitous Variables
 yymm <- 202309
-season <- "autumn" # options are "spring" or "autumn"
+season <- "spring" # options are "spring" or "autumn"
 
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
