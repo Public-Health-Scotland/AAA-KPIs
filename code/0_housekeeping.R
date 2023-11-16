@@ -12,6 +12,7 @@
 
 ## Ubiquitous Variables
 yymm <- 202309
+
 season <- "spring" # options are "spring" or "autumn"
 
 # Years needed from the historical extract for current KPI report
@@ -25,7 +26,6 @@ hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
                             "Grampian", "Greater Glasgow & Clyde", "Highland", 
                             "Lanarkshire", "Lothian", "Orkney",
                             "Shetland", "Tayside","Western Isles"))
-
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
@@ -74,57 +74,8 @@ year2_end <- "31-03-1958"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 3_2_kpi_1_4_surveillance.R & 4_2_kpi_1_4_surveillance_assess_recovery.R
+# KPI_1_4.R
 
-# # May Cut-Off Dates
-# ## Cut off dates for the spring report generate a 10-month view to
-# # account for missing data
-# cut_off_12m <- "2022-01-31" # This is the end of the 10th month of the last
-#          # financial year (i.e., if run for May 23, this is end of January 22)
-# cut_off_3m <- "2022-10-31" # This is the end of the 10th month of the last
-#          # calendar year (i.e., if run for May 23, this is end of October 22)
-
-# September Cut-Off Dates
-cut_off_12m <- "2022-03-31" # This is the end of the financial year 2 years ago
-           # (i.e., if run for September 23, this is end of March 22)
-cut_off_3m <- "2022-12-31" # This is the end of the last calendar year
-           # (i.e., if run for September 23, this is end of December 22)
-
-## September 2023
 # Define dates
-prev_year <- "2020/21"# year preceding current_year
-current_year <- "2021/22" # last year of full data (previous to current analysis)
-current_year_start <- "2021-03-01" # 1st March of prev_year 
-next_year_start <- "2022-03-01" # 1st March of current_year 
 financial_year_due <- "2022/23" # current data being analyzed
-financial_quarters <- c("2021/22_4", "2022/23_1","2022/23_2","2022/23_3")
-#last_date <- "2023-03-01" # current extract (May)
-last_date <- "2023-09-01" # current extract (September)
-
-
-
-###
-## Data year runs from 1Mar to 28/29Feb for surveillance
-## financial_year_due is the current KPI period 
-##   Example: Running scripts for the data covering 1Apr22-31Mar23, 
-##   financial_year_due = 2022/23
-## current_year is the last full data year in financial year terms
-##   Example: 2021/22 (1Apr21-31Mar22)
-## current_year_start is the 1st March prior to the start of the current year
-##   Example: when current_year = 2021/22, current_year_start = 2021-03-01
-## financial_year_due is year due to be screened for 12-month surveillance
-##   Example: when current_year = 2021/22, financial_year_due = 2022/23
-## financial_quarters is year due to be screened for 3-month surveillance (runs Jan-Dec)
-##   Example: when current_year = 2021/22, 
-##   financial_quarters = 2021/22_4, 2022/23_1, 2022/23_2, 2022/23_3
-## last_date is date of the extract (either May or September)
-##   Example: when current_year = 2021/22, last_date = 2023-03-01
-###
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 6_2_Supplementary_Surveillance.R
-# Define dates
-next_year <- "2022/23"
-date_cut_off <- "2023-03-31"
 
