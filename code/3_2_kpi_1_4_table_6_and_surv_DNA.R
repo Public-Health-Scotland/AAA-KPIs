@@ -26,9 +26,6 @@ pacman::p_load(
   tidylog
 )
 
-# GC - issue - add to housekeeping script
-prev_year <- "2022-04-01"
-
 rm(list = ls())
 gc()
 
