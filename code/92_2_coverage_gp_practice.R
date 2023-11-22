@@ -12,11 +12,20 @@
 ### Step 1 : load packages ----
 
 library(readr)
-library(haven)
 library(dplyr)
 library(tidylog)
 library(lubridate)
-library(openxlsx)
+#library(openxlsx)
+
+rm(list = ls())
+gc()
+
+
+source(here::here("code/0_housekeeping.R"))
+
+rm(cutoff_date, exclusions_path, financial_year_due, hist_path, simd_path,
+   year1, year1_end, year1_start, year2, year2_end, year2_start, hb_list)
+
 
 # Function
 
@@ -65,8 +74,8 @@ make_gp_vars <- function(df, gp_lookup) {
       hbres == "Dumfries & Galloway" & between(gp_join, 1800, 1999) ~ 1,
       hbres == "Shetland" & between(gp_join, 3900, 3999) ~ 1,
       is.na(gp_join) ~ 1,
-      TRUE ~ 0
-    ))
+      TRUE ~ 0),
+      gp_join = as.character(gp_join))
   
   # create a variable for practice code if registered in health board
   dat <- dat %>%
@@ -90,55 +99,47 @@ make_gp_vars <- function(df, gp_lookup) {
 
 
 ### Step 2 : Update variables and file paths ----
-# This should be the only step which needs edited each time
 
-kpi_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/",
-                         "temp/KPIs/KPI1.1 - KPI1.3/")
+# gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+#                           "GP Practice History with dob selection - prior to 1_4_1952.csv")
+# 
+# gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+#                           "GP Practice History with dob selection - post 1_4_1952.csv")
 
-extract_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/",
-                        "202209/output/aaa_extract_202209.rds")
+gp_history_path <- paste0(temp_path, "/GP_Practice_History_with_dob_selection.csv")
 
-gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
-                          "GP Practice History with dob selection - prior to 1_4_1952.csv")
+gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
+                  "National Reference Files/gpprac.csv")
 
-gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
-                          "GP Practice History with dob selection - post 1_4_1952.csv")
+prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
+                             "/data/gp_coverage_2122.rds")
 
-gp_lookup_fpath <- paste0("/conf/linkage/output/lookups/Unicode/",
-                          "National Reference Files/gpprac.sav")
-
-prev_gp_data_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/publications/",
-                             "Completed/20220301/Temp/Management Information/",
-                             "Practice/",
-                             "gp_coverage_2021.rds")
-
-gp_output_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
-                          "gp_coverage_2122.rds")
-
-fy_start <- "01-04-2021"
-fy_end <- "31-03-2022"
+fy_start <- "01-04-2022"
+fy_end <- "31-03-2023"
 
 
 ### Step 3 : Import data ----
 
-coverage_basefile <- read_rds(paste0(kpi_data_fpath,
-                                     "coverage_basefile.rds"))
+coverage_basefile <- read_rds(paste0(temp_path,
+                                     "/2_coverage_basefile.rds"))
 
-gp_prac_a <- read_csv(gp_prac_a_fpath)
-gp_prac_b <- read_csv(gp_prac_b_fpath)
+gp_history <- read_csv(gp_history_path)
+#gp_prac_b <- read_csv(gp_prac_b_fpath)
 
-gp_lookup <- read_sav(gp_lookup_fpath) %>%
+gp_lookup <- read_csv(gp_lookup_path) %>%
   select(gp_join = praccode,
-         gp_desc = add1) %>%
+         gp_desc = `add 1`) %>%
   mutate(gp_join = substr(gp_join, 1, 4)) %>%
   filter(!(gp_join == 9999 & gp_desc == "PATIENTS REGISTERED WITH A GP"))
 
-prev_gp_data <- read_rds(prev_gp_data_fpath)
+prev_gp_data <- read_rds(prev_gp_data_path)
 
 
 ### Step 3 : Add GP registration episodes to coverage data ----
+# rename df
+#gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
+gp_prac <- gp_history; rm(gp_history)
 
-gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
 
 # Flag gp practice that was relevant at the end of the financial year
 gp_prac <- mutate(gp_prac,
@@ -146,8 +147,7 @@ gp_prac <- mutate(gp_prac,
                     `Valid from` < dmy("01-04-2022") & `Valid to` > dmy("01-04-2022") ~ 1,
                     `Valid from` < dmy("01-04-2022") & is.na(`Valid to`) ~ 1,
                     is.na(`Valid from`) & `Valid to` > dmy("01-04-2022") ~ 1,
-                    TRUE ~ 0)
-)
+                    TRUE ~ 0))
 
 gp_prac <- filter(gp_prac, valid == 1)
 
@@ -161,7 +161,8 @@ coverage_gp <- coverage_basefile %>%
 
 # make practice code variable for joining
 coverage_gp <- coverage_gp %>%
-  mutate(gp_join = substr(practice_code, 2, 5))
+  mutate(gp_join = substr(practice_code, 2, 5),
+         gp_join = as.numeric(gp_join))
 
 # add gp_hb and gp_desc
 coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
@@ -173,7 +174,7 @@ coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
 breakdown_1_2a <- coverage_gp %>%
   group_by(gp_hb, gp_desc, hbres) %>%
   summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+    across(cohort_year1:test_b_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup() %>%
   mutate(gp_hb = if_else(is.na(gp_hb), "Unknown Practice", gp_hb))
@@ -181,7 +182,7 @@ breakdown_1_2a <- coverage_gp %>%
 hb_1_2a <- coverage_gp %>%
   group_by(hbres) %>%
   summarise(
-    across(cohort_year1:tested2_any_not_assigned, sum, na.rm = TRUE)
+    across(cohort_year1:test_b_not_assigned, sum, na.rm = TRUE)
   ) %>%
   ungroup() %>%
   mutate(gp_hb = hbres)

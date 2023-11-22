@@ -63,8 +63,10 @@ history_building <- function(df, season) {
   df
   
   if({{season}} == "spring")
-  {print("Don't add to the history file. Move along to next script.")}
+  {print("Don't add to the history file. Move along to next script.")
   
+  } else {
+    
   if({{season}} == "autumn")
   {df <- df |> 
     filter(kpi != "KPI 1.1 Sept coverage",
@@ -73,13 +75,14 @@ history_building <- function(df, season) {
   # change permissions to give the group read/write
   Sys.chmod(paste0(hist_path, "/aaa_kpi_historical.rds"),
             mode = "664", use_umask = FALSE)
-  print("You made history! Proceed to the next script.")}
+  print("You made history! Proceed to the next script.")
   
-  else ## this prints with "spring"??
-  {print("Do you know what season it is?! Go back and figure yourself out.")}
+  } else { ## this prints with "spring"?? Should work now, but not tested
   
+    print("Do you know what season it is?! Go back and figure yourself out.")}
+  
+  }
 }
-
 
 ### Step 2: Import data ----
 invite_uptake <- read_rds(paste0(temp_path, "/1_inviteanduptake_initial.rds"))
@@ -230,8 +233,8 @@ rm(pc_simd, simd_path)
 # HB-level SIMD added as part of KPI 1.3a above
 
 
-##!! Is it possible to add KPI 1.4a/b here??
-##!! What about DNA Exclusions and potentially KPI1.2a/b prisoners??
+
+##!! Is it possible to add KPI 1.2a/b prisoners??
 ## (KPI1.2a/b prisoners is fall MEG only)
 
 
