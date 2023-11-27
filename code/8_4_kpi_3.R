@@ -206,6 +206,7 @@ if (season == "spring"){
   
 }
 
+
 ### Health Board of Residence ----
 # Health Boards
 kpi_3_2_hb <- kpi_3_2 %>% 
@@ -377,6 +378,23 @@ kpi_3_2_surg <- kpi_3_2_surg |>
   # not sure if this needs to be done?
   mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
                              is.na(value) ~ 0, TRUE ~ value))
+
+
+###
+# Check differences between hbres and hb_surgery
+check <- kpi_3_2[kpi_3_2$financial_year %in% c(kpi_report_years),]
+check <- droplevels(check)
+table(check$financial_year) # total records by FY
+table(check$hbres, check$financial_year) # hbres groups
+table(check$hb_surgery, check$financial_year) # hb_surgery groups
+table(check$hb_surgery, useNA = "ifany") # are there any NAs?
+
+# Look into NAs and determine result_outcome
+check_2 <- check[is.na(check$hb_surgery),]
+table(check_2$result_outcome, check_2$financial_year)
+
+rm(check, check_2)
+###
 
 
 # Tidy environment

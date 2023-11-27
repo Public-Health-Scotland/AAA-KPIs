@@ -43,19 +43,11 @@ rate_42 <- theme4_4 |>
   filter(str_detect(financial_year, kpi_report_years[1]) | 
            str_detect(financial_year, kpi_report_years[2]))
 
-## KPI 4.1 1yr mortality rates previous stats
-rate_41_1yr <- theme4_4 |> 
-  filter(kpi == "KPI 4.1 1yr Rate",
-         group == "deaths_p") |> 
-  filter(str_detect(financial_year, kpi_report_years[1]) | 
-           str_detect(financial_year, kpi_report_years[2]))
+## KPI 4.1 & 4.2 1yr mortality rates previous stats
+rate_4_1yr <- tail(kpi_4_1yr, n = 3)
 
-## KPI 4.2 1yr mortality rates previous stats
-rate_42_1yr <- theme4_4 |> 
-  filter(kpi == "KPI 4.2 1yr Rate",
-         group == "deaths_p") |> 
-  filter(str_detect(financial_year, kpi_report_years[1]) | 
-           str_detect(financial_year, kpi_report_years[2]))
+rate_4_1yr <- rate_4_1yr |>
+  select(financial_year, Open_deaths_p, EVAR_deaths_p)
 
 
 ### Table of Contents ----
@@ -141,11 +133,11 @@ operations_title <- paste0("Operations in five-year period ",
 note_mort <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
                     "for five-year rolling periods and are presented at Scotland ",
                     "level. The 1-year mortality rates for the two previous ",
-                    "five-year rolling periods were: Open surgery ", rate_41_1yr[1,5], 
-                    "% (", rate_41_1yr[1,3], ") and ", rate_41_1yr[2,5], "% (", 
-                    rate_41_1yr[2,3], "); EVAR ", rate_42_1yr[1,5], "% (", 
-                    rate_42_1yr[1,3], ") and ", rate_42_1yr[2,5], "% (", 
-                    rate_42_1yr[2,3], ").")
+                    "five-year rolling periods were: Open surgery ", rate_4_1yr[1,2], 
+                    "% (", rate_4_1yr[1,1], ") and ", rate_4_1yr[2,2], "% (",
+                    rate_4_1yr[2,1], "); EVAR ", rate_4_1yr[1,3], "% (", 
+                    rate_4_1yr[1,1], ") and ", rate_4_1yr[2,3], "% (", 
+                    rate_4_1yr[2,1], ").")
 
 writeData(wb, "1-year mortality rates", operations_title, startRow = 3, 
           startCol = 1)
@@ -210,7 +202,7 @@ writeData(wb, "Unfit for surgery follow-up", note_cum, startRow = 24, startCol =
 
 
 ## Unfit follow-up deaths by cause ---
-note_cause_cum <- paste0("Cumulative total referrals who werescreened from ",  
+note_cause_cum <- paste0("Cumulative total referrals who were screened from ",  
                          "implementation to 31 March ", year_xx)
 
 writeData(wb, sheet = "Unfit follow-up deaths by cause", note_cause_cum, 

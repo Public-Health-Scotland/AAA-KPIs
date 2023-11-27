@@ -69,7 +69,6 @@ theme4_unfit_deaths <- read_rds(paste0(temp_path, "/4_91_unfit_deaths_cause_",
                                        yymm, ".rds"))
 
 
-
 ### 3: Format data ----
 ## KPI 3.1 ----
 kpi_3_1 <- theme4_3 |> 
@@ -176,8 +175,10 @@ evar_1yr <- kpi_4_1yr |>
   filter(kpi == "KPI 4.2 1yr Rate") |> 
   select(financial_year, EVAR_surgeries_n, EVAR_deaths_n, EVAR_deaths_p)
 
-kpi_4_1yr <- left_join(open_1yr, evar_1yr)
-kpi_4_1yr = tail(kpi_4_1yr, n = 1)
+kpi_4_1yr <- left_join(open_1yr, evar_1yr) |> 
+  # remove last row, as this will not have complete data 
+  filter(row_number() <= n()-1) 
+kpi_4_1yr_tail = tail(kpi_4_1yr, n = 1) 
 
 rm(open_1yr, evar_1yr)
 
@@ -322,7 +323,7 @@ writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes7, startRow = 38,
           startCol = 2, colNames = FALSE)
 
 ## KPI 4 1-year Mortality ---
-writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr, startRow = 8, 
+writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, startRow = 8, 
           colNames = FALSE)
 
 ## KPI 4 1,3,5-year Cumulative Mortality ---
