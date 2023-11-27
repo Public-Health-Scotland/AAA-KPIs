@@ -214,11 +214,9 @@ qa_recall <- theme_3 |>
 
 
 ## Excel notes for QA standard not met detail ----
-qa_detail_1a <- qa_reason_bot[1,2]
-
-qa_detail_1b <- qa_detail[19,5]
-
 #qa_detail_2a <- ## I think this has to come from the main data... do by hand for now.
+#qa_detail_2b
+#qa_detail_2c
 
 qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |> 
   filter(hb == "Scotland") |> 
@@ -262,17 +260,6 @@ self_ref_year_xx <- paste0("Self referrals: cumulative period from implementatio
                            "to 31 March ", year_xx)
 
 # QA standard not met detail notes
-qa_detail_note1 <- paste0("1. Up to five detailed reasons for each screen may be ",
-                          "recorded where all five positions have been used to ",
-                          "identify the relevant cases. This means that the sum ",
-                          "of the number of detailed reasons recorded is usually ",
-                          "greater than the total number of scans that did not ",
-                          "meet the QA standard. For example, there were ",  
-                          qa_detail_1a," scans in the year ending 31 March ", year_xx, 
-                          " that did not meet the QA standard and the total number ",
-                          "of detailed reasons recorded for the same period was ",
-                          qa_detail_1b, ".")
-
 # qa_detail_note2 <- paste0("2. Over the 3 years presented, there were a total of ",
 #                           qa_detail_2a, " standard not met scans that did not have ",
 #                           "any detailed reason recorded: ", qa_detail_2b, 
