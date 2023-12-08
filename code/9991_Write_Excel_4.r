@@ -15,11 +15,14 @@
 # and transforms the data to print directly into the theme 4 Excel file for 
 # both the spring and autumn MEGs.
 
+##!! Need to add in spring to sources file! This should mostly be notes about
+## provisional data and information on title tab.
 
 #### 1: Housekeeping ----
 library(dplyr)
 library(readr)
 library(tidyr)
+library(reporter)
 library(openxlsx)
 
 
