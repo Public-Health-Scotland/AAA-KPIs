@@ -6,8 +6,13 @@
 # Find coverage rates and number of self-referrals
 # by gp practice
 #
-# Written on RServer (R Version 3.6.1)
+# Written on R Server (R Version 3.6.1)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+## Notes:
+# This script is only run in the autumn and uses AAA GP extract downloaded
+# from BOXI. The script can be run after the MEG has been convened.
+
 
 ### Step 1 : load packages ----
 
@@ -15,7 +20,7 @@ library(readr)
 library(dplyr)
 library(tidylog)
 library(lubridate)
-#library(openxlsx)
+library(openxlsx)
 
 rm(list = ls())
 gc()
@@ -27,17 +32,41 @@ rm(cutoff_date, exclusions_path, financial_year_due, hist_path, simd_path,
    year1, year1_end, year1_start, year2, year2_end, year2_start, hb_list)
 
 
-# Function
+## Variables
+fy_start <- "01-04-2022"
+fy_end <- "31-03-2023"
 
-# Function creates new gp variables (gp_hb and gp_desc) for use in 
-# making the output.
+
+## File paths
+## The GP practice history may be a single file or may be downloaded as two
+## separate. If two files, use the a_path/b_path; if one, use the history_path
+# gp_prac_a_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+#                           "GP Practice History with dob selection - prior to 1_4_1952.csv")
+# 
+# gp_prac_b_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
+#                           "GP Practice History with dob selection - post 1_4_1952.csv")
+
+gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
+                          "/data/GP_Practice_History_with_dob_selection.csv")
+
+prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
+                            "/data/gp_coverage_2122.rds")
+
+gp_output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
+                         "/data/gp_coverage_2223.rds")
+
+gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
+                         "National Reference Files/gpprac.csv")
+
+
+## Function
+# Create new GP variables (gp_hb and gp_desc) for use in making final output.
 
 # The spss script has a big gp practice if/else statement
 # for assigning gp practice codes to health boards.
 # !! come back to check if this is the right thing
 
 make_gp_vars <- function(df, gp_lookup) {
-  
   
   # flag for if an individual is registered inside/outside their hb of residence
   dat <- df %>%
@@ -98,33 +127,15 @@ make_gp_vars <- function(df, gp_lookup) {
 }
 
 
-### Step 2 : Update variables and file paths ----
 
-# gp_prac_a_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
-#                           "GP Practice History with dob selection - prior to 1_4_1952.csv")
-# 
-# gp_prac_b_fpath <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202209/data/",
-#                           "GP Practice History with dob selection - post 1_4_1952.csv")
-
-gp_history_path <- paste0(temp_path, "/GP_Practice_History_with_dob_selection.csv")
-
-gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
-                  "National Reference Files/gpprac.csv")
-
-prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
-                             "/data/gp_coverage_2122.rds")
-
-fy_start <- "01-04-2022"
-fy_end <- "31-03-2023"
-
-
-### Step 3 : Import data ----
+### Step 2 : Import data ----
 
 coverage_basefile <- read_rds(paste0(temp_path,
                                      "/2_coverage_basefile.rds"))
 
 gp_history <- read_csv(gp_history_path)
-#gp_prac_b <- read_csv(gp_prac_b_fpath)
+#gp_prac_a <- read_csv(gp_prac_a_path)
+#gp_prac_b <- read_csv(gp_prac_b_path)
 
 gp_lookup <- read_csv(gp_lookup_path) %>%
   select(gp_join = praccode,
@@ -132,19 +143,19 @@ gp_lookup <- read_csv(gp_lookup_path) %>%
   mutate(gp_join = substr(gp_join, 1, 4)) %>%
   filter(!(gp_join == 9999 & gp_desc == "PATIENTS REGISTERED WITH A GP"))
 
-prev_gp_data <- read_rds(prev_gp_data_path)
-
 
 ### Step 3 : Add GP registration episodes to coverage data ----
-# rename df
+# Rename dataframe
+# Use first line only if two gp_prac files
 #gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
 gp_prac <- gp_history; rm(gp_history)
 
 
-# Flag gp practice that was relevant at the end of the financial year
+# Flag GP practice that was relevant at the end of the financial year
 gp_prac <- mutate(gp_prac,
                   valid = case_when(
-                    `Valid from` < dmy("01-04-2022") & `Valid to` > dmy("01-04-2022") ~ 1,
+                    `Valid from` < dmy("01-04-2022") & 
+                      `Valid to` > dmy("01-04-2022") ~ 1,
                     `Valid from` < dmy("01-04-2022") & is.na(`Valid to`) ~ 1,
                     is.na(`Valid from`) & `Valid to` > dmy("01-04-2022") ~ 1,
                     TRUE ~ 0))
@@ -157,7 +168,7 @@ coverage_gp <- coverage_basefile %>%
   rename(practice_code = `Practice Code`)
 
 
-### Step 4 : Assign gp practices to health boards ---
+### Step 3 : Assign GP practices to health boards ---
 
 # make practice code variable for joining
 coverage_gp <- coverage_gp %>%
@@ -168,9 +179,9 @@ coverage_gp <- coverage_gp %>%
 coverage_gp <- make_gp_vars(coverage_gp, gp_lookup)
 
 
-### Step 5 : Calculate KPI 1.2a by GP ----
+### Step 4 : Calculate KPI 1.2a by GP ----
 
-# calculate KPI 1.2a (coverage)
+# Calculate KPI 1.2a (coverage)
 breakdown_1_2a <- coverage_gp %>%
   group_by(gp_hb, gp_desc, hbres) %>%
   summarise(
@@ -189,37 +200,48 @@ hb_1_2a <- coverage_gp %>%
 
 breakdown_1_2a <- bind_rows(breakdown_1_2a, hb_1_2a)
 
-# create percentages
+# Create percentages
 breakdown_1_2a <- breakdown_1_2a %>%
   mutate(
-    percent_year1 = (tested2_year1/cohort_year1)*100,
-    
-    percent_any_year1 = (tested2_any_year1/cohort_year1)*100
+    percent_a_year1 = (test_a_year1/cohort_year1)*100,
+    percent_a_add_year1 = (test_a_add_year1/cohort_year1)*100
   )
 
 # Output tables
 output_1_2a <- breakdown_1_2a %>%
   select(hbres, gp_hb, gp_desc,
-         cohort_year1, tested2_year1, percent_year1) %>%
+         cohort_year1, test_a_year1, percent_a_year1) %>%
   arrange(hbres, gp_hb)
 
-## Save output for next year
-write_rds(output_1_2a, gp_output_fpath)
+## Save output for use next year
+write_rds(output_1_2a, gp_output_path)
 
 
-### Step 6 : Create KPI 1.2a GP output ----
+### Step 5 : Create KPI 1.2a GP output ----
 
 # bring in previous year's data
 # update practice names using most recent lookup to avoid duplication
-prev_gp_data <- prev_gp_data %>%
-  left_join(gp_lookup, by = c("gp_hb" = "gp_join"))
+prev_gp_data <- read_rds(prev_gp_data_path) %>%
+  select(-gp_desc) |> 
+  left_join(gp_lookup, by = c("gp_hb" = "gp_join")) |> 
+  select(hbres, gp_hb, gp_desc,
+         cohort_year_ww = cohort_year1,
+         test_year_ww = tested2_year1,
+         percent_year_ww = percent_year1)
 
 # Format to be like the old file. This step can be changed when the macro
 # gets converted to R
 output_2year <- output_1_2a %>%
-  mutate(gp_desc = if_else(gp_desc == "Practice outside hb area", as.character(NA), gp_desc)) %>%
+  mutate(gp_desc = if_else(gp_desc == "Practice outside hb area", 
+                           as.character(NA), gp_desc)) %>%
   full_join(prev_gp_data, by = c("hbres", "gp_hb", "gp_desc")) %>%
-  select(1,2,3,8,9,10,4,5,6) %>%
+  select(hbres, gp_hb, gp_desc,
+         cohort_year_ww,
+         test_year_ww,
+         percent_year_ww,
+         cohort_year_xx = cohort_year1,
+         test_year_xx = test_a_year1,
+         percent_year_xx = percent_a_year1) %>%
   mutate(sortorder = case_when(
     hbres == gp_hb ~ 1,
     gp_hb == "Unknown Practice" ~ 3,
@@ -229,29 +251,33 @@ output_2year <- output_1_2a %>%
   arrange(hbres, sortorder, gp_hb) %>%
   select(-sortorder)
 
-# change 'NA's to 'NaN's for the macro.
+# Change 'NA's to 'NaN's in the two percentage columns for the macro.
 # (This will say it's done nothing but it has)
+# Re-code the NAs in the cohort/test columns as 0 (to match macro formatting).
 output_2year <- output_2year %>%
-  mutate(across(4:9, replace_na, NaN))
+  mutate(across(c(6,9), replace_na, NaN),
+         across(c(4:5,7:8), replace_na, 0))
 
 # Write to excel
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", output_2year)
-saveWorkbook(wb, paste0(kpi_data_fpath, "gp_practice_all_boards.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, paste0(temp_path, "/gp_practice_all_boards.xlsx"), 
+             overwrite = TRUE)
 
+rm(hb_1_2a, output_1_2a, prev_gp_data)
 
-### Step 7 : Self referrals ----
+### Step 6 : Self referrals ----
 
-extract <- read_rds(extract_fpath)
+extract <- read_rds(extract_path)
 
 # Select screen dates from relevant financial year
 extract_slim <- extract %>%
   filter(date_screen >= dmy(fy_start),
          date_screen <= dmy(fy_end))
 
-# trim
-# patelig : Self referrals
+# Trim
+# pat_elig : Self referrals
 # screen_type : initial or initial QA
 # screen_result : exclude technical fails and external results
 extract_slim <- extract_slim %>%
@@ -264,7 +290,9 @@ extract_gp <- extract_slim %>%
   left_join(gp_prac, by = c("upi"="Upinumber"))
 
 extract_gp <- extract_gp %>%
-  mutate(gp_join = substr(practice_code, 2, 5))
+  mutate(gp_join = substr(practice_code, 2, 5),
+         gp_join = as.numeric(gp_join))
+
 
 extract_gp <- make_gp_vars(extract_gp, gp_lookup)
 
@@ -298,4 +326,4 @@ self_ref_gp <- self_ref_gp %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
-saveWorkbook(wb, paste0(kpi_data_fpath, "sr_all_boards.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, paste0(temp_path, "/sr_all_boards.xlsx"), overwrite = TRUE)

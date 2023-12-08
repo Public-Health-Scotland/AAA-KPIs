@@ -10,19 +10,19 @@
 # Written/run on Posit WB, R 4.1.2
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+## Notes:
+# This script is only run in the autumn and uses AAA GP extract downloaded
+# from BOXI. 
 
-### Step 1 : Housekeeping ----
+
+### 1: Housekeeping ----
 ## Packages
 library(readr)
 library(dplyr)
-library(phsmethods) # for commonly used functions in phs
+library(phsmethods)
 library(lubridate)
-library(janitor)    # for rounding 0.5 upwards
+library(janitor)
 library(tidylog)
-
-
-# library(stringr)    # for manipulation of strings
-# library(tidyr)      # for manipulating data in the "tidyway"
 
 
 rm(list = ls())
@@ -33,6 +33,17 @@ source(here::here("code/0_housekeeping.R"))
 
 rm(cutoff_date, hb_list, financial_year_due, hist_path, simd_path,
    year1, year1_end, year1_start, year2, year2_end, year2_start)
+
+financial_year <- kpi_report_years[3]
+
+cutoff_date <- "31-03-1957"
+
+# date of GP history extract
+# used to create valid_to date for queries (not sure what queries)
+date_valid_to <- "15-11-2023"
+
+fy_start <- "01-04-2022"
+fy_end <- "31-03-2023"
 
 
 ## Filepaths
@@ -45,21 +56,8 @@ prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
                             "/data/gp_coverage_2122.rds")
 
 
-# #location of procesing file (used for checks)
+# #location of processing file (used for checks)
 # processing <- '/PHI_conf/AAA/Topics/AAAScreening/Publications/AAA Screening Programme Statistics/20210302/Temp/Processing/Exclusion Files/'
-
-financial_year <- kpi_report_years[3]
-
-cutoff_date <- "31-03-1957"
-
-
-# date of GP history extract
-# used to create valid_to date for queries (not sure what queries)
-date_valid_to <- "15-11-2023"
-
-
-fy_start <- "01-04-2022"
-fy_end <- "31-03-2023"
 
 
 
@@ -285,9 +283,9 @@ during_reg <- during_reg |>
   ungroup()
 
 
-##################################################################################################
+################################################################################
 ### 5a - Men offered/tested during time registered at prison practice - tested within KPI timeframes ----
-##################################################################################################
+################################################################################
 
 #coverage kpi 1.2a
 #numerator is tested before age 66 and 3 months regardless of when invited
@@ -317,10 +315,10 @@ during_reg_kpis <- during_reg_kpis |>
          offered_1.2b, tested_1.2b, p_1.2b)
 
 
-##################################################################################################
+################################################################################
 ### 5b - men sent first offer or screened during prison registration - tested anytime
 #ie. includes men tested after 66 y 3m ----
-##################################################################################################
+################################################################################
 
 during_reg_tested <- during_reg %>%
   group_by(dob_eligibility) %>%
@@ -331,9 +329,9 @@ during_reg_tested <- during_reg %>%
 
 
 
-##################################################################################################
+################################################################################
 ### 6 - save files ----
-##################################################################################################
+################################################################################
 
 
 # write_xlsx(list("anytime_reg_kpis" = anytime_reg_kpis, "anytime_reg_tested" = anytime_reg_tested, 
