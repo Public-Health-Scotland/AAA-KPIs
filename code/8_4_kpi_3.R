@@ -112,7 +112,8 @@ kpi_3_1_res <- kpi_3_1_res |>
   select(hbres, kpi, financial_year_group, value) |> 
   pivot_wider(names_from = financial_year_group, values_from = value)
 
-kpi_3_1_res <- hb_list |> left_join(kpi_3_1_res, by = "hbres")
+kpi_3_1_res <- hb_list |> left_join(kpi_3_1_res, by = c("hb" = "hbres")) |> 
+  rename(hbres = hb)
 
 kpi_3_1_res <- kpi_3_1_res |> 
   pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
@@ -242,7 +243,8 @@ kpi_3_2_res <- kpi_3_2_res |>
   select(hbres, kpi, financial_year_group, value) |> 
   pivot_wider(names_from = financial_year_group, values_from = value)
 
-kpi_3_2_res <- hb_list |> left_join(kpi_3_2_res, by = "hbres")
+kpi_3_2_res <- hb_list |> left_join(kpi_3_2_res, by = c("hb" = "hbres")) |> 
+  rename(hbres = hb)
 
 kpi_3_2_res <- kpi_3_2_res |> 
   pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
