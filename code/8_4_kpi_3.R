@@ -90,7 +90,8 @@ kpi_3_1_scot <- kpi_3_1 %>%
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             seen_n = sum(seen)) %>% 
-  mutate(hbres = "Scotland", .before = financial_year)
+  mutate(hbres = "Scotland", .before = financial_year) |>
+  ungroup()
 
 # Combine
 kpi_3_1_res <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>% 
@@ -99,7 +100,8 @@ kpi_3_1_res <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>%
          #cum_seen = sum(seen), 
          #pc_cum_seen = round_half_up(cum_seen * 100 / cum_referrals, 1),  
          cover_p = round_half_up(seen_n * 100 / cohort_n, 1)) |> 
-  mutate(kpi = "KPI 3.1 Residence", .after = hbres)
+  mutate(kpi = "KPI 3.1 Residence", .after = hbres) |>
+  ungroup()
 
 #### This next chunk of code adds in FY where missing (produces NAs), but is 
 ## it better to store without the extra (NA) data produced, as the missing FYs 
@@ -213,14 +215,16 @@ if (season == "spring"){
 kpi_3_2_hb <- kpi_3_2 %>% 
   group_by(hbres, financial_year) %>% 
   summarise(cohort_n = n(), 
-            surgery_n = sum(surgery))
+            surgery_n = sum(surgery)) |>
+  ungroup()
 
 # Scotland
 kpi_3_2_scot <- kpi_3_2 %>% 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
-  mutate(hbres = "Scotland", .before = financial_year)
+  mutate(hbres = "Scotland", .before = financial_year) |>
+  ungroup()
 
 # Combine
 kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
@@ -230,7 +234,8 @@ kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
          #cum_surgery = sum(surgery),
          #pc_cum_surgery = round_half_up(cum_surgery * 100 / cum_approp, 1), 
          cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
-  mutate(kpi = "KPI 3.2 Residence", .after = hbres)
+  mutate(kpi = "KPI 3.2 Residence", .after = hbres) |>
+  ungroup()
 
 #### This next chunk of code adds in FY where missing (produces NAs), but is 
 ## it better to store without the extra (NA) data produced, as the missing FYs 
@@ -326,7 +331,8 @@ kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records??
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
-  mutate(hb_surgery = "Scotland", .before = financial_year)
+  mutate(hb_surgery = "Scotland", .before = financial_year) |>
+  ungroup()
 
 # Combine
 kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
@@ -336,7 +342,8 @@ kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
     #cum_seen = sum(seen), 
     #pc_cum_seen = round_half_up(cum_seen * 100 / cum_referrals, 1),  
     cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
-  mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery)
+  mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery) |>
+  ungroup()
 
 # #### This next chunk of code adds in FY where missing (produces NAs), but is 
 # ## it better to store without the extra (NA) data produced, as the missing FYs 
