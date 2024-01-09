@@ -27,6 +27,7 @@ library(readr)
 library(lubridate)
 library(forcats)
 library(janitor)
+library(stringr)
 library(tidylog)
 
 
