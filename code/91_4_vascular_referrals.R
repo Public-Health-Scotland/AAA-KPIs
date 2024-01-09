@@ -173,7 +173,7 @@ greater <- vasc %>%
 ## Subtotals: final & non-final outcome
 greater_subtotal <- vasc %>% 
   filter(result_size == "large",
-         outcome_type != 3) %>%
+         outcome_type != "no outcome recorded") %>%
   mutate(count = 1) %>% 
   group_by(financial_year, outcome_type) %>%
   summarize(cases = sum(count)) %>% 
@@ -204,7 +204,7 @@ annual_great <- greater_grantot %>%
 
 ## Referrals with no outcome recorded ----
 # This should be 0 records, but need to keep track and add to final table
-vasc %>% filter(outcome_type == 3)
+vasc %>% filter(outcome_type == "no outcome recorded")
 # If no records, manually add record of 0 to annual_greater
 annual_great <- annual_great |>  
   add_row(outcome_type = "Total: no outcome recorded", 
@@ -237,7 +237,7 @@ less <- vasc %>%
 ## Subtotals: final & non-final outcome
 less_subtotal <- vasc %>% 
   filter(result_size == "small",
-         outcome_type != 3) %>% 
+         outcome_type != "no outcome recorded") %>% 
   mutate(count = 1) %>% 
   group_by(financial_year, outcome_type) %>%
   summarize(cases = sum(count)) %>% 
