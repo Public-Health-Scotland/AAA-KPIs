@@ -47,7 +47,8 @@ fy_end <- "31-03-2023"
 
 
 ## Filepaths
-gp_history_path <- paste0(temp_path, "/GP_Practice_History_with_dob_selection.csv")
+gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+                          "GP_Practice_History_with_dob_selection.csv")
 
 gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
                          "National Reference Files/gpprac.csv")
@@ -119,7 +120,7 @@ practice_history <- practice_history |>
                                   datediff <= 1 ~ lag(valid_from_initial),
                                 TRUE ~ valid_from))
 
-#note that spss suggests valid from was recoded to the lagged valid from, but investigation showed
+#note that spss suggests valid from was recorded to the lagged valid from, but investigation showed
 #that for anyone with 3 or more episodes who met the conditions, spss was taking the initial valid from 
 #date, not the lagged valid from date. So have coded to do the same here.
 
