@@ -21,11 +21,11 @@ season <- "spring" # options are "spring" or "autumn"
 kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
 # hbres_list
-hb_list <- tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
-                            "Dumfries & Galloway", "Fife", "Forth Valley", 
-                            "Grampian", "Greater Glasgow & Clyde", "Highland", 
-                            "Lanarkshire", "Lothian", "Orkney",
-                            "Shetland", "Tayside","Western Isles"))
+hb_list <- tibble::tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
+                                    "Dumfries & Galloway", "Fife", "Forth Valley", 
+                                    "Grampian", "Greater Glasgow & Clyde", "Highland", 
+                                    "Lanarkshire", "Lothian", "Orkney",
+                                    "Shetland", "Tayside","Western Isles"))
 
 ## Ubiquitous Pathways
 extract_path <- paste0("/PHI_conf/AAA/Topics/Screening/extracts/", yymm,
