@@ -22,6 +22,7 @@ library(dplyr)
 library(phsmethods)
 library(lubridate)
 library(janitor)
+library(openxlsx)
 library(tidylog)
 
 
@@ -331,14 +332,120 @@ during_reg_tested <- during_reg %>%
 
 
 ################################################################################
-### 6 - save files ----
+### 6 - Save files ----
 ################################################################################
 
 
 # write_xlsx(list("anytime_reg_kpis" = anytime_reg_kpis, "anytime_reg_tested" = anytime_reg_tested, 
 #                 "during_reg_kpis" = during_reg_kpis, "during_reg_tested" = during_reg_tested),
 #            paste0(output, "prison practice screening.xlsx"))
-# 
+
+
+### 6.1 Set Up Workbook ----
+
+# Create a workbook
+
+wb <- createWorkbook()
+
+# Define a header and title style for workbook
+
+hs <- createStyle(fontColour = "#ffffff", fgFill = "#0078D4",
+                  halign = "center", valign = "center", 
+                  textDecoration = "bold", border = "TopBottomLeftRight")
+
+title_style <- createStyle(fontSize = 14, textDecoration = "bold")
+
+
+### 6.2 Add Anyone Registered At Any Time - KPIs ----
+
+# Add sheet for KPIs for people registered with a prison at any time
+# Set column widths to auto for this sheet
+
+addWorksheet(wb, "Registered Anytime - KPIs", gridLines = FALSE)
+
+addStyle(wb, "Registered Anytime - KPIs", title_style, rows = 1, cols = 1)
+
+writeData(wb, sheet = "Registered Anytime - KPIs", 
+          paste0("Registered Anytime - KPIs"), 
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "Registered Anytime - KPIs", anytime_reg_kpis, 
+          startCol = 1, startRow = 3, borders = "all", headerStyle = hs, 
+          colNames = TRUE)
+
+setColWidths(wb, sheet = "Registered Anytime - KPIs", cols = 1:7, 
+             widths = "auto")
+
+
+### 6.3 Add Anyone Registered At Any Time - Tested ----
+
+# Add sheet for tested data for people registered with a prison at any time
+# Set column widths to auto for this sheet
+
+addWorksheet(wb, "Registered Anytime - Tested", gridLines = FALSE)
+
+addStyle(wb, "Registered Anytime - Tested", title_style, rows = 1, cols = 1)
+
+writeData(wb, sheet = "Registered Anytime - Tested", 
+          paste0("Registered Anytime - Tested"), 
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "Registered Anytime - Tested", anytime_reg_tested, 
+          startCol = 1, startRow = 3, borders = "all", headerStyle = hs, 
+          colNames = TRUE)
+
+setColWidths(wb, sheet = "Registered Anytime - Tested", cols = 1:4, 
+             widths = "auto")
+
+
+### 6.4 Add Anyone Offered During Registered Time - KPIs ----
+
+# Add sheet for KPIs for people registered with a prison at any time
+# Set column widths to auto for this sheet
+
+addWorksheet(wb, "Registered During - KPIs", gridLines = FALSE)
+
+addStyle(wb, "Registered During - KPIs", title_style, rows = 1, cols = 1)
+
+writeData(wb, sheet = "Registered During - KPIs", 
+          paste0("Registered During - KPIs"), 
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "Registered During - KPIs", during_reg_kpis, 
+          startCol = 1, startRow = 3, borders = "all", headerStyle = hs, 
+          colNames = TRUE)
+
+setColWidths(wb, sheet = "Registered During - KPIs", cols = 1:7, 
+             widths = "auto")
+
+
+### 6.5 Add Anyone Offered During Registered Time - Tested ----
+
+# Add sheet for tested data for people registered with a prison at any time
+# Set column widths to auto for this sheet
+
+addWorksheet(wb, "Registered During - Tested", gridLines = FALSE)
+
+addStyle(wb, "Registered During - Tested", title_style, rows = 1, cols = 1)
+
+writeData(wb, sheet = "Registered During - Tested", 
+          paste0("Registered During - Tested"), 
+          startCol = 1, startRow = 1)
+
+writeData(wb, sheet = "Registered During - Tested", during_reg_tested, 
+          startCol = 1, startRow = 3, borders = "all", headerStyle = hs, 
+          colNames = TRUE)
+
+setColWidths(wb, sheet = "Registered During - Tested", cols = 1:4, 
+             widths = "auto")
+
+
+### 6.6 Output ----
+
+# Save workbook
+
+saveWorkbook(wb, paste0(temp_path, "/prison_coverage.xlsx"), 
+             overwrite = TRUE)
 
 
 ################################################################################
