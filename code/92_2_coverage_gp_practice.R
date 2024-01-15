@@ -21,6 +21,7 @@ library(dplyr)
 library(tidylog)
 library(lubridate)
 library(openxlsx)
+library(janitor)
 
 rm(list = ls())
 gc()
@@ -148,24 +149,27 @@ gp_lookup <- read_csv(gp_lookup_path) %>%
 # Rename dataframe
 # Use first line only if two gp_prac files
 #gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
-gp_prac <- gp_history; rm(gp_history)
+
+gp_prac <- gp_history |> 
+  clean_names()
+
+rm(gp_history)
 
 
 # Flag GP practice that was relevant at the end of the financial year
 gp_prac <- mutate(gp_prac,
                   valid = case_when(
-                    `Valid from` < dmy("01-04-2022") & 
-                      `Valid to` > dmy("01-04-2022") ~ 1,
-                    `Valid from` < dmy("01-04-2022") & is.na(`Valid to`) ~ 1,
-                    is.na(`Valid from`) & `Valid to` > dmy("01-04-2022") ~ 1,
+                    valid_from < dmy("01-04-2022") & 
+                    valid_to > dmy("01-04-2022") ~ 1,
+                    valid_from < dmy("01-04-2022") & is.na(valid_to) ~ 1,
+                    is.na(valid_from) & is.na(valid_to) > dmy("01-04-2022") ~ 1,
                     TRUE ~ 0))
 
 gp_prac <- filter(gp_prac, valid == 1)
 
 coverage_gp <- coverage_basefile %>%
-  left_join(gp_prac, by = c("upi" = "Upinumber")) %>%
-  select(-c(`Area of Residence`, `Valid from`, `Valid to`, `valid`)) %>%
-  rename(practice_code = `Practice Code`)
+  left_join(gp_prac, by = c("upi" = "upinumber")) %>%
+  select(-c(area_of_residence, valid_from, valid_to, valid))
 
 
 ### Step 3 : Assign GP practices to health boards ---
@@ -287,12 +291,12 @@ extract_slim <- extract_slim %>%
 
 # join on AAA GP practice file
 extract_gp <- extract_slim %>%
-  left_join(gp_prac, by = c("upi"="Upinumber"))
+  left_join(gp_prac |> rename(gp_practice_code = practice_code), 
+            by = c("upi" = "upinumber"))
 
 extract_gp <- extract_gp %>%
   mutate(gp_join = substr(practice_code, 2, 5),
          gp_join = as.numeric(gp_join))
-
 
 extract_gp <- make_gp_vars(extract_gp, gp_lookup)
 
