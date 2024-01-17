@@ -128,7 +128,6 @@ cohort1 <- aaa_extract %>%
   filter(pat_elig != "03") %>%
   filter(screen_type %in% c("01", "03", NA))
 
-
 ## Sift through the duplicates
 # This has been done in spss by sorting on date_offer_sent and then picking
 # whatever record happens to be last. Trying to do it slightly
@@ -141,17 +140,15 @@ cohort1 <- cohort1 %>%
   distinct(upi, postcode, ca2019, simd2020v2_sc_quintile, hbres,
            dob_eligibility, dob, .keep_all = TRUE)
 
-
 # Create variable called 'keep' to add records to.
 # Start with all the non-duplicates, then bring more records in
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
   mutate(keep = if_else(n() == 1, 1, 0)) %>%
   # keep only the last offer
-  mutate(keep = tidytable::case_when(keep == 1 ~ 1,
-                                     date_offer_sent == max(date_offer_sent) ~ 1,
-                                     TRUE ~ 0
-  )) %>%
+  mutate(keep = case_when(keep == 1 ~ 1,
+                          date_offer_sent == max(date_offer_sent) ~ 1,
+                          TRUE ~ 0)) %>%
   ungroup()
 
 # Remove records where the UPI is accounted for
@@ -165,34 +162,30 @@ cohort1 <- cohort1 %>%
 # Keep only records where there is an offer sent
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(keep = tidytable::case_when(keep == 1 ~ 1,
-                                     !is.na(date_offer_sent) ~ 1,
-                                     TRUE ~ 0
-    )) %>%
+  mutate(keep = case_when(keep == 1 ~ 1,
+                          !is.na(date_offer_sent) ~ 1,
+                          TRUE ~ 0)) %>%
   ungroup()
 
 # Remove records where the UPI is accounted for
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(drop = if_else(any(keep == 1) & keep == 0, 1, 0)
-  ) %>%
+  mutate(drop = if_else(any(keep == 1) & keep == 0, 1, 0)) %>%
   ungroup() %>%
   filter(drop == 0) %>%
   # keep where CHI and UPI match
   mutate(keep = case_when(keep == 1 ~ 1,
                           chi == upi ~ 1,
-                          TRUE ~ 0
-  ))
+                          TRUE ~ 0))
 
 # We now have all the CHIs
 cohort1 <- filter(cohort1, keep == 1)
-# couple of pairs with the same date_offer_sent so get rid of the one
-# with the mismatching chi
+# There are a couple of pairs with the same date_offer_sent so get rid of the 
+# one with the mismatching chi
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
   mutate(keep = tidytable::case_when(n() != 1 & chi != upi ~ 0,
-                                     TRUE ~ 1
-  )) %>%
+                                     TRUE ~ 1)) %>%
   ungroup() %>%
   filter(keep == 1) %>% 
   select(upi, postcode, ca2019, simd2020v2_sc_quintile,
@@ -201,9 +194,6 @@ cohort1 <- cohort1 %>%
 
 
 # Step 6: Create series of exclusions objects ----
-# some of these have '_summary' objects which were previously written to
-# excel. They aren't written out from here currently but can add that step
-# in if required.
 
 ### A: Already on surveillance prior to national programme ---
 prior_sur <- aaa_extract %>%
@@ -250,8 +240,7 @@ deceased <- aaa_exclusions %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -273,8 +262,7 @@ prior_scr <- aaa_exclusions %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -300,8 +288,7 @@ optout <- optout %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -327,8 +314,7 @@ repaired <- repaired %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -354,8 +340,7 @@ vasc_sur <- vasc_sur %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -381,8 +366,7 @@ referred <- referred %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -408,8 +392,7 @@ unfit <- unfit %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -435,8 +418,7 @@ other <- aaa_exclusions %>%
     between(exlength, 31, 91) ~ 3,
     between(exlength, 92, 183) ~ 4,
     between(exlength, 184, 365) ~ 5,
-    exlength > 365 ~ 6
-  ))
+    exlength > 365 ~ 6))
 
 other_exlength <- other %>%
   filter(!is.na(exlength_group)) %>%
@@ -450,8 +432,7 @@ other <- other %>%
     date_start < dob+years(66) ~ 1,
     # account for leap years
     is.na(dob+years(66)) & date_start < dob+days(1)+years(66) ~ 1,
-    TRUE ~ 0
-  )) %>%
+    TRUE ~ 0)) %>%
   filter(exclflag == 1) %>%
   distinct(upi, pat_inelig)
 
@@ -493,10 +474,8 @@ cohort1 <- cohort1 %>%
     inunfit = if_else(upi %in% unfit$upi,1,0),
     inother = if_else(upi %in% other$upi,1,0)
   ) %>%
-  mutate(
-    inresult = if_else(!is.na(FT_screen_result), 1, 0),
-    inoffer = if_else(!is.na(date_first_offer_sent), 1, 0)
-  )
+  mutate(inresult = if_else(!is.na(FT_screen_result), 1, 0),
+         inoffer = if_else(!is.na(date_first_offer_sent), 1, 0))
   
 
 cohort1 %>% count(inoffertested, inoptedout)
@@ -512,8 +491,7 @@ cohort1 <- cohort1 %>%
     inundersurv_vas = if_else(inresult == 1, 0, inundersurv_vas),
     inrefvas = if_else(inresult == 1, 0, inrefvas),
     inunfit = if_else(inresult == 1, 0, inunfit),
-    inother = if_else(inresult == 1, 0, inother)
-  )
+    inother = if_else(inresult == 1, 0, inother))
 
 cohort1 %>% count(inresult, intempgana)
 cohort1 %>% count(inresult, inonlyhavesurv_record)

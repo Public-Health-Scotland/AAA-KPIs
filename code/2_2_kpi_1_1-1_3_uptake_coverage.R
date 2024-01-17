@@ -65,9 +65,6 @@ history_building <- function(df, season) {
   if({{season}} == "spring")
   {print("Don't add to the history file. Move along to next script.")
   
-  } else {
-    
-  if({{season}} == "autumn")
   {df <- df |> 
     filter(kpi != "KPI 1.1 Sept coverage",
            fin_year != year2)
