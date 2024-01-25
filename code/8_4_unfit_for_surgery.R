@@ -1,5 +1,5 @@
 ##########################################################
-# 4.3_unfit_for_surgery.R
+# 8_4_unfit_for_surgery.R
 # Karen Hotopp
 # March 2023
 # Script 3 of ?
@@ -310,7 +310,7 @@ cause_of_death <- mortality %>%
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("I", c(72:99)) ~ "Heart and circulatory disease (excl. AAA)", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("J", str_pad(c(0:99), width = 2, side = "left", pad = "0")) ~ "Respiratory disease", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("K", c(70:77)) ~ "Liver disease", 
-    # COVID label doesn't seemt o be working...
+    # COVID label doesn't seem to be working...
     str_sub(underlying_cause_of_death, 1, 3) %in% "U07" ~ "COVID-19", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("V", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("W", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
