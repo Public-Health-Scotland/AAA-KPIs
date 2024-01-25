@@ -1,5 +1,5 @@
 ##########################################################
-# 7_3_kpi_2.R
+# 4_3_kpi_2.R
 # Gavin Clark & Karen Hotopp
 # 19/10/2022
 #
@@ -7,7 +7,7 @@
 # KPI 2: Quality Assurance and Audit of Scans
 #
 # Written/run on R Studio Server, R version 3.6.1
-# Revised on Posit PWB, R Version 4.1.2
+# Revised on Posit WB, R Version 4.1.2
 ##########################################################
 
 #### Step 1: Housekeeping ----
@@ -34,16 +34,8 @@ rm(hb_list, exclusions_path, output_path)
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
 
-# Dates of first and last financial year ##!! Just start and end dates of current FY?
-##!! Also, what are the two dates that are commented out?? 
-start_date <- "2022-04-01" #"2019-04-01"
-
-end_date <- "2023-03-31" #"2022-03-31"
 
 # Table 4 variables
-finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
-
-end_current <- as.Date("2023-03-31") # combine w above date to remove excess variables
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
 end_minus_3 <- end_current %m-% years(3) ## But why?

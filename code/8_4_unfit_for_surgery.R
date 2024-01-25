@@ -2,7 +2,6 @@
 # 8_4_unfit_for_surgery.R
 # Karen Hotopp
 # March 2023
-# Script 3 of ?
 # 
 # Translation of SPSS file '4. Unfit for surgery'
 # Part of Theme 4 for AAA KPIs
@@ -35,7 +34,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(fy_tibble, fy_list, season)
 

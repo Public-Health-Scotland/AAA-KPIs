@@ -8,7 +8,7 @@
 # intervention/operated on within 8 weeks of screening
 #
 # Written/run on R Studio Server, R version 3.6.1
-# Revised on Posit PWB, R Version 4.1.2
+# Revised on Posit WB, R Version 4.1.2
 ###############################################################################
 
 ## Notes: 
@@ -17,7 +17,7 @@
 # Therefore, all KPI data is recalculated for each MEG.
 
 ## From Sept 2023, KPI 3.2 now includes analysis by HB of surgery (in addition 
-# to HB of residence)
+# to HB of residence) as management information.
 
 
 ### 1: Housekeeping ----
@@ -33,7 +33,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(exclusions_path)
 
