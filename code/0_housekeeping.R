@@ -69,7 +69,7 @@ cutoff_date <- "31-03-1958"
 # Year 1 is the cohort currently being analyzed for reporting (complete), 
 # while year 2 looks into the future to give a snapshot of progress for the  
 # cohort reported on next cycle.
-year1 <- "2022/23"
+year1 <- kpi_report_years[3]
 year2 <- "2023/24"
 
 year1_start <- "01-04-1956" # cohort year being analyzed
@@ -81,9 +81,9 @@ year2_end <- "31-03-1958"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # KPI_1_4.R
-
-# Define dates
-financial_year_due <- "2022/23" # current data being analyzed
+## Moved to KPI 1.4 script
+# # Define dates
+# financial_year_due <- kpi_report_years[3] # current data being analyzed
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

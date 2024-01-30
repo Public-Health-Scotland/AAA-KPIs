@@ -32,6 +32,13 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
+rm(hb_list, simd_path, output_path, cutoff_date, year1, year2, year1_start, 
+   year1_end, year2_start, year2_end, start_date, end_date, finyear_minus_3, 
+   cut_off_date)
+
+# Define dates
+financial_year_due <- kpi_report_years[3] # current data being analyzed
+
 # hbres_list
 template <- tibble(fy_due = financial_year_due,
                    hbres = c("Scotland","Ayrshire & Arran","Borders",
