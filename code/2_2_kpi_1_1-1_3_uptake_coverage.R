@@ -50,9 +50,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, extract_path, cutoff_date, cut_off_12m, cut_off_3m, 
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
+rm(fy_tibble, exclusions_path, extract_path, cutoff_date, start_date, end_date,
+   end_current, cut_off_date)
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
@@ -63,21 +62,27 @@ history_building <- function(df, season) {
   df
   
   if({{season}} == "spring")
-  {print("Don't add to the history file. Move along to next script.")
-  
-  {df <- df |> 
-    filter(kpi != "KPI 1.1 Sept coverage",
-           fin_year != year2)
-  write_rds(df, paste0(hist_path, "/aaa_kpi_historical.rds"))
-  # change permissions to give the group read/write
-  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical.rds"),
-            mode = "664", use_umask = FALSE)
-  print("You made history! Proceed to the next script.")
-  
-  } else { ## this prints with "spring"?? Should work now, but not tested
-  
-    print("Do you know what season it is?! Go back and figure yourself out.")}
-  
+  {
+    
+    print("Don't add to the history file. Move along to next script.")
+    
+  } else {
+    
+    if (season == "autumn") {
+      df <- df |> 
+        filter(kpi != "KPI 1.1 Sept coverage",
+               fin_year != year2)
+      write_rds(df, paste0(hist_path, "/aaa_kpi_historical.rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical.rds"),
+                mode = "664", use_umask = FALSE)
+      print("You made history! Proceed to the next script.")
+      
+    } else { 
+      
+      print("Do you know what season it is?! Go back and figure yourself out.")
+      
+    }
   }
 }
 

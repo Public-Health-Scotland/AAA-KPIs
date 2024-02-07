@@ -33,19 +33,21 @@ gc()
 source(here::here("code/0_housekeeping.R"))
 
 rm(hb_list, simd_path, output_path, cutoff_date, year1, year2, year1_start, 
-   year1_end, year2_start, year2_end, start_date, end_date, finyear_minus_3, 
+   year1_end, year2_start, year2_end, start_date, end_date, end_current, 
    cut_off_date)
+
+rm(finyear_minus_3)
 
 # Define dates
 financial_year_due <- kpi_report_years[3] # current data being analyzed
 
-# hbres_list
-template <- tibble(fy_due = financial_year_due,
-                   hbres = c("Scotland","Ayrshire & Arran","Borders",
-                             "Dumfries & Galloway", "Fife", "Forth Valley", 
-                             "Grampian", "Greater Glasgow & Clyde", "Highland", 
-                             "Lanarkshire", "Lothian", "Orkney",
-                             "Shetland", "Tayside","Western Isles"))
+# # hbres_list
+# template <- tibble(fy_due = financial_year_due,
+#                    hbres = c("Scotland","Ayrshire & Arran","Borders",
+#                              "Dumfries & Galloway", "Fife", "Forth Valley", 
+#                              "Grampian", "Greater Glasgow & Clyde", "Highland", 
+#                              "Lanarkshire", "Lothian", "Orkney",
+#                              "Shetland", "Tayside","Western Isles"))
 
 ## Step 2: Read in, check, and format files ----
 
@@ -98,9 +100,6 @@ aaa_extract %<>%
             first_outcome:audit_batch_outcome )) %>% # eligibility_period:dob_eligibility needed?
   arrange(upi, date_screen) %>% 
   glimpse()
-# 417,692 rows 2020/09
-# 440,014 rows 2021/03
-# 465,782 rows 2021/09
 # 493,121 rows 2022/03
 # 523,774 rows 2022/09
 # 551,027 rows 2023/03
@@ -149,6 +148,7 @@ check_dups <- annual_surveillance_cohort %>%
   ungroup() %>%
   filter(n > 1)
 # 50, mixture of date ranges, though most are close together
+# KH: what columns are we actually checking here?
 
 # Remove those where the appointment is within less than six months
 # (arbitrary value)
@@ -172,6 +172,7 @@ check_dups <- annual_surveillance_cohort %>%
   ungroup() %>%
   filter(n > 1)
 # 10, look more reasonable
+# KH: not clear 
 
 ### 3.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -239,9 +240,12 @@ check_dups <- annual_surveillance_w_excl %>%
   filter(n > 1)
 # 8 duplicates, look ok
 
-# Save annual surveillance cohort
-saveRDS(annual_surveillance_w_excl, 
-        "temp/annual_surveillance_w_excl.rds")
+# Save annual surveillance cohort (only if needed for checking)
+# saveRDS(annual_surveillance_w_excl, paste0(temp_path, 
+#                                            "/2_2_kpi_1_4a_annual.rds"))
+
+rm(annual_exclusions, annual_surveillance_cohort, annual_surveillance_f_up,
+   check_dups)
 
 ## Step 4: Create quarterly surveillance cohort ----
 
@@ -347,11 +351,16 @@ check_interval <- quarterly_surveillance_w_excl %>%
     interval_3_4 = min(interval_3_4, na.rm = TRUE),
     interval_4_5 = min(interval_4_5, na.rm = TRUE)
   ) 
+check_interval
 # 36 days is minimum
 
-# Save quarterly surveillance file
-saveRDS(quarterly_surveillance_w_excl, 
-          "temp/quarterly_surveillance_w_excl.rds")
+# # Save quarterly surveillance file (only if needed for checking)
+# saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
+#                                               "/2_3_kpi_1_4b_quarterly.rds"))
+
+rm(quarterly_exclusions_list, quarterly_surveillance_cohort,
+   quarterly_surveillance_f_up, check_interval)
+
 
 ### Optional Step 4z: Create output file of CHIs for checking of methodology ----
 
@@ -370,9 +379,13 @@ tayside_fife_quarterly <- quarterly_surveillance_w_excl |>
   ) |> arrange(upi, date_screen_surv) |>
   distinct(upi, .keep_all = TRUE)
 
-write_csv(tayside_fife_annual, "temp/tayside_fife_annual_for_checking.csv")
+write_csv(tayside_fife_annual, 
+          paste0(temp_path, "/tayside_fife_annual_for_checking.csv"))
 
-write_csv(tayside_fife_quarterly, "temp/tayside_fife_quarterly_for_checking.csv")
+write_csv(tayside_fife_quarterly, 
+          paste0(temp_path, "/tayside_fife_quarterly_for_checking.csv"))
+
+rm(tayside_fife_annual, tayside_fife_quarterly)
 
 ## Step 5: Supplementary table 6 ----
 ## Count of number of men with a surveillance screen in the year of interest
@@ -441,18 +454,15 @@ kpi_1_4a <- annual_surveillance_w_excl %>%
     ungroup() %>% 
     mutate(met_kpi_1_4a_p = 
              round_half_up(met_kpi_1_4a_n * 100 / cohort_n,1),
-           kpi = "kpi 1.4a") |>
-  pivot_longer(
-    cols = cohort_n:met_kpi_1_4a_p,
-    names_to = "group",
-    values_to = "value"
-  ) |>
-  select(
-    hbres,
-    kpi,
-    fin_year = fy_due,
-    group,
-    value)
+           kpi = "KPI 1.4a") |>
+  pivot_longer(cols = cohort_n:met_kpi_1_4a_p,
+               names_to = "group",
+               values_to = "value") |>
+  select(hbres,
+         kpi,
+         fin_year = fy_due,
+         group,
+         value)
   
 kpi_1_4b <- quarterly_surveillance_w_excl %>% 
   group_by(fy_due, hbres) %>% 
@@ -461,71 +471,91 @@ kpi_1_4b <- quarterly_surveillance_w_excl %>%
   ungroup() %>% 
   mutate(met_kpi_1_4b_p = 
            round_half_up(met_kpi_1_4b_n * 100 / cohort_n,1),
-         kpi = "kpi 1.4b") |>
-  pivot_longer(
-    cols = cohort_n:met_kpi_1_4b_p,
-    names_to = "group",
-    values_to = "value"
-  ) |>
-  select(
-    hbres,
-    kpi,
-    fin_year = fy_due,
-    group,
-    value)
+         kpi = "KPI 1.4b") |>
+  pivot_longer(cols = cohort_n:met_kpi_1_4b_p,
+               names_to = "group",
+               values_to = "value") |>
+  select(hbres,
+         kpi,
+         fin_year = fy_due,
+         group,
+         value)
 
 sup_tab_6_hb <- sup_tab_6_cohort |>
   group_by(fy_screen, hbres, surveillance_interval) |>
-  summarise(
-    tested_n = n()
-  ) |>
+  summarise(tested_n = n()) |>
   ungroup()
 
 sup_tab_6_scotland <- sup_tab_6_hb |>
   group_by(fy_screen, surveillance_interval) |>
-  summarise(
-    tested_n = sum(tested_n)
-  ) |>
+  summarise(tested_n = sum(tested_n)) |>
   ungroup() |>
-  mutate(
-    hbres = "Scotland"
-  )
+  mutate(hbres = "Scotland")
 
 sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
-  pivot_longer(
-    tested_n,
-    names_to = "group",
-    values_to = "value"
-  ) |>
-  mutate(
-    kpi = "supplementary table 6"
-  ) |>
-  select(
-    hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value
-  )
+  pivot_longer(tested_n,
+               names_to = "group",
+               values_to = "value") |>
+  mutate(kpi = "Table 6") |>
+  select(hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value)
 
 # summarise by pat_inelig and financial_year
 # reformat the table
 # rename row names
-dna_excluded_surveillance_table <- dna_excluded_surveillance %>%
+dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
-  mutate(pat_inelig = case_when(pat_inelig == "08" ~ "Non Responder Surveillance",
-                                pat_inelig == "02" ~ "Opted Out Surveillance"),
-         kpi = "DNA surveillance"
-         ) |>
+  mutate(pat_inelig = case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
+                                pat_inelig == "08" ~ "Non Responder Surveillance"),
+         kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
-  select(
-    kpi, pat_inelig, fin_year = financial_year, count
-  )
+  select(kpi, pat_inelig, fin_year = financial_year, count)
 
 # Write to temp
-saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), "temp/kpi_1_4.rds")
-saveRDS(sup_tab_6, "temp/sup_tab_6")
-saveRDS(dna_excluded_surveillance_table, 
-        "temp/dna_excluded_surveillance_table")
+#saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), "/kpi_1_4.rds")
+saveRDS(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
+saveRDS(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
+                                   yymm, ".rds"))
 
 
+if (season == "spring") {
+  table(hist_db$kpi, hist_db$fin_year) 
+  
+  print("Don't add to the history file. Move along to next step")
+  
+} else {
+  
+  if (season == "autumn") {
+    # save a backup of hist_db
+    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
+    # change permissions to give the group read/write
+    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
+              mode = "664", use_umask = FALSE)
+    
+    ## Combine data from current to historical
+    current_kpi <- kpi_2 |> 
+      filter(financial_year == kpi_report_years[3]) |> 
+      rename(fin_year = financial_year, ## decide how these should be standardized
+             hb = hb_screen) ## move this higher up
+    
+    print(table(current_kpi$kpi, current_kpi$fin_year)) 
+    
+    hist_db <- bind_rows(hist_db, current_kpi)
+    print(table(hist_db$kpi, hist_db$fin_year)) 
+    
+    ## Write out new historic file
+    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+    # change permissions to give the group read/write
+    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
+              mode = "664", use_umask = FALSE)
+    
+    print("You made history! Proceed to the next step")
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }}
 
 
 

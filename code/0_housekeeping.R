@@ -11,14 +11,14 @@
 
 
 ## Ubiquitous Variables
-yymm <- 202309
+yymm <- 202209
 
 season <- "autumn" # options are "spring" or "autumn"
 
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
 # current year of analysis) and the year in current screening process)
-kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
+kpi_report_years <- c("2019/20", "2020/21", "2021/22") 
 
 # hbres_list
 hb_list <- tibble::tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
