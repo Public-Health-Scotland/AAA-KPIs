@@ -1,8 +1,8 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# KPI_1_4.R
+# 3_2_kpi_1_4_surveillance.R
 # Gavin Clark
 # September 2023
-# Create the outputs for KPI 1.4 a, b, surveillance table 6, and 
+# Create RDS files for KPI 1.4 a, b, surveillance table 6, and DNA exclusions
 # Written/run on R Studio Server
 # R version 3.6.1
 # Revised/Run on Posit WB
@@ -32,14 +32,46 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, hb_tibble, simd_path, output_path, cutoff_date, year1, year2, 
+rm(fy_tibble, simd_path, output_path, cutoff_date, year1, year2, 
    year1_start, year1_end, year2_start, year2_end, start_date, end_date, 
    end_current, cut_off_date)
 
-rm(finyear_minus_3)
-
-# # Define dates
-# financial_year_due <- kpi_report_years[3] # current data being analyzed
+## Functions
+history_building <- function(df, season) {
+  
+  df
+  
+  if (season == "spring") {
+    table(hist_db$kpi, hist_db$fin_year) 
+    
+    print("Don't add to the history file. Move along to next step")
+    
+  } else {
+    
+    if (season == "autumn") {
+      ## Combine data from this script (KPI 1.4 a & b)
+      kpi_1_4 <- kpi_1_4 |>
+        filter(fin_year == kpi_report_years[3])
+      
+      kpi_1 <- bind_rows(kpi_1, kpi_1_4)
+      
+      print(table(kpi_1$kpi, kpi_1$fin_year)) 
+      
+      ## Write out new historic file
+      write_rds(kpi_1, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/2_1_invite_attend_", yymm, ".rds"),
+                mode = "664", use_umask = FALSE)
+      
+      print("You made history! Proceed to the next step")
+      
+    } else {
+      
+      print("Go check your calendar!")
+      
+    }
+  }
+}
 
 
 ## Step 2: Read in, check, and format files ----
@@ -321,7 +353,7 @@ check_interval <- quarterly_surveillance_w_excl %>%
             interval_4_5 = min(interval_4_5, na.rm = TRUE))
 
 check_interval
-# 36 days is minimum
+# 36 days is minimum (all should be >30)
 
 # # Save quarterly surveillance file (only if needed for checking)
 # saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
@@ -452,6 +484,8 @@ kpi_1_4b <- quarterly_surveillance_w_excl %>%
          group,
          value)
 
+kpi_1_4 <- bind_rows(kpi_1_4a, kpi_1_4b)
+
 ## Table 6
 sup_tab_6_hb <- sup_tab_6_cohort |>
   group_by(fy_screen, hbres, surveillance_interval) |>
@@ -471,6 +505,8 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
   mutate(kpi = "Table 6") |>
   select(hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value)
 
+sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres")
+
 ## DNA exclusions
 # summarise by pat_inelig and financial_year
 # reformat the table
@@ -483,67 +519,19 @@ dna_excluded_table <- dna_excluded_surveillance %>%
   arrange(financial_year) |>
   select(kpi, fin_year = financial_year, pat_inelig, count)
 
-# Write to temp
-saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), paste0(temp_path, "/2_1_kpi_1_4.rds"))
+
+## Write to temp
 saveRDS(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
 saveRDS(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
                                    yymm, ".rds"))
 
-table(kpi_1_4a$fin_year)
-table(kpi_1_4b$fin_year)
+# Read in file created in previous script (2_2_kpi_1_1-3_uptake_coverage.R)
+kpi_1 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
+table(kpi_1$kpi, kpi_1$fin_year)
+table(kpi_1_4$kpi, kpi_1_4$fin_year)
+# Check that the data for years 1 & 2 matches data already stored in the block
 
-## Functions
-history_building <- function(df, season) {
-  
-  df
-  
-  if (season == "spring") {
-    table(hist_db$kpi, hist_db$fin_year) 
-    
-    print("Don't add to the history file. Move along to next step")
-    
-  } else {
-    
-    if (season == "autumn") {
-      # save a backup of hist_db
-      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      ## Combine data from current to historical
-      current_kpi <- kpi_2 |> 
-        filter(financial_year == kpi_report_years[3]) |> 
-        rename(fin_year = financial_year, ## decide how these should be standardized
-               hb = hb_screen) ## move this higher up
-      
-      print(table(current_kpi$kpi, current_kpi$fin_year)) 
-      
-      hist_db <- bind_rows(hist_db, current_kpi)
-      print(table(hist_db$kpi, hist_db$fin_year)) 
-      
-      ## Write out new historic file
-      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      print("You made history! Proceed to the next step")
-      
-    } else {
-      
-      print("Go check your calendar!")
-      
-    }
-  }
-}
-
-
-
-
-
-
-
-
+# Save KPI 1.4 a/b to theme 2 data block
+history_building(kpi_1_4, season)
 
