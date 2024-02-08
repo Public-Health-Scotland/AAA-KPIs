@@ -605,11 +605,7 @@ new_hist_db <- new_hist_db |>
                                             "2015/16", "2016/17", "2017/18", 
                                             "2018/19", "2019/20", "2020/21", 
                                             "2021/22", "2022/23")),
-         hbres = fct_relevel(hbres, c("Scotland","Ayrshire & Arran","Borders",
-                                      "Dumfries & Galloway", "Fife", "Forth Valley", 
-                                      "Grampian", "Greater Glasgow & Clyde",  
-                                      "Highland", "Lanarkshire", "Lothian", "Orkney",
-                                      "Shetland", "Tayside","Western Isles"))) |> 
+         hbres = fct_relevel(hbres, hb_list)) |> 
   arrange(kpi, fin_year, hbres)
 
 

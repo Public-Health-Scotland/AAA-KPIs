@@ -41,7 +41,7 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 ### 2: Import data ----
-theme2 <- read_rds(paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
+theme2 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 table(theme2$kpi, theme2$fin_year) 
 # should be 3 most recent complete years + incomplete/active year

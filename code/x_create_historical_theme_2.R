@@ -26,8 +26,6 @@ library(tidylog)
 rm(list=ls())
 gc()
 
-## Values
-
 
 
 ## File paths
@@ -371,64 +369,69 @@ aaa_1.3b_hb <- rbind(aaa_2021, aaa_2122) |>
 
 
 ### KPI 1.4a ----
-## 2020/21
-aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_4_path, 
-                             "/KPI_1.4atable.xlsx"), 
-                      cols = 2:5, rows = c(3,5:19)) |> 
-  pivot_longer(!X1, names_to = "group", values_to = "value") |> 
-  mutate(fin_year = "2020/21", .after = X1)
-
-## 2021/22
-aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_4_path,
-                             "/KPI_1.4atable.xlsx"), 
-                      cols = 2:5, rows = c(3,5:19)) |> 
-  pivot_longer(!X1, names_to = "group", values_to = "value") |> 
-  mutate(fin_year = "2021/22", .after = X1)
-
-## Combine and clean
-aaa_1.4a <- rbind(aaa_2021, aaa_2122) |> 
-  mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
-         X1 = str_replace_all(X1, "&amp;", "&"),
-         X1 = str_replace(X1, "A_S", "S")) |> 
-  rename(hbres = X1) |> 
-  mutate(group = case_when(str_detect(group, "attend") ~ "attend_n",
-                           str_detect(group, "Cohort") ~ "cohort_n",
-                           str_detect(group, "uptake") ~ "uptake_p"),
-         kpi = "KPI 1.4a", .after = hbres) |> 
-  mutate(simd = NA, .after = kpi) |> 
-  glimpse()
+# Original code replaced Feb 2024, when 2023 rewrite of KPI 1.4 a/b was run to
+# create historical records back to 2019/20
+aaa_1.4 <- read_rds(paste0(kpi_path, 202209, temp_4_path, "/2_1_kpi_1_4.rds"))
 
 
-### KPI 1.4b ----
-## 2020/21
-aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_4_path, 
-                             "/KPI_1.4btable.xlsx"), 
-                      cols = 2:5, rows = c(3,5:19)) |> 
-  pivot_longer(!X1, names_to = "group", values_to = "value") |> 
-  mutate(fin_year = "2020/21", .after = X1)
-
-## 2021/22
-aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_4_path,
-                             "/KPI_1.4btable.xlsx"), 
-                      cols = 2:5, rows = c(3,5:19)) |>
-  tibble::add_row(X1 = "Shetland", 'xml:space=\"preserve\">Cohort' = 0,
-                  'xml:space=\"preserve\">attend' = 0,
-                  'xml:space=\"preserve\">uptake' = 0, .after = 12) |> 
-  pivot_longer(!X1, names_to = "group", values_to = "value") |> 
-  mutate(fin_year = "2021/22", .after = X1)
-
-## Combine and clean
-aaa_1.4b <- rbind(aaa_2021, aaa_2122) |> 
-  mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
-         X1 = str_replace_all(X1, "&amp;", "&"),
-         X1 = str_replace(X1, "A_S", "S")) |> 
-  rename(hbres = X1) |> 
-  mutate(group = case_when(str_detect(group, "attend") ~ "attend_n",
-                           str_detect(group, "Cohort") ~ "cohort_n",
-                           str_detect(group, "uptake") ~ "uptake_p"),
-         kpi = "KPI 1.4b", .after = hbres) |> 
-  mutate(simd = NA, .after = kpi) |> 
-  glimpse()
+# ## 2020/21
+# aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_4_path, 
+#                              "/KPI_1.4atable.xlsx"), 
+#                       cols = 2:5, rows = c(3,5:19)) |> 
+#   pivot_longer(!X1, names_to = "group", values_to = "value") |> 
+#   mutate(fin_year = "2020/21", .after = X1)
+# 
+# ## 2021/22
+# aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_4_path,
+#                              "/KPI_1.4atable.xlsx"), 
+#                       cols = 2:5, rows = c(3,5:19)) |> 
+#   pivot_longer(!X1, names_to = "group", values_to = "value") |> 
+#   mutate(fin_year = "2021/22", .after = X1)
+# 
+# ## Combine and clean
+# aaa_1.4a <- rbind(aaa_2021, aaa_2122) |> 
+#   mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
+#          X1 = str_replace_all(X1, "&amp;", "&"),
+#          X1 = str_replace(X1, "A_S", "S")) |> 
+#   rename(hbres = X1) |> 
+#   mutate(group = case_when(str_detect(group, "attend") ~ "attend_n",
+#                            str_detect(group, "Cohort") ~ "cohort_n",
+#                            str_detect(group, "uptake") ~ "uptake_p"),
+#          kpi = "KPI 1.4a", .after = hbres) |> 
+#   mutate(simd = NA, .after = kpi) |> 
+#   glimpse()
+# 
+# 
+# ### KPI 1.4b ----
+# ## 2020/21
+# aaa_2021 <- read.xlsx(paste0(pub_path, 20220301, temp_4_path, 
+#                              "/KPI_1.4btable.xlsx"), 
+#                       cols = 2:5, rows = c(3,5:19)) |> 
+#   pivot_longer(!X1, names_to = "group", values_to = "value") |> 
+#   mutate(fin_year = "2020/21", .after = X1)
+# 
+# ## 2021/22
+# aaa_2122 <- read.xlsx(paste0(kpi_path, 202209, temp_4_path,
+#                              "/KPI_1.4btable.xlsx"), 
+#                       cols = 2:5, rows = c(3,5:19)) |>
+#   tibble::add_row(X1 = "Shetland", 'xml:space=\"preserve\">Cohort' = 0,
+#                   'xml:space=\"preserve\">attend' = 0,
+#                   'xml:space=\"preserve\">uptake' = 0, .after = 12) |> 
+#   pivot_longer(!X1, names_to = "group", values_to = "value") |> 
+#   mutate(fin_year = "2021/22", .after = X1)
+# 
+# ## Combine and clean
+# aaa_1.4b <- rbind(aaa_2021, aaa_2122) |> 
+#   mutate(X1 = str_remove(X1, 'xml:space="preserve">'),
+#          X1 = str_replace_all(X1, "&amp;", "&"),
+#          X1 = str_replace(X1, "A_S", "S")) |> 
+#   rename(hbres = X1) |> 
+#   mutate(group = case_when(str_detect(group, "attend") ~ "attend_n",
+#                            str_detect(group, "Cohort") ~ "cohort_n",
+#                            str_detect(group, "uptake") ~ "uptake_p"),
+#          kpi = "KPI 1.4b", .after = hbres) |> 
+#   mutate(simd = NA, .after = kpi) |> 
+#   glimpse()
 
 
 #### 3: Check and combine ----
@@ -441,12 +444,11 @@ names(aaa_1.3a_hb)
 names(aaa_1.3a_Sept)
 names(aaa_1.3b)
 names(aaa_1.3b_hb)
-names(aaa_1.4a)
-names(aaa_1.4b)
+names(aaa_1.4)
 
 aaa_kpi_historic <- rbind(aaa_1.1, aaa_1.2a, aaa_1.2a_Sept, aaa_1.2b,
                           aaa_1.3a, aaa_1.3a_hb, aaa_1.3a_Sept, aaa_1.3b,
-                          aaa_1.3b_hb, aaa_1.4a, aaa_1.4b) |> 
+                          aaa_1.3b_hb, aaa_1.4) |> 
   mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
                                       "Dumfries & Galloway", "Fife", "Forth Valley",
                                       "Grampian", "Greater Glasgow & Clyde", 
@@ -454,15 +456,17 @@ aaa_kpi_historic <- rbind(aaa_1.1, aaa_1.2a, aaa_1.2a_Sept, aaa_1.2b,
                                       "Shetland", "Tayside", "Western Isles")),
          simd = fct_relevel(simd, c("Total", "1", "2", "3", "4", "5",
                                     "Unknown"))) |> 
+  arrange(kpi, fin_year, hbres) |> 
   select(hbres, kpi, fin_year, simd, group, value)
 
 table(aaa_kpi_historic$kpi)
+table(aaa_kpi_historic$kpi, aaa_kpi_historic$fin_year)
 
 
 #### 4: Write out ----
 write_rds(aaa_kpi_historic, paste0(kpi_path, 
-                                   "historical/aaa_kpi_historical.rds"))
+                                   "historical/aaa_kpi_historical_theme2.rds"))
 # change permissions to give the group read/write
-Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical.rds"),
+Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_theme2.rds"),
           mode = "664", use_umask = FALSE)
 

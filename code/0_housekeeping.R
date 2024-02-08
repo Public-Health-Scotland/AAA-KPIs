@@ -11,21 +11,21 @@
 
 
 ## Ubiquitous Variables
-yymm <- 202209
+yymm <- 202309
 
 season <- "autumn" # options are "spring" or "autumn"
 
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
 # current year of analysis) and the year in current screening process)
-kpi_report_years <- c("2019/20", "2020/21", "2021/22") 
+kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
 # hbres_list
-hb_list <- tibble::tibble(hbres = c("Scotland","Ayrshire & Arran","Borders",
-                                    "Dumfries & Galloway", "Fife", "Forth Valley", 
-                                    "Grampian", "Greater Glasgow & Clyde", "Highland", 
-                                    "Lanarkshire", "Lothian", "Orkney",
-                                    "Shetland", "Tayside","Western Isles"))
+hb_list <- c("Scotland","Ayrshire & Arran","Borders", "Dumfries & Galloway", 
+             "Fife", "Forth Valley", "Grampian", "Greater Glasgow & Clyde", 
+             "Highland", "Lanarkshire", "Lothian", "Orkney",
+             "Shetland", "Tayside", "Western Isles")
+hb_tibble <- tibble::tibble(hbres = c(hb_list))
 
 # financial year list (list of FYs covered by program from start)
 fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 
@@ -82,8 +82,6 @@ year2_end <- "31-03-1958"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # KPI_1_4.R
 ## Moved to KPI 1.4 script
-# # Define dates
-# financial_year_due <- kpi_report_years[3] # current data being analyzed
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

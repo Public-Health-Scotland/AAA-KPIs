@@ -32,22 +32,15 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, simd_path, output_path, cutoff_date, year1, year2, year1_start, 
-   year1_end, year2_start, year2_end, start_date, end_date, end_current, 
-   cut_off_date)
+rm(fy_tibble, hb_tibble, simd_path, output_path, cutoff_date, year1, year2, 
+   year1_start, year1_end, year2_start, year2_end, start_date, end_date, 
+   end_current, cut_off_date)
 
 rm(finyear_minus_3)
 
-# Define dates
-financial_year_due <- kpi_report_years[3] # current data being analyzed
+# # Define dates
+# financial_year_due <- kpi_report_years[3] # current data being analyzed
 
-# # hbres_list
-# template <- tibble(fy_due = financial_year_due,
-#                    hbres = c("Scotland","Ayrshire & Arran","Borders",
-#                              "Dumfries & Galloway", "Fife", "Forth Valley", 
-#                              "Grampian", "Greater Glasgow & Clyde", "Highland", 
-#                              "Lanarkshire", "Lothian", "Orkney",
-#                              "Shetland", "Tayside","Western Isles"))
 
 ## Step 2: Read in, check, and format files ----
 
@@ -60,9 +53,6 @@ aaa_exclusions <- readRDS(exclusions_path)
 ### 2.2: Check Exclusions and filter ----
 # check number of records
 aaa_exclusions %>% nrow()
-# 98,960  rows 2020/09
-# 106,417 rows 2021/03
-# 114,781 rows 2021/09
 # 123,791 rows 2022/03
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
@@ -89,8 +79,8 @@ exclusions <- aaa_exclusions %>%
 # select relevant columns
 aaa_extract %<>% 
   mutate(month = format(as.Date(date_screen, format = "%Y-%m-%d"), "%m"),
-         fin_month = case_when(month %in% c('04','05','06','07','08','09',
-                                            '10','11','12') ~ as.numeric(month)-3,
+         fin_month = case_when(month %in% c('04','05','06','07','08','09','10',
+                                            '11','12') ~ as.numeric(month) - 3,
                                month == '03' ~ 12,
                                month == '02' ~ 11,
                                month == '01' ~ 10)) %>%
@@ -133,8 +123,7 @@ annual_surveillance_cohort <- aaa_extract %>%
   filter(followup_recom == "02") %>% 
   mutate(date_next_screen_due = date_screen + 365,
          fy_due = extract_fin_year(date_next_screen_due)) %>%
-  filter(fy_due %in% kpi_report_years
-         ) %>%
+  filter(fy_due %in% kpi_report_years) %>%
   # This is the appointment where the recommendation was surveillance
   # so renaming to make this clear
   rename(date_screen_surv = date_screen) 
@@ -142,9 +131,7 @@ annual_surveillance_cohort <- aaa_extract %>%
 ## Check for duplicates, check the dates of screening to see how far apart
 check_dups <- annual_surveillance_cohort %>%
   group_by(upi, fy_due) %>%
-  mutate(
-    n = n()
-  ) %>%
+  mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
 # 50, mixture of date ranges, though most are close together
@@ -155,20 +142,15 @@ check_dups <- annual_surveillance_cohort %>%
 annual_surveillance_cohort <- annual_surveillance_cohort |>
   arrange(upi, date_next_screen_due) |>
   group_by(upi) |>
-    mutate(
-      appt_less_6m = if_else(
-        date_next_screen_due - lag(date_next_screen_due) < 180, 1, 0
-      )
-    ) |>
+    mutate(appt_less_6m = if_else(
+      date_next_screen_due - lag(date_next_screen_due) < 180, 1, 0)) |>
     ungroup() |>
   filter(is.na(appt_less_6m)|appt_less_6m == 0)
 
 ## Check again for duplicates, check the dates of screening to see how far apart
 check_dups <- annual_surveillance_cohort %>%
   group_by(upi, fy_due) %>%
-  mutate(
-    n = n()
-  ) %>%
+  mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
 # 10, look more reasonable
@@ -182,18 +164,14 @@ annual_surveillance_f_up <- annual_surveillance_cohort |>
   inner_join(screened_cohort, by = "upi") |>
   # Have had a screening appointment after the surveillance appointment
   filter(date_next_screen > date_screen_surv) %>%
-  mutate(
-    # Person has a screen due in the period of interest
-    # and they have been screened within 365 days plus 6 weeks
-    met_kpi_1_4a = if_else(
-      between(date_next_screen, 
-              date_screen_surv,
-              date_next_screen_due + 6 * 7), 1, 0)) %>%
+  # Person has a screen due in the period of interest
+  # and they have been screened within 365 days plus 6 weeks
+  mutate(met_kpi_1_4a = if_else(between(date_next_screen, 
+                                        date_screen_surv,
+                                        date_next_screen_due + 6 * 7), 1, 0)) %>%
   # Create list of compliant CHIs for linking to cohort
   group_by(upi, fy_due) |>
-  summarise(
-    met_kpi_1_4a = max(met_kpi_1_4a)
-  ) %>%
+  summarise(met_kpi_1_4a = max(met_kpi_1_4a)) %>%
   ungroup()
 
 ### 3.3: Identify exclusions ----
@@ -233,9 +211,7 @@ annual_surveillance_w_excl <- annual_surveillance_cohort |>
 # Check for duplicates  
 check_dups <- annual_surveillance_w_excl %>%
   group_by(upi, fy_due) %>%
-  mutate(
-    n = n()
-  ) %>%
+  mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
 # 8 duplicates, look ok
@@ -246,6 +222,7 @@ check_dups <- annual_surveillance_w_excl %>%
 
 rm(annual_exclusions, annual_surveillance_cohort, annual_surveillance_f_up,
    check_dups)
+
 
 ## Step 4: Create quarterly surveillance cohort ----
 
@@ -261,8 +238,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   # GC - 3 months is not a consistent number, going with 91
   mutate(date_next_screen_due = date_screen + 91,
          fy_due = extract_fin_year(date_next_screen_due)) %>%
-  filter(fy_due %in% kpi_report_years
-  ) %>%
+  filter(fy_due %in% kpi_report_years) %>%
   rename(date_screen_surv = date_screen) |>
   select(upi, hbres, fy_due, date_screen_surv, date_next_screen_due)
 
@@ -275,16 +251,15 @@ quarterly_surveillance_f_up <- quarterly_surveillance_cohort |>
   inner_join(screened_cohort, by = "upi") |>
   # Have had a screening appointment after the surveillance appointment
   filter(date_next_screen > date_screen_surv) %>%
-  mutate(
-    # Person has a screen due in the period of interest
-    met_kpi_1_4b = if_else(
-      between(date_next_screen, 
-              # There are a small number of cases which are within a month
-              # Excluding as presumably these are repeat screens in some way(?)
-              # Perhaps one to double-check
-              date_screen_surv + 30,
-              # and they have been screened within 90 days plus 4 weeks
-              date_next_screen_due + 4 * 7), 1, 0)) %>%
+  # Person has a screen due in the period of interest
+  mutate(met_kpi_1_4b = if_else(
+    between(date_next_screen, 
+            # There are a small number of cases which are within a month
+            # Excluding as presumably these are repeat screens in some way(?)
+            # Perhaps one to double-check
+            date_screen_surv + 30,
+            # and they have been screened within 90 days plus 4 weeks
+            date_next_screen_due + 4 * 7), 1, 0)) %>%
   # Create list of compliant CHIs
   filter(met_kpi_1_4b == 1) %>%
   # Small number where there appear to be two follow-up screenings for the
@@ -331,26 +306,20 @@ check_interval <- quarterly_surveillance_w_excl %>%
   select(upi, date_screen_surv) |>
   arrange(upi, date_screen_surv) |>
   group_by(upi) |>
-  mutate(
-    count = row_number()
-  ) |>
+  mutate(count = row_number()) |>
   ungroup() |>
-  pivot_wider(
-    names_from = count,
-    names_prefix = "date_screen_surv_",
-    values_from = date_screen_surv) %>%
-  mutate(
-    interval_1_2 = date_screen_surv_2 - date_screen_surv_1,
-    interval_2_3 = date_screen_surv_3 - date_screen_surv_2,
-    interval_3_4 = date_screen_surv_4 - date_screen_surv_3,
-    interval_4_5 = date_screen_surv_5 - date_screen_surv_4,
-  ) |>
-  summarise(
-    interval_1_2 = min(interval_1_2, na.rm = TRUE),
-    interval_2_3 = min(interval_2_3, na.rm = TRUE),
-    interval_3_4 = min(interval_3_4, na.rm = TRUE),
-    interval_4_5 = min(interval_4_5, na.rm = TRUE)
-  ) 
+  pivot_wider(names_from = count,
+              names_prefix = "date_screen_surv_",
+              values_from = date_screen_surv) %>%
+  mutate(interval_1_2 = date_screen_surv_2 - date_screen_surv_1,
+         interval_2_3 = date_screen_surv_3 - date_screen_surv_2,
+         interval_3_4 = date_screen_surv_4 - date_screen_surv_3,
+         interval_4_5 = date_screen_surv_5 - date_screen_surv_4) |>
+  summarise(interval_1_2 = min(interval_1_2, na.rm = TRUE),
+            interval_2_3 = min(interval_2_3, na.rm = TRUE),
+            interval_3_4 = min(interval_3_4, na.rm = TRUE),
+            interval_4_5 = min(interval_4_5, na.rm = TRUE))
+
 check_interval
 # 36 days is minimum
 
@@ -362,30 +331,29 @@ rm(quarterly_exclusions_list, quarterly_surveillance_cohort,
    quarterly_surveillance_f_up, check_interval)
 
 
-### Optional Step 4z: Create output file of CHIs for checking of methodology ----
-
-tayside_fife_annual <- annual_surveillance_w_excl |>
-  filter(hbres %in% c("Tayside", "Fife")) |>
-  select(
-    upi, hbres, date_screen_surv, met_kpi_1_4a
-  ) |>
-  arrange(upi, date_screen_surv) |>
-  distinct(upi, .keep_all = TRUE)
-
-tayside_fife_quarterly <- quarterly_surveillance_w_excl |>
-  filter(hbres %in% c("Tayside", "Fife")) |>
-  select(
-    upi, hbres, date_screen_surv, met_kpi_1_4b
-  ) |> arrange(upi, date_screen_surv) |>
-  distinct(upi, .keep_all = TRUE)
-
-write_csv(tayside_fife_annual, 
-          paste0(temp_path, "/tayside_fife_annual_for_checking.csv"))
-
-write_csv(tayside_fife_quarterly, 
-          paste0(temp_path, "/tayside_fife_quarterly_for_checking.csv"))
-
-rm(tayside_fife_annual, tayside_fife_quarterly)
+# ### Optional Step 4z: Create output file of CHIs for checking methodology ----
+# tayside_fife_annual <- annual_surveillance_w_excl |>
+#   filter(hbres %in% c("Tayside", "Fife")) |>
+#   select(
+#     upi, hbres, date_screen_surv, met_kpi_1_4a
+#   ) |>
+#   arrange(upi, date_screen_surv) |>
+#   distinct(upi, .keep_all = TRUE)
+# 
+# tayside_fife_quarterly <- quarterly_surveillance_w_excl |>
+#   filter(hbres %in% c("Tayside", "Fife")) |>
+#   select(
+#     upi, hbres, date_screen_surv, met_kpi_1_4b
+#   ) |> arrange(upi, date_screen_surv) |>
+#   distinct(upi, .keep_all = TRUE)
+# 
+# write_csv(tayside_fife_annual, 
+#           paste0(temp_path, "/tayside_fife_annual_for_checking.csv"))
+# 
+# write_csv(tayside_fife_quarterly, 
+#           paste0(temp_path, "/tayside_fife_quarterly_for_checking.csv"))
+# 
+# rm(tayside_fife_annual, tayside_fife_quarterly)
 
 ## Step 5: Supplementary table 6 ----
 ## Count of number of men with a surveillance screen in the year of interest
@@ -394,7 +362,7 @@ sup_tab_6_cohort <- aaa_extract |>
   # Select those recommended for surveillance at next appointment, need the 
   # followup_recom variable as this is the only one that says whether it is 
   # quarterly or annual surveillance
-  filter(!is.na(financial_year),followup_recom %in% c("01", "02")) |>
+  filter(!is.na(financial_year), followup_recom %in% c("01", "02")) |>
   select(upi, date_screen_last = date_screen, followup_recom) |>
   # Link screened cohort to get those who attended the next appointment
   inner_join(screened_cohort, by = "upi") |>
@@ -403,24 +371,20 @@ sup_tab_6_cohort <- aaa_extract |>
   # the follow-up recommendation
   filter(date_screen > date_screen_last) |>
   mutate(
-    # To remove the multiple matched upis between the dataset, we want to keep
+    # To remove the multiple matched UPIs between the dataset, we want to keep
     # the subsequent screening attendance to the follow-up recommendation.
     # To do this, first calculate the interval between follow-up recommendation
     # and date of screening attendance
     interval = date_screen - date_screen_last,
     fy_screen = extract_fin_year(date_screen),
-    surveillance_interval = case_when(
-      followup_recom == "01" ~ "quarterly",
-      followup_recom == "02" ~ "annual",
-      TRUE ~ "error"
-    )) |>
+    surveillance_interval = case_when(followup_recom == "01" ~ "quarterly",
+                                      followup_recom == "02" ~ "annual",
+                                      TRUE ~ "error")) |>
   filter(fy_screen %in% kpi_report_years) |>
   # For each instance of CHI, date of screen, and surveillance interval,
   # Find the lowest interval to identify and filter on the next appointment
   group_by(upi, date_screen) |>
-  mutate(
-    min_interval = min(interval)
-  ) |>
+  mutate(min_interval = min(interval)) |>
   ungroup() |>
   filter(interval == min_interval) |>
   distinct(upi, fy_screen, surveillance_interval, .keep_all = TRUE) |>
@@ -446,41 +410,49 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 97 rows 2023/09
 
 ## Step 7: Create KPI output ----
-
+## KPI 1.4a
 kpi_1_4a <- annual_surveillance_w_excl %>% 
-    group_by(fy_due, hbres) %>% 
-    summarise(cohort_n = n(), met_kpi_1_4a_n = sum(met_kpi_1_4a)) %>% 
-    group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
-    ungroup() %>% 
-    mutate(met_kpi_1_4a_p = 
-             round_half_up(met_kpi_1_4a_n * 100 / cohort_n,1),
-           kpi = "KPI 1.4a") |>
+  group_by(fy_due, hbres) %>% 
+  summarise(cohort_n = n(), met_kpi_1_4a_n = sum(met_kpi_1_4a)) %>% 
+  group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
+  ungroup() %>% 
+  mutate(met_kpi_1_4a_p = round_half_up(met_kpi_1_4a_n * 100 / cohort_n, 1),
+         kpi = "KPI 1.4a") |>
   pivot_longer(cols = cohort_n:met_kpi_1_4a_p,
                names_to = "group",
                values_to = "value") |>
+  mutate(simd = NA,
+         hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(fy_due, hbres) |> 
   select(hbres,
          kpi,
+         simd,
          fin_year = fy_due,
          group,
          value)
   
+## KPI 1.4b
 kpi_1_4b <- quarterly_surveillance_w_excl %>% 
   group_by(fy_due, hbres) %>% 
   summarise(cohort_n = n(), met_kpi_1_4b_n = sum(met_kpi_1_4b)) %>% 
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() %>% 
-  mutate(met_kpi_1_4b_p = 
-           round_half_up(met_kpi_1_4b_n * 100 / cohort_n,1),
+  mutate(met_kpi_1_4b_p = round_half_up(met_kpi_1_4b_n * 100 / cohort_n, 1),
          kpi = "KPI 1.4b") |>
   pivot_longer(cols = cohort_n:met_kpi_1_4b_p,
                names_to = "group",
                values_to = "value") |>
+  mutate(simd = NA,
+         hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(fy_due, hbres) |> 
   select(hbres,
          kpi,
+         simd,
          fin_year = fy_due,
          group,
          value)
 
+## Table 6
 sup_tab_6_hb <- sup_tab_6_cohort |>
   group_by(fy_screen, hbres, surveillance_interval) |>
   summarise(tested_n = n()) |>
@@ -499,9 +471,9 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
   mutate(kpi = "Table 6") |>
   select(hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value)
 
+## DNA exclusions
 # summarise by pat_inelig and financial_year
 # reformat the table
-# rename row names
 dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
@@ -509,53 +481,69 @@ dna_excluded_table <- dna_excluded_surveillance %>%
                                 pat_inelig == "08" ~ "Non Responder Surveillance"),
          kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
-  select(kpi, pat_inelig, fin_year = financial_year, count)
+  select(kpi, fin_year = financial_year, pat_inelig, count)
 
 # Write to temp
-#saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), "/kpi_1_4.rds")
+saveRDS(bind_rows(kpi_1_4a, kpi_1_4b), paste0(temp_path, "/2_1_kpi_1_4.rds"))
 saveRDS(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
 saveRDS(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
                                    yymm, ".rds"))
 
+table(kpi_1_4a$fin_year)
+table(kpi_1_4b$fin_year)
 
-if (season == "spring") {
-  table(hist_db$kpi, hist_db$fin_year) 
+
+## Functions
+history_building <- function(df, season) {
   
-  print("Don't add to the history file. Move along to next step")
+  df
   
-} else {
-  
-  if (season == "autumn") {
-    # save a backup of hist_db
-    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
-    # change permissions to give the group read/write
-    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
-              mode = "664", use_umask = FALSE)
+  if (season == "spring") {
+    table(hist_db$kpi, hist_db$fin_year) 
     
-    ## Combine data from current to historical
-    current_kpi <- kpi_2 |> 
-      filter(financial_year == kpi_report_years[3]) |> 
-      rename(fin_year = financial_year, ## decide how these should be standardized
-             hb = hb_screen) ## move this higher up
-    
-    print(table(current_kpi$kpi, current_kpi$fin_year)) 
-    
-    hist_db <- bind_rows(hist_db, current_kpi)
-    print(table(hist_db$kpi, hist_db$fin_year)) 
-    
-    ## Write out new historic file
-    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
-    # change permissions to give the group read/write
-    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
-              mode = "664", use_umask = FALSE)
-    
-    print("You made history! Proceed to the next step")
+    print("Don't add to the history file. Move along to next step")
     
   } else {
     
-    print("Go check your calendar!")
-    
-  }}
+    if (season == "autumn") {
+      # save a backup of hist_db
+      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
+                mode = "664", use_umask = FALSE)
+      
+      ## Combine data from current to historical
+      current_kpi <- kpi_2 |> 
+        filter(financial_year == kpi_report_years[3]) |> 
+        rename(fin_year = financial_year, ## decide how these should be standardized
+               hb = hb_screen) ## move this higher up
+      
+      print(table(current_kpi$kpi, current_kpi$fin_year)) 
+      
+      hist_db <- bind_rows(hist_db, current_kpi)
+      print(table(hist_db$kpi, hist_db$fin_year)) 
+      
+      ## Write out new historic file
+      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
+                mode = "664", use_umask = FALSE)
+      
+      print("You made history! Proceed to the next step")
+      
+    } else {
+      
+      print("Go check your calendar!")
+      
+    }
+  }
+}
+
+
+
+
+
+
 
 
 

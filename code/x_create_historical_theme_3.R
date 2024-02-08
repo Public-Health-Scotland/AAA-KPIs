@@ -296,6 +296,7 @@ aaa_2.2_add_a <- aaa_2.2_add_a |>
 # rm(elig_non_vis_total, elig_non_vis_2_screens, eligible_non_vis_1_screen)
 # 
 # 
+
 ### KPI 2.2 additional (b) ----
 
 names_kpi2.2_add_b <- c("hb", 
@@ -385,120 +386,120 @@ aaa_2.2_add_b <- aaa_2.2_add_b |>
          kpi = "KPI 2.2 Additional B", .after = hb) |>
   glimpse()
 
-### QA standard not met reason ----
+# ### QA standard not met reason ----
+# 
+# names_not_met_reason <- c("hb", 
+#                           "FY_2019/20_not_met_n",
+#                           "FY_2019/20_calliper_n", "FY_2019/20_calliper_p",
+#                           "FY_2019/20_angle_n", "FY_2019/20_angle_p",
+#                           "FY_2019/20_image_quality_n", "FY_2019/20_image_quality_p",
+#                           "FY_2019/20_anatomy_n", "FY_2019/20_anatomy_p",
+#                           
+#                           "FY_2020/21_not_met_n",
+#                           "FY_2020/21_calliper_n", "FY_2020/21_calliper_p",
+#                           "FY_2020/21_angle_n", "FY_2020/21_angle_p",
+#                           "FY_2020/21_image_quality_n", "FY_2020/21_image_quality_p",
+#                           "FY_2020/21_anatomy_n", "FY_2020/21_anatomy_p",
+#                           
+#                           "FY_2021/22_not_met_n",
+#                           "FY_2021/22_calliper_n", "FY_2021/22_calliper_p",
+#                           "FY_2021/22_angle_n", "FY_2021/22_angle_p",
+#                           "FY_2021/22_image_quality_n", "FY_2021/22_image_quality_p",
+#                           "FY_2021/22_anatomy_n", "FY_2021/22_anatomy_p")
+# 
+# # SPSS output seems to be missing so take straight from the excel report
+# # This is the published data so should be correct
+# not_met_reason1 <- read.xlsx(paste0(kpi_path, 202209, "/output",
+#                                    "/3. Quality Assurance_202209.xlsx"),
+#                             sheet = "QA standard not met reason",
+#                             cols = c(2:20), rows = c(8:22),
+#                             colNames = FALSE)
+# 
+# not_met_reason2 <- read.xlsx(paste0(kpi_path, 202209, "/output",
+#                                     "/3. Quality Assurance_202209.xlsx"),
+#                              sheet = "QA standard not met reason",
+#                              cols = c(3:11), rows = c(29:43),
+#                              colNames = FALSE)
+# 
+# not_met_reason <- bind_cols(not_met_reason1, not_met_reason2)
+# 
+# names(not_met_reason) <- names_not_met_reason
+# names(not_met_reason)
+# 
+# not_met_reason <- not_met_reason |> 
+#   mutate(hb = str_remove(hb, 'xml:space="preserve">'),
+#          hb = str_replace_all(hb, "&amp;", "&")) |>
+#   mutate(across(everything(), str_remove, 'xml:space="preserve">'),
+#          across(2:last_col(), str_replace, "-", "0"),
+#          across(2:last_col(), as.numeric)) |> 
+#   pivot_longer(!hb, names_to = "fin_year", values_to = "value") |> 
+#   mutate(group = fin_year, .after = fin_year) |> 
+#   # clean variable levels
+#   mutate(fin_year = str_remove(fin_year, "FY_"),
+#          fin_year = str_remove(fin_year, "_not_met_n"),
+#          fin_year = str_remove(fin_year, "_calliper_n"),
+#          fin_year = str_remove(fin_year, "_calliper_p"),
+#          fin_year = str_remove(fin_year, "_angle_n"),
+#          fin_year = str_remove(fin_year, "_angle_p"),
+#          fin_year = str_remove(fin_year, "_image_quality_n"),
+#          fin_year = str_remove(fin_year, "_image_quality_p"),
+#          fin_year = str_remove(fin_year, "_anatomy_n"),
+#          fin_year = str_remove(fin_year, "_anatomy_p"),
+#          group = case_when(str_detect(group, "_not_met_n") ~ "standard_not_met_n",
+#                            str_detect(group, "_calliper_n") ~ "calliper_n",
+#                            str_detect(group, "_calliper_p") ~ "calliper_p",
+#                            str_detect(group, "_angle_n") ~ "angle_n",
+#                            str_detect(group, "_angle_p") ~ "angle_p",
+#                            str_detect(group, "_image_quality_n") ~ "image_quality_n",
+#                            str_detect(group, "_image_quality_p") ~ "image_quality_p",
+#                            str_detect(group, "_anatomy_n") ~ "anatomy_n",
+#                            str_detect(group, "_anatomy_p") ~ "anatomy_p"),
+#          kpi = "QA Not Met: Reason", .after = hb) |>
+#   glimpse()
 
-names_not_met_reason <- c("hb", 
-                          "FY_2019/20_not_met_n",
-                          "FY_2019/20_calliper_n", "FY_2019/20_calliper_p",
-                          "FY_2019/20_angle_n", "FY_2019/20_angle_p",
-                          "FY_2019/20_image_quality_n", "FY_2019/20_image_quality_p",
-                          "FY_2019/20_anatomy_n", "FY_2019/20_anatomy_p",
-                          
-                          "FY_2020/21_not_met_n",
-                          "FY_2020/21_calliper_n", "FY_2020/21_calliper_p",
-                          "FY_2020/21_angle_n", "FY_2020/21_angle_p",
-                          "FY_2020/21_image_quality_n", "FY_2020/21_image_quality_p",
-                          "FY_2020/21_anatomy_n", "FY_2020/21_anatomy_p",
-                          
-                          "FY_2021/22_not_met_n",
-                          "FY_2021/22_calliper_n", "FY_2021/22_calliper_p",
-                          "FY_2021/22_angle_n", "FY_2021/22_angle_p",
-                          "FY_2021/22_image_quality_n", "FY_2021/22_image_quality_p",
-                          "FY_2021/22_anatomy_n", "FY_2021/22_anatomy_p")
-
-# SPSS output seems to be missing so take straight from the excel report
-# This is the published data so should be correct
-not_met_reason1 <- read.xlsx(paste0(kpi_path, 202209, "/output",
-                                   "/3. Quality Assurance_202209.xlsx"),
-                            sheet = "QA standard not met reason",
-                            cols = c(2:20), rows = c(8:22),
-                            colNames = FALSE)
-
-not_met_reason2 <- read.xlsx(paste0(kpi_path, 202209, "/output",
-                                    "/3. Quality Assurance_202209.xlsx"),
-                             sheet = "QA standard not met reason",
-                             cols = c(3:11), rows = c(29:43),
-                             colNames = FALSE)
-
-not_met_reason <- bind_cols(not_met_reason1, not_met_reason2)
-
-names(not_met_reason) <- names_not_met_reason
-names(not_met_reason)
-
-not_met_reason <- not_met_reason |> 
-  mutate(hb = str_remove(hb, 'xml:space="preserve">'),
-         hb = str_replace_all(hb, "&amp;", "&")) |>
-  mutate(across(everything(), str_remove, 'xml:space="preserve">'),
-         across(2:last_col(), str_replace, "-", "0"),
-         across(2:last_col(), as.numeric)) |> 
-  pivot_longer(!hb, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  # clean variable levels
-  mutate(fin_year = str_remove(fin_year, "FY_"),
-         fin_year = str_remove(fin_year, "_not_met_n"),
-         fin_year = str_remove(fin_year, "_calliper_n"),
-         fin_year = str_remove(fin_year, "_calliper_p"),
-         fin_year = str_remove(fin_year, "_angle_n"),
-         fin_year = str_remove(fin_year, "_angle_p"),
-         fin_year = str_remove(fin_year, "_image_quality_n"),
-         fin_year = str_remove(fin_year, "_image_quality_p"),
-         fin_year = str_remove(fin_year, "_anatomy_n"),
-         fin_year = str_remove(fin_year, "_anatomy_p"),
-         group = case_when(str_detect(group, "_not_met_n") ~ "standard_not_met_n",
-                           str_detect(group, "_calliper_n") ~ "calliper_n",
-                           str_detect(group, "_calliper_p") ~ "calliper_p",
-                           str_detect(group, "_angle_n") ~ "angle_n",
-                           str_detect(group, "_angle_p") ~ "angle_p",
-                           str_detect(group, "_image_quality_n") ~ "image_quality_n",
-                           str_detect(group, "_image_quality_p") ~ "image_quality_p",
-                           str_detect(group, "_anatomy_n") ~ "anatomy_n",
-                           str_detect(group, "_anatomy_p") ~ "anatomy_p"),
-         kpi = "QA Not Met: Reason", .after = hb) |>
-  glimpse()
-
-### QA standard not met detail ----
-
-names_not_met_detail <- c("n_2019/20", "p_2019/20", "n_2020/21", "p_2020/21",
-                          "n_2021/22", "p_2021/22")
-
-not_met_detail <- read.xlsx(paste0(kpi_path, 202209, "/output",
-                                    "/3. Quality Assurance_202209.xlsx"),
-                             sheet = "QA standard not met detail",
-                             cols = c(3:8), rows = c(9:27),
-                             colNames = FALSE)
-
-names(not_met_detail) <- names_not_met_detail
-names(not_met_detail)
-
-not_met_detail <- not_met_detail |> 
-  mutate(detail = c("Calliper - APL",
-                      "Calliper - APT",
-                      "Calliper - Anterior Calliper",
-                      "Calliper - Posterior Calliper",
-                      "Total (Calliper)",
-                      "Angle - APL",
-                      "Angle - APT",
-                      "Angle - Image Angle",
-                      "Angle - Measurement Angle",
-                      "Total (Angle)",
-                      "Image Quality - Gain",
-                      "Image Quality - Depth",
-                      "Image Quality - Focus",
-                      "Image Quality - Section Width",
-                      "Image Quality - Image Size",
-                      "Total (Quality)",
-                      "Anatomy - see QA notes",
-                      "Total (Anatomy)",
-                      "Total (Overall)"), .before = 1)
-
-not_met_detail <- not_met_detail |> 
-  pivot_longer(cols = c("n_2019/20", "p_2019/20", "n_2020/21", "p_2020/21",
-                        "n_2021/22", "p_2021/22")) |> 
-  mutate(kpi = "QA Not Met: Detail",
-         fin_year = str_sub(name,3,9),
-         group = str_sub(name,1,1)) |> 
-  select(-name) |> 
-  select(detail, kpi, fin_year, group, value)
+# ### QA standard not met detail ----
+# 
+# names_not_met_detail <- c("n_2019/20", "p_2019/20", "n_2020/21", "p_2020/21",
+#                           "n_2021/22", "p_2021/22")
+# 
+# not_met_detail <- read.xlsx(paste0(kpi_path, 202209, "/output",
+#                                     "/3. Quality Assurance_202209.xlsx"),
+#                              sheet = "QA standard not met detail",
+#                              cols = c(3:8), rows = c(9:27),
+#                              colNames = FALSE)
+# 
+# names(not_met_detail) <- names_not_met_detail
+# names(not_met_detail)
+# 
+# not_met_detail <- not_met_detail |> 
+#   mutate(detail = c("Calliper - APL",
+#                       "Calliper - APT",
+#                       "Calliper - Anterior Calliper",
+#                       "Calliper - Posterior Calliper",
+#                       "Total (Calliper)",
+#                       "Angle - APL",
+#                       "Angle - APT",
+#                       "Angle - Image Angle",
+#                       "Angle - Measurement Angle",
+#                       "Total (Angle)",
+#                       "Image Quality - Gain",
+#                       "Image Quality - Depth",
+#                       "Image Quality - Focus",
+#                       "Image Quality - Section Width",
+#                       "Image Quality - Image Size",
+#                       "Total (Quality)",
+#                       "Anatomy - see QA notes",
+#                       "Total (Anatomy)",
+#                       "Total (Overall)"), .before = 1)
+# 
+# not_met_detail <- not_met_detail |> 
+#   pivot_longer(cols = c("n_2019/20", "p_2019/20", "n_2020/21", "p_2020/21",
+#                         "n_2021/22", "p_2021/22")) |> 
+#   mutate(kpi = "QA Not Met: Detail",
+#          fin_year = str_sub(name,3,9),
+#          group = str_sub(name,1,1)) |> 
+#   select(-name) |> 
+#   select(detail, kpi, fin_year, group, value)
 
 # Below commented out, as have changed Excel to auto-populate this field
 # # Add on standard not met
@@ -627,20 +628,22 @@ names(aaa_2.1b)
 names(aaa_2.2)
 names(aaa_2.2_add_a)
 names(aaa_2.2_add_b)
-names(not_met_reason)
-names(not_met_detail)
 names(batch)
-
-## Not the best way of dealing with this, but it's what's going to happen for 
-## now... matches data block from 7_3_kpi_2.R
-not_met_detail <- rename(not_met_detail, hb = detail)
 
 
 aaa_kpi_historic <- rbind(aaa_2.1a, aaa_2.1b, aaa_2.2, aaa_2.2_add_a,
-                          aaa_2.2_add_b, not_met_reason, not_met_detail, batch) |> 
-  mutate(value = round_half_up(value, 1))
+                          aaa_2.2_add_b, batch) |> 
+  rename(hbres = hb) |> 
+  mutate(value = round_half_up(value, 1),
+         hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
+                                      "Dumfries & Galloway", "Fife", "Forth Valley",
+                                      "Grampian", "Greater Glasgow & Clyde", 
+                                      "Highland", "Lanarkshire", "Lothian", "Orkney", 
+                                      "Shetland", "Tayside", "Western Isles"))) |> 
+  arrange(kpi, fin_year, hbres)
 
 table(aaa_kpi_historic$kpi)
+table(aaa_kpi_historic$kpi, aaa_kpi_historic$fin_year)
 
 
 #### 4: Write out ----
