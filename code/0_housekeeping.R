@@ -46,7 +46,7 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 hist_path <- "/PHI_conf/AAA/Topics/Screening/KPI/historical"
 
 simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
-                    "/postcode_2023_1_simd2020v2.rds")
+                    "/postcode_2024_1_simd2020v2.rds")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
@@ -90,8 +90,8 @@ year2_end <- "31-03-1958"
 start_date <- "2022-04-01"
 end_date <- "2023-03-31" 
 
-# Table 4 variables
-finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
+# # Table 4 variables
+# finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
 
 end_current <- as.Date(end_date)
 

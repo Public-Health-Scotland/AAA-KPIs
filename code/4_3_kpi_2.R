@@ -39,7 +39,6 @@ coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
 # Table 4 variables
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
-#end_minus_3 <- end_current %m-% years(3) ## But why?
 
 # QA standard not met detailed reasons list
 qa_detail_list <- tibble(detail = c("Calliper - APL",
@@ -215,8 +214,7 @@ kpi_2_2_add_a <- extract_audit %>%
   mutate(
     no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
     standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)
-  )
+    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1))
 
 kpi_2_2_add_a <- kpi_2_2_add_a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
@@ -851,7 +849,7 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$financial_year)
 
-
+# Could this be made into a function that gets sourced?
 if (season == "spring") {
   table(hist_db$kpi, hist_db$fin_year) 
   
@@ -893,7 +891,7 @@ if (season == "spring") {
 }
 
 rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
-   qa_batch_scot, qa_batch_hb, qa_recal_list, qa_batch_recall)
+   qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
 
 
 ### Current database ---
@@ -916,13 +914,13 @@ kpi_2_subgroup <- bind_rows(table_4, qa_reason, qa_detail) |>
 
 table(kpi_2_subgroup$kpi, kpi_2_subgroup$fin_year)
 
-kpi_2_fulla <- bind_rows(kpi_2_full, kpi_2_subgroup) #|> 
+kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |> 
   mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
                                       "Dumfries & Galloway", "Fife", "Forth Valley",
                                       "Grampian", "Greater Glasgow & Clyde", 
                                       "Highland", "Lanarkshire", "Lothian", "Orkney", 
                                       "Shetland", "Tayside", "Western Isles"))) |> 
-  arrange(kpi, fin_year, hbres) |>
+  arrange(kpi, fin_year, hbres)
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
 
