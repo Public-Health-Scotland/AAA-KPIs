@@ -113,7 +113,7 @@ history_building <- function(df, season) {
 }
 
 ### Step 2: Import data ----
-invite_uptake <- read_rds(paste0(temp_path, "/1_inviteanduptake_initial.rds"))
+invite_uptake <- read_rds(paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
 
 pc_simd <- read_rds(simd_path) |>
   select(pc8, simd2020v2_hb2019_quintile)
@@ -269,9 +269,9 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
+write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
-#invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))
+#invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 ### Step 5: Summaries ----
 ## KPI 1.1 ----

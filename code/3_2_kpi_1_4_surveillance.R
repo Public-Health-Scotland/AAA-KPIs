@@ -250,7 +250,7 @@ check_dups <- annual_surveillance_w_excl %>%
 
 # Save annual surveillance cohort (only if needed for checking)
 # saveRDS(annual_surveillance_w_excl, paste0(temp_path, 
-#                                            "/2_2_kpi_1_4a_annual.rds"))
+#                                            "/2_4_kpi_1_4a_annual.rds"))
 
 rm(annual_exclusions, annual_surveillance_cohort, annual_surveillance_f_up,
    check_dups)
@@ -357,7 +357,7 @@ check_interval
 
 # # Save quarterly surveillance file (only if needed for checking)
 # saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
-#                                               "/2_3_kpi_1_4b_quarterly.rds"))
+#                                               "/2_5_kpi_1_4b_quarterly.rds"))
 
 rm(quarterly_exclusions_list, quarterly_surveillance_cohort,
    quarterly_surveillance_f_up, check_interval)
@@ -503,9 +503,13 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
                names_to = "group",
                values_to = "value") |>
   mutate(kpi = "Table 6") |>
-  select(hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value)
+  select(hbres, kpi, fin_year = fy_screen, surveillance_interval, group, value) |> 
+  mutate(surveillance_interval = 
+           forcats::fct_relevel(surveillance_interval, 
+                                c("quarterly", "annual"))) |> 
+  arrange(fin_year, surveillance_interval)
 
-sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres")
+sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres") 
 
 ## DNA exclusions
 # summarise by pat_inelig and financial_year

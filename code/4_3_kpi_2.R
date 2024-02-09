@@ -33,7 +33,7 @@ rm(hb_list, fy_tibble, exclusions_path, simd_path, output_path, cutoff_date,
    year1, year2,year1_start, year1_end, year2_start, year2_end, cut_off_date)
 
 # Cover base file location
-coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
+coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
 
 
 # Table 4 variables
