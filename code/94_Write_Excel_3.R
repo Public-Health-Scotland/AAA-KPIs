@@ -50,7 +50,7 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 ### 2: Import data ----
-# KPI 3.1 and 3.2
+# KPI 2.1a/b and 2.2
 theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
 
