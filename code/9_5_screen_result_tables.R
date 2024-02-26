@@ -210,7 +210,7 @@ rm(first_offer, last_results)
 ### 4 Join on Invite and Uptake Data ----
 # Read in invite and uptake data
 invite_uptake <- read_rds(paste0(temp_path, 
-                                 "/1_inviteanduptake_initial.rds")) %>% 
+                                 "/1_1_invite_uptake_initial.rds")) %>% 
   select(upi, ca2019, simd2020v2_sc_quintile, hbres, dob_eligibility, dob)
 
 # Join invite_and_uptake and fo_lr_initial_screens
