@@ -121,9 +121,8 @@ unfit_fy <- unfit_surgery %>%
   mutate(unfit_p = round_half_up(unfit_n * 100/cohort_n, 1)) 
 
 ## Should this be written out? And rewritten each year as a new historical file?
-unfit_hist <- hb_list |> 
-  left_join(unfit_fy, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+unfit_hist <- hb_tibble |> 
+  left_join(unfit_fy, by = "hbres")
 
 ## Cumulative total from programme implementation ---
 unfit_cum <- unfit_surgery %>%
@@ -141,9 +140,8 @@ unfit_current <- unfit_fy %>%
 
 unfit_current <- rbind(unfit_current, unfit_cum)
 
-unfit_current <- hb_list |> 
-  left_join(unfit_current, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+unfit_current <- hb_tibble |> 
+  left_join(unfit_current, by = "hbres")
 
 
 write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
@@ -172,6 +170,16 @@ extract <- read_rds(extract_path) %>%
          result_outcome == "08") %>% 
   select(upi, dob, date_screen, hbres, date_surgery, result_outcome, 
          date_death, surg_method, financial_year)
+
+# AMc: adding in smra_con here as it is required below
+# Connect to SMRA tables using odbc connection
+# The suppressWarnings function prevents your password from appearing in the
+# console if the connection is unsuccessful
+smra_con <- suppressWarnings(dbConnect(
+  odbc(),
+  dsn = "SMRA",
+  uid = .rs.askForPassword("What is your user ID?"),
+  pwd = .rs.askForPassword("What is your LDAP password?")))
 
 # Read in deaths data
 # Select columns and filter for AGE >= 64, DATE_OF_DEATH 2012 onwards and where
@@ -265,9 +273,8 @@ mortality_hb <- mortality %>%
   arrange(hbres != "Scotland", hbres) %>% 
   select(hbres, ends_with("1_year"), ends_with("3_year"), ends_with("5_year"))
 
-mortality_hb <- hb_list |> 
-  left_join(mortality_hb, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb) |> 
+mortality_hb <- hb_tibble |> 
+  left_join(mortality_hb, by = "hbres") |> 
   mutate_all(~ifelse(is.nan(.), NA, .))
 
 
