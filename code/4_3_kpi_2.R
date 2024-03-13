@@ -452,7 +452,7 @@ sup_tab_4_sr <- extract %>%
   mutate(flag_result = max(result_temp)) %>%
   ungroup() %>%
   filter(flag_result == 0, 
-         pat_elig == '03', # not a self-referral 
+         pat_elig == '03', # is a self-referral 
          screen_type %in% c('01', '03'), # initial/QA initial screen
          screen_result != '03') %>% # not tech fail
   distinct(upi, .keep_all = TRUE) %>%
@@ -511,7 +511,7 @@ qa_standard <- extract %>%
                                        audit_fail_reason == "02" ~ "angle",
                                        audit_fail_reason == '03' ~ "image quality",
                                        audit_fail_reason == '04' ~ "anatomy",
-                                       TRUE ~ "No audit fail"),
+                                       TRUE ~ "no audit fail"),
     audit_fail_reason_text = fct_relevel(audit_fail_reason_text,
                                          "calliper",
                                          "angle",
