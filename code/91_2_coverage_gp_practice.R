@@ -132,7 +132,7 @@ make_gp_vars <- function(df, gp_lookup) {
 ### Step 2 : Import data ----
 
 coverage_basefile <- read_rds(paste0(temp_path,
-                                     "/2_coverage_basefile.rds"))
+                                     "/1_2_coverage_basefile.rds"))
 
 gp_history <- read_csv(gp_history_path)
 #gp_prac_a <- read_csv(gp_prac_a_path)
@@ -140,7 +140,7 @@ gp_history <- read_csv(gp_history_path)
 
 gp_lookup <- read_csv(gp_lookup_path) %>%
   select(gp_join = praccode,
-         gp_desc = `add 1`) %>%
+         gp_desc = add1) %>%
   mutate(gp_join = substr(gp_join, 1, 4)) %>%
   filter(!(gp_join == 9999 & gp_desc == "PATIENTS REGISTERED WITH A GP"))
 
