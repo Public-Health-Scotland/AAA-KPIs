@@ -39,7 +39,7 @@ rm(hb_list, fy_tibble, fy_list, exclusions_path, extract_path,
    hist_path, simd_path)
 
 ## Define reporting years
-year_xx <- year(date_cut_off)
+year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
 meg_month <- "December"
@@ -60,7 +60,7 @@ table(theme_3$kpi, theme_3$fin_year)
 kpi_2_1a <- theme_3 |> 
   filter(kpi == "KPI 2.1a") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -69,7 +69,7 @@ kpi_2_1a <- theme_3 |>
 kpi_2_1b <- theme_3 |> 
   filter(kpi == "KPI 2.1b") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -78,7 +78,7 @@ kpi_2_1b <- theme_3 |>
 kpi_2_2 <- theme_3 |> 
   filter(kpi == "KPI 2.2") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -89,7 +89,7 @@ kpi_2_2_add_a_top <- theme_3 |>
   filter(kpi == "KPI 2.2 Additional A",
          fin_year %in% c(kpi_report_years[1:2])) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -98,7 +98,7 @@ kpi_2_2_add_a_bot <- theme_3 |>
   filter(kpi == "KPI 2.2 Additional A",
          fin_year %in% c(kpi_report_years[3])) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -109,7 +109,7 @@ kpi_2_2_add_b_top <- theme_3 |>
   filter(kpi == "KPI 2.2 Additional B",
          fin_year %in% c(kpi_report_years[1:2])) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -118,7 +118,7 @@ kpi_2_2_add_b_bot <- theme_3 |>
   filter(kpi == "KPI 2.2 Additional B",
          fin_year %in% c(kpi_report_years[3])) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -128,10 +128,10 @@ kpi_2_2_add_b_bot <- theme_3 |>
 table_4_top <- theme_3 |> 
   filter(str_detect(kpi, "Table 4:"),
          fin_year %in% c(kpi_report_years[1:2])) |>
-  mutate(hb = fct_relevel(as.factor(hb), "Scotland")) |> 
-  arrange(fin_year, hb)  |> 
+  mutate(hbres = fct_relevel(as.factor(hbres), "Scotland")) |> 
+  arrange(fin_year, hbres)  |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -139,10 +139,10 @@ table_4_top <- theme_3 |>
 table_4_bot <- theme_3 |> 
   filter(str_detect(kpi, "Table 4:"),
          fin_year %in% c(kpi_report_years[3])) |>
-  mutate(hb = fct_relevel(as.factor(hb), "Scotland")) |> 
-  arrange(fin_year, hb)  |> 
+  mutate(hbres = fct_relevel(as.factor(hbres), "Scotland")) |> 
+  arrange(fin_year, hbres)  |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -153,7 +153,7 @@ qa_reason_top <- theme_3 |>
   filter(kpi == "QA Not Met: Reason",
          fin_year %in% c(kpi_report_years[1:2])) |>
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -162,7 +162,7 @@ qa_reason_bot <- theme_3 |>
   filter(kpi == "QA Not Met: Reason",
          fin_year %in% c(kpi_report_years[3])) |>
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -171,17 +171,17 @@ qa_reason_bot <- theme_3 |>
 qa_detail <- theme_3 |> 
   filter(kpi == "QA Not Met: Detail") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb, FY_kpi_group, value) |> 
+  select(hbres, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(-hb)
+  select(-hbres)
 
 
 ## Batch QA standard not met ----
 # Reason -- Scotland
 qa_batch_scot <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Reason",
-         hb == "Scotland") |> 
+         hbres == "Scotland") |> 
   select(group, fin_year, value) |> 
   # match Excel tables
   pivot_wider(names_from = fin_year, values_from = value)
@@ -190,10 +190,10 @@ qa_batch_scot <- theme_3 |>
 qa_batch_hb <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Reason") |> 
   # move Scotland to end of list
-  mutate(hb = forcats::fct_relevel(as.factor(hb), "Scotland", after = Inf)) |> 
-  arrange(hb, fin_year) |> 
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
+  arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
-  select(hb, FY_group, value) |> 
+  select(hbres, FY_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
   #! Do not change the last pipe to |> or next line of code will not work!!
@@ -203,10 +203,10 @@ qa_batch_hb <- theme_3 |>
 qa_recall <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Recall Advice") |> 
   # move Scotland to end of list
-  mutate(hb = forcats::fct_relevel(as.factor(hb), "Scotland", after = Inf)) |> 
-  arrange(hb, fin_year) |> 
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
+  arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
-  select(hb, FY_group, value) |> 
+  select(hbres, FY_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
   #! Do not change the last pipe to |> or next line of code will not work!!
@@ -219,8 +219,8 @@ qa_recall <- theme_3 |>
 #qa_detail_2c
 
 qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |> 
-  filter(hb == "Scotland") |> 
-  select(hb, ends_with("anatomy_n")) |> 
+  filter(hbres == "Scotland") |> 
+  select(hbres, ends_with("anatomy_n")) |> 
   mutate(anatomy_sum = sum(c_across(where(is.numeric)))) |> 
   select(anatomy_sum)
 
