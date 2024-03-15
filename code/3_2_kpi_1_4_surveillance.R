@@ -221,7 +221,7 @@ annual_exclusions <- annual_surveillance_cohort |>
     between(date_start, date_screen_surv+1, date_next_screen_due-1) ~ 1,
     # Have an exclusion which started after date next screen due
     date_start >= date_next_screen_due ~ 0,
-    # Have a screen which has not yet ended, e.g. excluded before
+    # Have a exclusion which has not yet ended, e.g. excluded before
     # last appointment(not sure if this is possible)
     is.na(date_end) ~ 1,
     # Have an exclusion which ended between last screen and next screen due date
