@@ -171,16 +171,6 @@ extract <- read_rds(extract_path) %>%
   select(upi, dob, date_screen, hbres, date_surgery, result_outcome, 
          date_death, surg_method, financial_year)
 
-# AMc: adding in smra_con here as it is required below
-# Connect to SMRA tables using odbc connection
-# The suppressWarnings function prevents your password from appearing in the
-# console if the connection is unsuccessful
-smra_con <- suppressWarnings(dbConnect(
-  odbc(),
-  dsn = "SMRA",
-  uid = .rs.askForPassword("What is your user ID?"),
-  pwd = .rs.askForPassword("What is your LDAP password?")))
-
 # Read in deaths data
 # Select columns and filter for AGE >= 64, DATE_OF_DEATH 2012 onwards and where
 # UPI_NUMBER is not empty
