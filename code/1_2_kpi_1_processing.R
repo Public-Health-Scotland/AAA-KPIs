@@ -189,7 +189,7 @@ cohort1 <- cohort1 %>%
   ungroup() %>%
   filter(keep == 1) %>% 
   select(upi, postcode, ca2019, simd2020v2_sc_quintile,
-         hbres, dob_eligibility, dob) %>%
+         hbres, hb_screen, dob_eligibility, dob) %>%
   filter(dob <= dmy(cutoff_date))
 
 
@@ -516,7 +516,8 @@ cohort1 <- cohort1 %>%
          postcode,
          ca2019,
          simd2020v2_sc_quintile,
-         hbres,
+         hbres, 
+         hb_screen,
          dob_eligibility,
          dob,
          date_first_offer_sent,

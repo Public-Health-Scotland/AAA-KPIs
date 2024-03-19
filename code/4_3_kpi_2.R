@@ -367,8 +367,7 @@ non_vis_match <- coverage_basefile %>%
 
 # Create summary tables
 sup_tab_4_eligible <- non_vis_match %>%
-  # hb_screen not on coverage basefile, try hbres ##!! GO BACK AND FIX THIS!!
-  group_by(fin_year_66, hbres) %>%
+  group_by(fin_year_66, hb_screen) %>%
   summarise(n = n(),
             non_vis_n = sum(non_vis >= 1),
             non_vis_2_more_n = sum(non_vis >= 2),
@@ -383,8 +382,8 @@ sup_tab_4_eligible <- non_vis_match %>%
          non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1))
 
 sup_tab_4_eligible <- sup_tab_4_eligible %>%
-  mutate(hbres = fct_relevel(as.factor(hbres), "Scotland")) %>%
-  select(health_board = hbres, 
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+  select(health_board = hb_screen, 
          financial_year = fin_year_66,
          tested_n = n,
          non_vis_n, non_vis_p,
