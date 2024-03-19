@@ -73,10 +73,6 @@ aaa_3.1 <- aaa_3.1 |>
   glimpse()
 
 
-## Health Board of Surgery
-# This will need to be created fresh, as the HB of surgery is a new KPI
-# To be created as 2022/23 KPI 3.1 is analyzed and then saved as historic.
-
 
 ### KPI 3.2 ----
 ## Health Board of Residence
@@ -105,8 +101,8 @@ aaa_3.2 <- aaa_3.2 |>
 
 
 ## Health Board of Surgery
-# This will need to be created fresh, as the HB of surgery is a new KPI
-# To be created as 2022/23 KPI 3.2 is analyzed and then saved as historic.
+# This will need to be created fresh, as the HB of surgery is new in 2022/23.
+# To be created as 2022/23 KPI 3.2 is analyzed and then saved to historic.
 
 
 #### 3: Check and combine ----
@@ -114,19 +110,21 @@ names(aaa_3.1)
 names(aaa_3.2)
 
 aaa_kpi_historic <- rbind(aaa_3.1, aaa_3.2) |> 
-  mutate(hb = fct_relevel(hb, c("Scotland", "Ayrshire & Arran", "Borders",
-                                "Dumfries & Galloway", "Fife", "Forth Valley",
-                                "Grampian", "Greater Glasgow & Clyde", 
-                                "Highland", "Lanarkshire", "Lothian", "Orkney", 
-                                "Shetland", "Tayside", "Western Isles"))) |> 
-  select(hb, kpi, fin_year, group, value)
+  rename(hbres = hb) |> 
+  mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
+                                      "Dumfries & Galloway", "Fife", "Forth Valley",
+                                      "Grampian", "Greater Glasgow & Clyde", 
+                                      "Highland", "Lanarkshire", "Lothian", "Orkney", 
+                                      "Shetland", "Tayside", "Western Isles"))) |> 
+  select(hbres, kpi, fin_year, group, value)
 
 table(aaa_kpi_historic$kpi)
+table(aaa_kpi_historic$kpi, aaa_kpi_historic$fin_year)
 
 
 #### 4: Write out ----
 write_rds(aaa_kpi_historic, paste0(kpi_path, 
-                                   "historical/aaa_kpi_historical_theme_4.rds"))
+                                   "historical/aaa_kpi_historical_theme4.rds"))
 # change permissions to give the group read/write
-Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_theme_4.rds"),
+Sys.chmod(paste0(kpi_path, "historical/aaa_kpi_historical_theme4.rds"),
           mode = "664", use_umask = FALSE)

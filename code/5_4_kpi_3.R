@@ -8,7 +8,7 @@
 # intervention/operated on within 8 weeks of screening
 #
 # Written/run on R Studio Server, R version 3.6.1
-# Revised on Posit PWB, R Version 4.1.2
+# Revised on Posit WB, R Version 4.1.2
 ###############################################################################
 
 ## Notes: 
@@ -17,7 +17,7 @@
 # Therefore, all KPI data is recalculated for each MEG.
 
 ## From Sept 2023, KPI 3.2 now includes analysis by HB of surgery (in addition 
-# to HB of residence)
+# to HB of residence) as management information.
 
 
 ### 1: Housekeeping ----
@@ -33,7 +33,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(exclusions_path)
 
@@ -114,8 +114,8 @@ kpi_3_1_res <- kpi_3_1_res |>
   select(hbres, kpi, financial_year_group, value) |> 
   pivot_wider(names_from = financial_year_group, values_from = value)
 
-kpi_3_1_res <- hb_list |> left_join(kpi_3_1_res, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+kpi_3_1_res <- hb_tibble |> left_join(kpi_3_1_res, by = "hbres") 
+
 
 kpi_3_1_res <- kpi_3_1_res |> 
   pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
@@ -248,8 +248,8 @@ kpi_3_2_res <- kpi_3_2_res |>
   select(hbres, kpi, financial_year_group, value) |> 
   pivot_wider(names_from = financial_year_group, values_from = value)
 
-kpi_3_2_res <- hb_list |> left_join(kpi_3_2_res, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+kpi_3_2_res <- hb_tibble |> left_join(kpi_3_2_res, by = "hbres") 
+
 
 kpi_3_2_res <- kpi_3_2_res |> 
   pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 

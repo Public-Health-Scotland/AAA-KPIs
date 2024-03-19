@@ -1,5 +1,5 @@
 ##########################################################
-# 7_3_kpi_2.R
+# 4_3_kpi_2.R
 # Gavin Clark & Karen Hotopp
 # 19/10/2022
 #
@@ -7,7 +7,7 @@
 # KPI 2: Quality Assurance and Audit of Scans
 #
 # Written/run on R Studio Server, R version 3.6.1
-# Revised on Posit PWB, R Version 4.1.2
+# Revised on Posit WB, R Version 4.1.2
 ##########################################################
 
 #### Step 1: Housekeeping ----
@@ -29,24 +29,16 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, exclusions_path, output_path)
+rm(hb_list, fy_tibble, exclusions_path, simd_path, output_path, cutoff_date, 
+   year1, year2,year1_start, year1_end, year2_start, year2_end, cut_off_date)
 
 # Cover base file location
-coverage_basefile_path <- paste0(temp_path, "/2_coverage_basefile.rds")
+coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
 
-# Dates of first and last financial year ##!! Just start and end dates of current FY?
-##!! Also, what are the two dates that are commented out?? 
-start_date <- "2022-04-01" #"2019-04-01"
-
-end_date <- "2023-03-31" #"2022-03-31"
 
 # Table 4 variables
-finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
-
-end_current <- as.Date("2023-03-31") # combine w above date to remove excess variables
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
-end_minus_3 <- end_current %m-% years(3) ## But why?
 
 # QA standard not met detailed reasons list
 qa_detail_list <- tibble(detail = c("Calliper - APL",
@@ -80,25 +72,24 @@ qa_recall_list <- tibble(recall_advice = c("Immediate recall",
                                            "Total"))
 
 
-#### Step 2: Read in and process data ----
+#### Step 2: Read in data ----
 extract <- read_rds(extract_path)
 
 coverage_basefile <- read_rds(coverage_basefile_path)
 
 
-### Step 3: Create summary tables ----
+#### Step 3: Create summary tables ----
 # Create relevant subset of data
 extract2 <- extract %>%
   # filter for relevant dates and keep positive, negative and non-vis screens
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
          screen_result %in% c('01','02','04')) %>%
-  mutate(#fin_year = extract_fin_year(date_screen), # already in df
-         non_vis_n = if_else(screen_result == '04', 1, 0),
+  mutate(non_vis_n = if_else(screen_result == '04', 1, 0),
          screened_n = if_else(screen_result %in% c('01','02','04'), 1, 0),
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66))) 
 
-#### KPI 2.1a ----
+### KPI 2.1a ----
 # Percentage of screening appointments, where the aorta could not be visualised
 # Denominator = Total number of attended scans (excluding technical failure) 
 # Numerator = Number of scans with a screening result of non-visualisation
@@ -134,7 +125,7 @@ extract2_dedup_scotland <- extract2 %>%
   arrange(upi, financial_year, desc(non_vis_n)) %>%
   distinct(upi, financial_year, .keep_all = TRUE)
 # GC TO DO
-# decide whether it is acceptable to have differing totals for scotland
+# decide whether it is acceptable to have differing totals for Scotland
 # vs. if adding the HBs individually
 # ##!! Can we talk through this?
 
@@ -223,8 +214,7 @@ kpi_2_2_add_a <- extract_audit %>%
   mutate(
     no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
     standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)
-  )
+    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1))
 
 kpi_2_2_add_a <- kpi_2_2_add_a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
@@ -367,7 +357,7 @@ non_vis_match <- coverage_basefile %>%
     non_vis = replace_na(non_vis, 0),
     # create new variable for FY when patient turned 66
     fin_year_66 = case_when(
-      age_calculate(dob, end_minus_3) == 66 ~ finyear_minus_3, ## NEEDED??
+      #age_calculate(dob, end_minus_3) == 66 ~ finyear_minus_3, ## NEEDED??
       age_calculate(dob, end_minus_2) == 66 ~ kpi_report_years[[1]],
       age_calculate(dob, end_minus_1) == 66 ~ kpi_report_years[[2]],
       age_calculate(dob, end_current) == 66 ~ kpi_report_years[[3]],
@@ -462,7 +452,7 @@ sup_tab_4_sr <- extract %>%
   mutate(flag_result = max(result_temp)) %>%
   ungroup() %>%
   filter(flag_result == 0, 
-         pat_elig == '03', # not a self-referral 
+         pat_elig == '03', # is a self-referral 
          screen_type %in% c('01', '03'), # initial/QA initial screen
          screen_result != '03') %>% # not tech fail
   distinct(upi, .keep_all = TRUE) %>%
@@ -521,7 +511,7 @@ qa_standard <- extract %>%
                                        audit_fail_reason == "02" ~ "angle",
                                        audit_fail_reason == '03' ~ "image quality",
                                        audit_fail_reason == '04' ~ "anatomy",
-                                       TRUE ~ "No audit fail"),
+                                       TRUE ~ "no audit fail"),
     audit_fail_reason_text = fct_relevel(audit_fail_reason_text,
                                          "calliper",
                                          "angle",
@@ -674,27 +664,6 @@ summary <- detail %>%
 
 # Combine and reorganize
 qa_detail <- bind_rows(summary_text, summary_detail, summary) %>%
-  # # this step (mutate) can be removed b/c of qa_detail_list step below
-  # mutate(detail = fct_relevel(detail,
-  #                             "Calliper - APL",
-  #                             "Calliper - APT",
-  #                             "Calliper - Anterior Calliper",
-  #                             "Calliper - Posterior Calliper",
-  #                             "Total (Calliper)",
-  #                             "Angle - APL",
-  #                             "Angle - APT",
-  #                             "Angle - Image Angle",
-  #                             "Angle - Measurement Angle",
-  #                             "Total (Angle)",
-  #                             "Image Quality - Gain",
-  #                             "Image Quality - Depth",
-  #                             "Image Quality - Focus",
-  #                             "Image Quality - Section Width",
-  #                             "Image Quality - Image Size",
-  #                             "Total (Quality)",
-  #                             "Anatomy - see QA notes",
-  #                             "Total (Anatomy)",
-  #                             "Total (Overall)")) %>%
   select(detail,
          year1_n = year1,
          year1_p,
@@ -788,7 +757,7 @@ qa_batch_recall <- extract2 %>%
                                    audit_batch_outcome == "04" ~ 
                                      "No recall: Referred to vascular",
                                    audit_batch_outcome == "05" ~ 
-                                     "No recall: Verified by 2nd opinion")) #%>%
+                                     "No recall: Verified by 2nd opinion"))
 
 # Health Board total  
 qa_batch_recall_hb <- qa_batch_recall |> 
@@ -866,10 +835,10 @@ table_4 <- rename(table_4, hb_screen = health_board)
 qa_detail <- rename(qa_detail, hb_screen = detail)
 
 # Combine
-# Note: Table 4 not added until after new historical file has been created,
-# as data is recalculated for each report and not retained in historical file
-kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, 
-                   kpi_2_2_add_b, qa_reason, qa_detail,  
+# Note: Table 4 and QA standard not met (reason and detail) not added until 
+# after new historical file has been created, as data is recalculated for each 
+# report and not retained in historical file
+kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b,  
                    qa_batch_scot, qa_batch_hb, qa_batch_recall)
 
 
@@ -880,45 +849,49 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$financial_year)
 
-
+# Could this be made into a function that gets sourced?
 if (season == "spring") {
   table(hist_db$kpi, hist_db$fin_year) 
   
   print("Don't add to the history file. Move along to next step")
+  
+} else {
+  
+  if (season == "autumn") {
+    # save a backup of hist_db
+    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
+    # change permissions to give the group read/write
+    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
+              mode = "664", use_umask = FALSE)
+    
+    ## Combine data from current to historical
+    current_kpi <- kpi_2 |> 
+      filter(financial_year == kpi_report_years[3]) |> 
+      rename(fin_year = financial_year, ## decide how these should be standardized
+             hbres = hb_screen) 
+    
+    print(table(current_kpi$kpi, current_kpi$fin_year)) 
+    
+    hist_db <- bind_rows(hist_db, current_kpi)
+    print(table(hist_db$kpi, hist_db$fin_year)) 
+    
+    ## Write out new historic file
+    write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+    # change permissions to give the group read/write
+    Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
+              mode = "664", use_umask = FALSE)
+    
+    print("You made history! Proceed to the next step")
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
 
-    } else {
-
-      if (season == "autumn") {
-        # save a backup of hist_db
-        write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
-        # change permissions to give the group read/write
-        Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
-                  mode = "664", use_umask = FALSE)
-        
-        ## Combine data from current to historical
-        current_kpi <- kpi_2 |> 
-          filter(financial_year == kpi_report_years[3]) |> 
-          rename(fin_year = financial_year, ## decide how these should be standardized
-                 hb = hb_screen) ## move this higher up
-        
-        print(table(current_kpi$kpi, current_kpi$fin_year)) 
-
-        hist_db <- bind_rows(hist_db, current_kpi)
-        print(table(hist_db$kpi, hist_db$fin_year)) 
-        
-        ## Write out new historic file
-        write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
-        # change permissions to give the group read/write
-        Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
-                  mode = "664", use_umask = FALSE)
-        
-        print("You made history! Proceed to the next step")
-        
-      } else {
-      
-      print("Go check your calendar!")
-      
-    }}
+rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
+   qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
 
 
 ### Current database ---
@@ -926,18 +899,28 @@ if (season == "spring") {
 kpi_2_full <- hist_db |> 
   filter(fin_year %in% c(kpi_report_years))
 
-## Add in Table 4 data
+table(kpi_2_full$kpi, kpi_2_full$fin_year)
+
+## Add in Table 4 and QA standard not met (reason and detail) data
 table(table_4$kpi, table_4$financial_year)
+table(qa_reason$kpi, qa_reason$financial_year)
+table(qa_detail$kpi, qa_detail$financial_year)
 
 # Should be able to remove next chunk once variables are standardized
-table_4 <- table_4 |> 
+kpi_2_subgroup <- bind_rows(table_4, qa_reason, qa_detail) |> 
   rename(fin_year = financial_year, ## decide how these should be standardized
-         hb = hb_screen) |> ## move this higher up
-  filter(fin_year %in% c(kpi_report_years)) ## go back and remove year-1 (2019/20) when creating df
+         hbres = hb_screen) |> ## move this higher up
+  filter(fin_year %in% c(kpi_report_years)) ## can probably remove, just check above
 
-table(table_4$kpi, table_4$fin_year)
+table(kpi_2_subgroup$kpi, kpi_2_subgroup$fin_year)
 
-kpi_2_full <- bind_rows(kpi_2_full, table_4)
+kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |> 
+  mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
+                                      "Dumfries & Galloway", "Fife", "Forth Valley",
+                                      "Grampian", "Greater Glasgow & Clyde", 
+                                      "Highland", "Lanarkshire", "Lothian", "Orkney", 
+                                      "Shetland", "Tayside", "Western Isles"))) |> 
+  arrange(kpi, fin_year, hbres)
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
 

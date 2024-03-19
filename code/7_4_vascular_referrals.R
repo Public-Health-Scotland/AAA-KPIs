@@ -30,7 +30,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(fy_tibble, season)
 
@@ -411,9 +411,9 @@ repairs_all <- rbind(method, repair) %>%
   glimpse()
 
 ## Should this be written out? And rewritten each year as a new historical file?
-repairs_hist <- hb_list |> 
-  left_join(repairs_all, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+repairs_hist <- hb_tibble |> 
+  left_join(repairs_all, by =  "hbres")
+
 
 ## Current 3-year reporting period ---
 repairs_current <- repairs_all %>% 
@@ -428,9 +428,9 @@ repairs_cum <- repairs_current %>%
 
 repairs_current <- rbind(repairs_current, repairs_cum)
 
-repairs_current <- hb_list |> 
-  left_join(repairs_current, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+repairs_current <- hb_tibble |> 
+  left_join(repairs_current, by = "hbres") 
+
 
 
 write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))

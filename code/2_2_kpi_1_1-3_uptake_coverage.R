@@ -50,39 +50,70 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, extract_path, cutoff_date, cut_off_12m, cut_off_3m, 
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date, next_year, date_cut_off)
+rm(fy_tibble, hb_list, exclusions_path, extract_path, output_path, 
+   cutoff_date, start_date, end_date, end_current, cut_off_date)
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
 
 ## Functions
+# Could this function be sourced? Similar function used in several scripts,
+# just need to be able to change details in the "autumn" section to match what
+# is happening in that script.
 history_building <- function(df, season) {
   
   df
   
   if({{season}} == "spring")
-  {print("Don't add to the history file. Move along to next script.")
-  
-  {df <- df |> 
-    filter(kpi != "KPI 1.1 Sept coverage",
-           fin_year != year2)
-  write_rds(df, paste0(hist_path, "/aaa_kpi_historical.rds"))
-  # change permissions to give the group read/write
-  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical.rds"),
-            mode = "664", use_umask = FALSE)
-  print("You made history! Proceed to the next script.")
-  
-  } else { ## this prints with "spring"?? Should work now, but not tested
-  
-    print("Do you know what season it is?! Go back and figure yourself out.")}
-  
+  {
+    
+    print("Don't add to the history file. Move along to next script.")
+    
+  } else {
+    
+    if (season == "autumn") {
+      # save a backup of hist_db
+      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2_bckp.rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2_bckp.rds"),
+                mode = "664", use_umask = FALSE)
+      
+      df <- df |> 
+        filter(kpi != "KPI 1.1 Sept coverage",
+               fin_year != year2)
+      
+      print(table(df$kpi, df$fin_year)) 
+      
+      ## New historical database ----
+      new_hist_db <- bind_rows(hist_db, df) |>
+        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
+                                        "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
+                                        "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
+                                        "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD",
+                                        "KPI 1.4a", "KPI 1.4b")),
+               fin_year = fct_relevel(fin_year, c(fy_list)),
+               hbres = fct_relevel(hbres, c(hb_list))) |> 
+        arrange(kpi, fin_year, hbres)
+      
+      print(table(new_hist_db$kpi, new_hist_db$fin_year)) 
+      
+      write_rds(new_hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2.rds"))
+      # change permissions to give the group read/write
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2.rds"),
+                mode = "664", use_umask = FALSE)
+      
+      print("You made history! Proceed to the next script.")
+      
+    } else { 
+      
+      print("Do you know what season it is?! Go back and figure yourself out.")
+      
+    }
   }
 }
 
 ### Step 2: Import data ----
-invite_uptake <- read_rds(paste0(temp_path, "/1_inviteanduptake_initial.rds"))
+invite_uptake <- read_rds(paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
 
 pc_simd <- read_rds(simd_path) |>
   select(pc8, simd2020v2_hb2019_quintile)
@@ -238,9 +269,9 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-write_rds(invite_uptake, paste0(temp_path, "/2_coverage_basefile.rds"))
+write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
-#invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))
+#invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 ### Step 5: Summaries ----
 ## KPI 1.1 ----
@@ -278,7 +309,7 @@ kpi_1_1 <- kpi_1_1 |>
   mutate(simd = NA, .after = fin_year) |> 
   glimpse()
 
-kpi_1_1 <- hb_list |> left_join(kpi_1_1, by = "hbres")
+kpi_1_1 <- hb_tibble |> left_join(kpi_1_1, by = "hbres")
 
 
 ## KPI 1.2a ----
@@ -313,7 +344,7 @@ kpi_1_2a <- kpi_1_2a |>
   mutate(simd = NA, .after = fin_year) |> 
   glimpse()
 
-kpi_1_2a <- hb_list |> left_join(kpi_1_2a, by = "hbres")
+kpi_1_2a <- hb_tibble |> left_join(kpi_1_2a, by = "hbres")
 
 
 ## KPI 1.2b ----
@@ -344,7 +375,7 @@ kpi_1_2b <- kpi_1_2b |>
   mutate(simd = NA, .after = fin_year) |> 
   glimpse()
 
-kpi_1_2b <- hb_list |> left_join(kpi_1_2b, by = "hbres")
+kpi_1_2b <- hb_tibble |> left_join(kpi_1_2b, by = "hbres")
 
 
 ## KPI 1.3a ----
@@ -400,7 +431,7 @@ kpi_1_3a <- kpi_1_3a |>
   relocate(simd, .after = fin_year) |>
   glimpse()
 
-kpi_1_3a <- hb_list |> left_join(kpi_1_3a, by = "hbres")
+kpi_1_3a <- hb_tibble |> left_join(kpi_1_3a, by = "hbres")
 
 
 ## KPI 1.3a Health Board ----
@@ -439,7 +470,7 @@ kpi_1_3a_hb <- kpi_1_3a_hb |>
   relocate(simd, .after = fin_year) |>
   glimpse()
 
-kpi_1_3a_hb <- hb_list |> left_join(kpi_1_3a_hb, by = "hbres") |> 
+kpi_1_3a_hb <- hb_tibble |> left_join(kpi_1_3a_hb, by = "hbres") |> 
   filter(hbres != "Scotland")
 
 
@@ -489,7 +520,7 @@ kpi_1_3b <- kpi_1_3b |>
   relocate(simd, .after = fin_year) |>
   glimpse()
 
-kpi_1_3b <- hb_list |> left_join(kpi_1_3b, by = "hbres")
+kpi_1_3b <- hb_tibble |> left_join(kpi_1_3b, by = "hbres")
 
 
 ## KPI 1.3b Health Board ----
@@ -528,10 +559,10 @@ kpi_1_3b_hb <- kpi_1_3b_hb |>
   relocate(simd, .after = fin_year) |>
   glimpse()
 
-kpi_1_3b_hb <- hb_list |> left_join(kpi_1_3b_hb, by = "hbres") |> 
+kpi_1_3b_hb <- hb_tibble |> left_join(kpi_1_3b_hb, by = "hbres") |> 
   filter(hbres != "Scotland")
 
-rm(kpi_1_3a_scot, kpi_1_3b_scot, hb_list, simd_level)
+rm(kpi_1_3a_scot, kpi_1_3b_scot, hb_tibble, simd_level)
 
 
 ## Join summaries ----
@@ -539,7 +570,7 @@ kpi_summary <- rbind(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a,
                      kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb) |> 
   mutate(value = janitor::round_half_up(value, 1))
 
-table(kpi_summary$kpi)
+table(kpi_summary$kpi, kpi_summary$fin_year)
 
 # Change NaNs to NAs
 kpi_summary$value[is.nan(kpi_summary$value)] <- NA
@@ -553,62 +584,39 @@ rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 # 1.3a Coverage by 1 Sept SIMD, 1.3a HB SIMD, 1.3b Scotland SIMD, and 1.3b HB SIMD
 
 ## Full records (currently only from 2020/21; need to add historical)
-hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical.rds"))
-# save a backup of hist_db
-write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_bckp.rds"))
-# change permissions to give the group read/write
-Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_bckp.rds"),
-          mode = "664", use_umask = FALSE)
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 
-table(hist_db$kpi, hist_db$fin_year) # should be equal across FYs and match below 
-#                        2020/21 2021/22
-# KPI 1.1                     45      45
-# KPI 1.2a                    45      45
-# KPI 1.2a Sept coverage      30      30
-# KPI 1.2b                    45      45
-# KPI 1.3a HB SIMD           294     294
-# KPI 1.3a Scotland SIMD     315     315
-# KPI 1.3a Sept coverage     210     210
-# KPI 1.3b HB SIMD           294     294
-# KPI 1.3b Scotland SIMD     315     315
-# KPI 1.4a                    45      45
-# KPI 1.4b                    45      45
+table(hist_db$kpi, hist_db$fin_year)
+table(kpi_summary$kpi, kpi_summary$fin_year)
 
-## Add new records onto full database
-new_hist_db <- bind_rows(hist_db, kpi_summary)
+history_building(kpi_summary, season)
 
-## Check for duplication
-table(new_hist_db$kpi, new_hist_db$fin_year) # current year (year1) should match 
-# previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2
 
+table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
+#                        2019/20 2020/21 2021/22
+# KPI 1.1                      0      45      45
+# KPI 1.2a                     0      45      45
+# KPI 1.2a Sept coverage       0      30      30
+# KPI 1.2b                     0      45      45
+# KPI 1.3a HB SIMD             0     294     294
+# KPI 1.3a Scotland SIMD       0     315     315
+# KPI 1.3a Sept coverage       0     210     210
+# KPI 1.3b HB SIMD             0     294     294
+# KPI 1.3b Scotland SIMD       0     315     315
+# KPI 1.4a                    45      45      45
+# KPI 1.4b                    45      45      42
 
 ## Current report output ----
-report_db <- new_hist_db |> 
+## Add new records onto full database
+report_db <- bind_rows(hist_db, kpi_summary)
+
+## Check for duplication
+table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
+# previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2 & KPI 1.4
+
+report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-write_rds(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".rds"))
-#write_csv(report_db, paste0(temp_path, "/3_invite_attend_", yymm, ".csv")) # for checking
+write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+#write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
 
-
-## New historical database ----
-new_hist_db <- new_hist_db |>
-  mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
-                                  "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
-                                  "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
-                                  "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD")),
-         fin_year = fct_relevel(fin_year, c("2012/13", "2013/14", "2014/15", 
-                                            "2015/16", "2016/17", "2017/18", 
-                                            "2018/19", "2019/20", "2020/21", 
-                                            "2021/22", "2022/23")),
-         hbres = fct_relevel(hbres, c("Scotland","Ayrshire & Arran","Borders",
-                                      "Dumfries & Galloway", "Fife", "Forth Valley", 
-                                      "Grampian", "Greater Glasgow & Clyde",  
-                                      "Highland", "Lanarkshire", "Lothian", "Orkney",
-                                      "Shetland", "Tayside","Western Isles"))) |> 
-  arrange(kpi, fin_year, hbres)
-
-
-history_building(new_hist_db, season)
-# This will remove 750 rows of data:
-# - 720 rows where fin_year == year2
-# - 30 rows where kpi == "KPI 1.1 Sept coverage"

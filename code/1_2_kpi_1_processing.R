@@ -530,6 +530,6 @@ cohort1 <- cohort1 %>%
          inresult,
          inoffer)
 
-write_rds(cohort1, paste0(temp_path, "/1_inviteanduptake_initial.rds"))
+write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
 
 

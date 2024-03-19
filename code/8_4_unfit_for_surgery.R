@@ -1,8 +1,7 @@
 ##########################################################
-# 4.3_unfit_for_surgery.R
+# 8_4_unfit_for_surgery.R
 # Karen Hotopp
 # March 2023
-# Script 3 of ?
 # 
 # Translation of SPSS file '4. Unfit for surgery'
 # Part of Theme 4 for AAA KPIs
@@ -35,7 +34,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm(fy_tibble, fy_list, season)
 
@@ -122,9 +121,8 @@ unfit_fy <- unfit_surgery %>%
   mutate(unfit_p = round_half_up(unfit_n * 100/cohort_n, 1)) 
 
 ## Should this be written out? And rewritten each year as a new historical file?
-unfit_hist <- hb_list |> 
-  left_join(unfit_fy, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+unfit_hist <- hb_tibble |> 
+  left_join(unfit_fy, by = "hbres")
 
 ## Cumulative total from programme implementation ---
 unfit_cum <- unfit_surgery %>%
@@ -142,9 +140,8 @@ unfit_current <- unfit_fy %>%
 
 unfit_current <- rbind(unfit_current, unfit_cum)
 
-unfit_current <- hb_list |> 
-  left_join(unfit_current, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb)
+unfit_current <- hb_tibble |> 
+  left_join(unfit_current, by = "hbres")
 
 
 write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
@@ -266,9 +263,8 @@ mortality_hb <- mortality %>%
   arrange(hbres != "Scotland", hbres) %>% 
   select(hbres, ends_with("1_year"), ends_with("3_year"), ends_with("5_year"))
 
-mortality_hb <- hb_list |> 
-  left_join(mortality_hb, by = c("hb" = "hbres")) |> 
-  rename(hbres = hb) |> 
+mortality_hb <- hb_tibble |> 
+  left_join(mortality_hb, by = "hbres") |> 
   mutate_all(~ifelse(is.nan(.), NA, .))
 
 
@@ -310,7 +306,7 @@ cause_of_death <- mortality %>%
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("I", c(72:99)) ~ "Heart and circulatory disease (excl. AAA)", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("J", str_pad(c(0:99), width = 2, side = "left", pad = "0")) ~ "Respiratory disease", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("K", c(70:77)) ~ "Liver disease", 
-    # COVID label doesn't seemt o be working...
+    # COVID label doesn't seem to be working...
     str_sub(underlying_cause_of_death, 1, 3) %in% "U07" ~ "COVID-19", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("V", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 
     str_sub(underlying_cause_of_death, 1, 3) %in% paste0("W", str_pad(c(1:98), width = 2, side = "left", pad = "0")) ~ "External causes of morbidity and mortality", 

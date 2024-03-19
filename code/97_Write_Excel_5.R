@@ -37,7 +37,7 @@ rm(hb_list, extract_path, current_year, current_year_start,
    year1, year1_end, year1_start, year2, year2_end, year2_start, simd_path)
 
 ## Define reporting years
-year_xx <- year(date_cut_off)
+year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
 year_uu <- year_xx - 3
