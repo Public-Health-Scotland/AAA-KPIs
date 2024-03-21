@@ -27,10 +27,10 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(gpd_lookups, year1_start, year1_end, year2_start, year2_end,
-   cut_off_12m, cut_off_3m, prev_year, current_year, current_year_start, 
-   next_year_start, financial_year_due, financial_quarters, last_date,
-   next_year, date_cut_off)
+rm (hist_path, output_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years, season,
+    cut_off_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
 
 
 ### Step 2: Import data ----

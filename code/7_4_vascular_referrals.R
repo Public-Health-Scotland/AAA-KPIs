@@ -32,8 +32,11 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, season)
+rm (exclusions_path, hist_path, output_path, simd_path, hb_list, fy_tibble, season,
+    cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
+# list of result outcomes in custom order (99, 98, 97, 96 all newly assigned values)
 resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07',
                                          '08','11','12','13','15','16','20','97',
                                          '09','10','14','17','18','19', '96'))
@@ -47,7 +50,8 @@ resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07'
 # error
 aaa_extract <- read_rds(extract_path) %>% 
   # referred to vascular
-  filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
+  filter(!is.na(date_referral_true) & largest_measure >= 5.5,
+         !is.na(date_seen_outpatient),
          date_screen <= cut_off_date, 
          result_outcome != "02")
 
@@ -200,7 +204,7 @@ greater_grantot <- vasc %>%
 ## Combine into >=5.5cm df
 annual_great <- greater_grantot %>% 
   rbind(greater_subtotal, greater) %>% 
-  mutate(cummulative = rowSums(pick(where(is.numeric)), na.rm = TRUE))
+  mutate(cumulative = rowSums(pick(where(is.numeric)), na.rm = TRUE))
 
 ## Referrals with no outcome recorded ----
 # This should be 0 records, but need to keep track and add to final table
@@ -217,7 +221,7 @@ annual_great <- resout_list |>
          outcome_type = case_when(result_outcome %in% c("04", "05") ~ "final outcome",
                                   result_outcome == "14" ~ "non-final outcome",
                                   TRUE ~ outcome_type)) |> 
-  select(result_size, outcome_type, result_outcome, all_of(fy_list), cummulative)
+  select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 
 ## Size < 5.5cm ----
@@ -269,7 +273,7 @@ annual_less <- less_grantot %>%
   add_row(outcome_type = "Total: non-final outcome", 
           result_outcome = "97") %>% 
   mutate(result_size = "small",
-         cummulative = rowSums(pick(where(is.numeric)), na.rm = TRUE)) %>% 
+         cumulative = rowSums(pick(where(is.numeric)), na.rm = TRUE)) %>% 
   # is there a better way of doing this?? Need to manually check what years needed
   mutate(`2012/13` = NA,
          `2014/15` = NA,
@@ -278,7 +282,7 @@ annual_less <- less_grantot %>%
          `2019/20` = NA,
          `2021/22` = NA) %>% 
   # reorder columns
-  select(result_size, outcome_type, result_outcome, all_of(fy_list), cummulative)
+  select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 
 ## Combine annual totals ----

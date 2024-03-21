@@ -35,7 +35,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path)
+rm (exclusions_path, output_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble, cut_off_date, cutoff_date, 
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 
 #### 2: Data Manipulation ----
@@ -277,7 +279,7 @@ table(kpi_3_2_res$health_board, kpi_3_2_res$financial_year) # all hbres/FY are 3
 
 kpi_3_2_res <- kpi_3_2_res |> 
   # remove NAs for numerical counts and replace w 0
-  # not sure if this needs to be done?
+  # leaves _p var as NA, which helps when creating Excel wbs
   mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
                              is.na(value) ~ 0, TRUE ~ value))
 

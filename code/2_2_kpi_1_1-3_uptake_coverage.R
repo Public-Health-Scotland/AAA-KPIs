@@ -50,8 +50,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, hb_list, exclusions_path, extract_path, output_path, 
-   cutoff_date, start_date, end_date, end_current, cut_off_date)
+rm (exclusions_path, extract_path, output_path, fy_tibble,
+    cut_off_date, cutoff_date, end_current, end_date, start_date)
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))

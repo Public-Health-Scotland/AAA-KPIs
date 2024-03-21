@@ -32,9 +32,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, simd_path, output_path, cutoff_date, year1, year2, 
-   year1_start, year1_end, year2_start, year2_end, start_date, end_date, 
-   end_current, cut_off_date)
+rm (output_path, simd_path, fy_list, fy_tibble,
+    cut_off_date, cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Functions
 history_building <- function(df, season) {

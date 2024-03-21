@@ -31,10 +31,10 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, extract_path, current_year, current_year_start,
-   cut_off_12m, cut_off_3m, cutoff_date, exclusions_path, financial_quarters,
-   financial_year_due, hist_path, last_date, next_year, next_year_start, prev_year,
-   year1, year1_end, year1_start, year2, year2_end, year2_start, simd_path)
+rm (exclusions_path, extract_path, hist_path, simd_path, 
+    fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years,
+    cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
 
 ## Define reporting years
 year_xx <- year(cut_off_date)

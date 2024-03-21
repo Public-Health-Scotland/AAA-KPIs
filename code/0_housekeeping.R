@@ -18,7 +18,7 @@ season <- "spring" # options are "spring" or "autumn"
 # Years needed from the historical extract for current KPI report
 # This includes the three most recent *complete* years of data (including 
 # current year of analysis) and the year in current screening process)
-kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
+kpi_report_years <- c("2021/22", "2022/23", "2023/24") 
 
 # hbres_list
 hb_list <- c("Scotland","Ayrshire & Arran","Borders", "Dumfries & Galloway", 
@@ -29,7 +29,7 @@ hb_tibble <- tibble::tibble(hbres = c(hb_list)) # move this scripts that need it
 
 # financial year list (list of FYs covered by program from start)
 fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 
-             "2018/19", "2019/20", "2020/21", "2021/22", "2022/23")
+             "2018/19", "2019/20", "2020/21", "2021/22", "2022/23", "2023/24")
 fy_tibble <- tibble::tibble(financial_year = c(fy_list)) # move this scripts that need it specifically?
 
 
@@ -61,7 +61,7 @@ output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 # Individuals born after this date are not eligible for the program yet 
 # (Have not turned 65 years old in time for this KPI round)
 # This will match `year2_end` variable in next script
-cutoff_date <- "31-03-1958"
+cutoff_date <- "31-03-1959"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,13 +70,13 @@ cutoff_date <- "31-03-1958"
 # while year 2 looks into the future to give a snapshot of progress for the  
 # cohort reported on next cycle.
 year1 <- kpi_report_years[3]
-year2 <- "2023/24"
+year2 <- "2024/25"
 
-year1_start <- "01-04-1956" # cohort year being analyzed
-year1_end <- "31-03-1957"
+year1_start <- "01-04-1957" # cohort year being analyzed
+year1_end <- "31-03-1958"
 
-year2_start <- "01-04-1957" # cohort year still active
-year2_end <- "31-03-1958"
+year2_start <- "01-04-1958" # cohort year still active
+year2_end <- "31-03-1959"
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,8 +87,8 @@ year2_end <- "31-03-1958"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 4_3_kpi_2.R
 # Dates of first and last financial year ##!! Just start and end dates of current FY?
-start_date <- "2022-04-01"
-end_date <- "2023-03-31" 
+start_date <- "2023-04-01"
+end_date <- "2024-03-31" 
 
 # # Table 4 variables
 # finyear_minus_3 <- "2019/20" # Why does this year need to be segregated out? Not used for report.
@@ -98,7 +98,7 @@ end_current <- as.Date(end_date)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Theme 4 scripts
-cut_off_date <- as.Date("2023-03-31") # How is this date defined?? 
+cut_off_date <- as.Date("2024-03-31") # How is this date defined?? 
 #potential match: 6_2_Suppl_Surve.R
 
 

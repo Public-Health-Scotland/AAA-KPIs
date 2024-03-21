@@ -33,7 +33,10 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping_theme_4.R"))
 
-rm(hb_list, fy_tibble, fy_list, extract_path)
+rm (exclusions_path, extract_path, hist_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble,
+    cut_off_date, cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
    
 
 ## File paths

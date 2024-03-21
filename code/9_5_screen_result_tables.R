@@ -25,9 +25,10 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, cutoff_date, cut_off_12m, cut_off_3m, 
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date, next_year)
+rm (exclusions_path, hist_path, output_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble, season,
+    cut_off_date, cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 
 # Define dob cut-offs for each year

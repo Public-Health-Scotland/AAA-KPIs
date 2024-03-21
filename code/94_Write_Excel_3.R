@@ -35,8 +35,9 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, fy_tibble, fy_list, exclusions_path, extract_path, 
-   hist_path, simd_path)
+rm (exclusions_path, extract_path, hist_path, simd_path, fy_list, hb_list,
+    fy_tibble, hb_tibble, cutoff_date, end_current, end_date, start_date, 
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Define reporting years
 year_xx <- year(cut_off_date)

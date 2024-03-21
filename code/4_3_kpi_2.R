@@ -29,8 +29,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, fy_tibble, exclusions_path, simd_path, output_path, cutoff_date, 
-   year1, year2,year1_start, year1_end, year2_start, year2_end, cut_off_date)
+rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, hb_tibble, 
+    cut_off_date, cutoff_date, year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
