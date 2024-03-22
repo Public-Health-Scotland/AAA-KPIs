@@ -733,11 +733,8 @@ qa_batch_hb <- extract2 %>%
 # Insert any missing detail categories and arrange
 qa_batch_hb <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
   mutate(n = ifelse(is.na(n), 0, n)) |> 
-  ##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
-  ## be rewritten to take multiple HBs into account; just time-saving for now,
-  ## sorry to the next person who runs this code...
-  mutate(hb_screen = "Tayside", 
-         kpi = "QA Batch standard not met: Reason",
+
+  mutate(kpi = "QA Batch standard not met: Reason",
          financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
@@ -771,11 +768,7 @@ qa_batch_recall_hb <- qa_batch_recall |>
 qa_batch_recall_hb <- qa_recall_list |> left_join(qa_batch_recall_hb, 
                                                by = "recall_advice") |> 
   mutate(n = ifelse(is.na(n), 0, n)) |> 
-  ##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
-  ## be rewritten to take multiple HBs into account; just time-saving for now,
-  ## sorry to the next person who runs this code...
-  mutate(hb_screen = "Tayside", 
-         kpi = "QA Batch standard not met: Recall Advice",
+  mutate(kpi = "QA Batch standard not met: Recall Advice",
          financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = recall_advice,
@@ -793,10 +786,7 @@ qa_batch_recall_scot <- qa_batch_recall |>
 qa_batch_recall_scot <- qa_recall_list |> left_join(qa_batch_recall_scot, 
                                                     by = "recall_advice") |> 
   mutate(n = ifelse(is.na(n), 0, n)) |> 
-##!! CHANGE NEXT STEP!! This will only work for 2022/23 data and needs to 
-## be rewritten to take multiple HBs into account; just time-saving for now,
-## sorry to the next person who runs this code...
-mutate(hb_screen = "Scotland", 
+  mutate(hb_screen = "Scotland", 
        kpi = "QA Batch standard not met: Recall Advice",
        financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
