@@ -89,6 +89,7 @@ aaa_exclusions %>% nrow()
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
 # 153,558 rows 2023/09
+# 164,471 rows 2024/03
 
 # organize data
 aaa_exclusions %<>%
@@ -126,6 +127,7 @@ aaa_extract %<>%
 # 523,774 rows 2022/09
 # 551,027 rows 2023/03
 # 579,917 rows 2023/09
+# 609,774 rows 2024/03
 
 ### 2.4: Create cohort of all of the screenings ----
 screened_cohort <- aaa_extract %>% 
@@ -187,6 +189,17 @@ check_dups <- annual_surveillance_cohort %>%
   filter(n > 1)
 # 10, look more reasonable
 # KH: not clear 
+
+# for Spring run, introduce date filter to allow enough follow-up time 
+# to accurately represent KPI 1.4a
+# i.e. need date_next_screen_due to be >6 weeks before March extract date
+# not required in autumn as Sept extract allows enough f-up time from FY end
+
+if (season == "spring"){
+  annual_surveillance_cohort <- annual_surveillance_cohort %>% 
+    # filter to allow 7 weeks f-up (arbritrary +1 week than required)
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-12"))
+}
 
 ### 3.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -275,6 +288,17 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   select(upi, hbres, fy_due, date_screen_surv, date_next_screen_due)
 
 ## Duplicates are expected in this cohort
+
+# for Spring run, introduce date filter to allow enough follow-up time 
+# to accurately represent KPI 1.4b
+# i.e. need date_next_screen_due to be >4 weeks before March extract date
+# not required in autumn as Sept extract allows enough f-up time from FY end
+
+if (season == "spring"){
+  quarterly_surveillance_cohort <- quarterly_surveillance_cohort %>% 
+    # filter to allow 5 weeks f-up (arbritrary +1 week than required)
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-26")) # 5 weeks f-up
+}
 
 ### 4.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -440,6 +464,7 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 85 rows 2022/09
 # 94 rows 2023/03
 # 97 rows 2023/09
+# 100 rows 2024/03
 
 ## Step 7: Create KPI output ----
 ## KPI 1.4a
@@ -535,6 +560,9 @@ kpi_1 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 table(kpi_1$kpi, kpi_1$fin_year)
 table(kpi_1_4$kpi, kpi_1_4$fin_year)
 # Check that the data for years 1 & 2 matches data already stored in the block
+
+# call in historical db to run next funtion
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 
 # Save KPI 1.4 a/b to theme 2 data block
 history_building(kpi_1_4, season)
