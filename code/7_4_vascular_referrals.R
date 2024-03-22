@@ -51,7 +51,6 @@ resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07'
 aaa_extract <- read_rds(extract_path) %>% 
   # referred to vascular
   filter(!is.na(date_referral_true) & largest_measure >= 5.5,
-         !is.na(date_seen_outpatient),
          date_screen <= cut_off_date, 
          result_outcome != "02")
 
