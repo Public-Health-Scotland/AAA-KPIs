@@ -66,6 +66,7 @@ table(extract$screen_result)
 # 01 (positive) = 898; 02 (negative) = 7    Sep 2022
 # 01 (positive) = 1012; 02 (negative) = 7   Mar 2023
 # 01 (positive) = 1016; 02 (negative) = 7   Sep 2023
+# 01 (positive) = 1148; 02 (negative) = 9   Mar 2023
 
 table(extract$result_outcome, extract$size_dichot)
 
@@ -362,7 +363,7 @@ non_aaa_deaths <- cause_of_death %>%
   mutate(category = if_else(underlying_cause_of_death %in% paste0("I71", c(3:6, 8:9)),
                             "Total AAA-related deaths", category)) %>% 
   # unsure why COVID isn't being correctly labelled above...
-  mutate(category = if_else(is.na(category), "COVID-19", category)) |> 
+  # mutate(category = if_else(is.na(category), "COVID-19", category)) |> 
   group_by(category) %>% 
   summarise(count_n = n()) |> 
   group_modify(~ adorn_totals(.x, where = "row", name = "Total deaths")) |>

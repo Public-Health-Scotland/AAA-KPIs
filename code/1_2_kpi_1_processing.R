@@ -211,7 +211,7 @@ prior_sur <- prior_sur %>%
   filter(screen_type == "02")
 
 table(prior_sur$screen_type)
-# 02: 283
+# 02: 287
 
 
 ### B: Only an external result recorded ---
@@ -222,7 +222,7 @@ external_only <- aaa_extract %>%
   distinct(upi, screen_result)
 
 table(external_only$screen_result)
-# 05: 132 
+# 05: 135
 # 06: 583
 
 external_only <- select(external_only, upi)
@@ -245,7 +245,7 @@ deceased <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(deceased$pat_inelig)
-# 15: 5036  
+# 15: 5281 
 # 16: 1107
 
 deceased <- deceased %>% select(upi) %>% arrange(upi)
@@ -267,7 +267,7 @@ prior_scr <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(prior_scr$pat_inelig)
-# 21: 863
+# 21: 891
 
 prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
 
@@ -293,7 +293,7 @@ optout <- optout %>%
   distinct(upi, pat_inelig)
 
 table(optout$pat_inelig)
-# 01: 2211
+# 01: 2280
 
 optout <- optout %>% select(upi) %>% arrange(upi)
 
@@ -319,7 +319,7 @@ repaired <- repaired %>%
   distinct(upi, pat_inelig)
 
 table(repaired$pat_inelig)
-# 04: 225
+# 04: 228
 
 repaired <- repaired %>% select(upi) %>% arrange(upi)
 
@@ -345,7 +345,7 @@ vasc_sur <- vasc_sur %>%
   distinct(upi, pat_inelig)
 
 table(vasc_sur$pat_inelig)
-# 06: 536
+# 06: 571
 
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
@@ -371,7 +371,7 @@ referred <- referred %>%
   distinct(upi, pat_inelig)
 
 table(referred$pat_inelig)
-# 19: 9
+# 19: 13
 
 referred <- referred %>% select(upi) %>% arrange(upi)
 
@@ -397,7 +397,7 @@ unfit <- unfit %>%
   distinct(upi, pat_inelig)
 
 table(unfit$pat_inelig)
-# 18: 435
+# 18: 457
 
 unfit <- unfit %>% select(upi) %>% arrange(upi)
 
@@ -438,7 +438,7 @@ other <- other %>%
 
 table(other$pat_inelig)
 #   11   12   17 
-# 1085 1189 1364 
+# 1112 1219 1418 
 
 other <- other %>% distinct(upi) %>% arrange(upi)
 
@@ -451,8 +451,8 @@ temp_gana <- aaa_exclusions %>%
   mutate(exlength = date_end - date_start)
 
 table(temp_gana$pat_inelig)
-# 25: 1066  
-# 26: 484
+# 25: 1564 
+# 26: 512
 
 temp_gana <- temp_gana %>% distinct(upi) %>% arrange(upi)
 

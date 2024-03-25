@@ -27,18 +27,17 @@ source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, hist_path, output_path, simd_path,
     fy_list, hb_list, fy_tibble, hb_tibble, season,
-    cut_off_date, cutoff_date, end_current, end_date, start_date,
+    cutoff_date, end_current,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
-
-# Define dob cut-offs for each year
-# WHAT DEFINES THESE YEARS???
-dob_one_start <- as.Date("1954-04-01") # 69 years
-dob_one_end <- as.Date("1955-03-31")
-dob_two_start <- as.Date("1955-04-01") # 68 years
-dob_two_end <- as.Date("1956-03-31")
-dob_three_start <- as.Date("1956-04-01") # 67 years
-dob_three_end <- as.Date("1957-03-31")
+# Define dob cut-offs for each year - classifies people turining 66 in each
+# kpi report year
+dob_one_start <- ymd(start_date) - years(68)
+dob_one_end <- ymd(end_date) - years(68)
+dob_two_start <- ymd(start_date) - years(67)
+dob_two_end <- ymd(end_date) - years(67)
+dob_three_start <- ymd(start_date) - years(66)
+dob_three_end <- ymd(end_date) - years(66)
 
 
 ## Functions
@@ -317,7 +316,7 @@ table_3 <- calculate_totals(table_three_data, simd2020v2_sc_quintile,
 # Filter for self referrals and initial screens (including QA initial screens)
 # Filter for tested (+ve, -ve, non-visualisation screen result)
 aaa_extract <- aaa_extract %>% 
-  filter(date_screen <= date_cut_off, 
+  filter(date_screen <= cut_off_date, 
          pat_elig == "03" & screen_type %in% c("01", "03"), 
          screen_result %in% c("01", "02", "04"))
 

@@ -197,8 +197,7 @@ check_dups <- annual_surveillance_cohort %>%
 
 if (season == "spring"){
   annual_surveillance_cohort <- annual_surveillance_cohort %>% 
-    # filter to allow 7 weeks f-up (arbritrary +1 week than required)
-    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-12"))
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-01"))
 }
 
 ### 3.2: Identify those with follow-up within appropriate timeframe ----
@@ -296,8 +295,7 @@ quarterly_surveillance_cohort <- aaa_extract %>%
 
 if (season == "spring"){
   quarterly_surveillance_cohort <- quarterly_surveillance_cohort %>% 
-    # filter to allow 5 weeks f-up (arbritrary +1 week than required)
-    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-26")) # 5 weeks f-up
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-01"))
 }
 
 ### 4.2: Identify those with follow-up within appropriate timeframe ----

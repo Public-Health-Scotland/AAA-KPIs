@@ -35,9 +35,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path,
-    fy_list, hb_list, fy_tibble, hb_tibble, cut_off_date, cutoff_date, 
-    year1_end, year1_start, year2_end, year2_start, year1, year2)
+rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, 
+    cutoff_date, year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 
 #### 2: Data Manipulation ----
@@ -425,7 +424,7 @@ write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"))
 Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"),
           mode = "664", use_umask = FALSE)
 
-table(hist_db$financial_year, hist_db$kpi) 
+table(hist_db$fin_year, hist_db$kpi) 
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
 # 2012/13                45                45               9
 # 2013/14                45                45              27

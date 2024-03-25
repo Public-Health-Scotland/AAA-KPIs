@@ -240,7 +240,7 @@ evar_hb_surgery <- fy_tibble |> left_join(evar_hb_surgery,
   mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
   mutate(surg_method = "EVAR", .before = financial_year)
 
-rm(fy_tibble, fy_list, hb_list, open_hb_screen_scot, open_hb_surgery_scot, 
+rm(fy_tibble, open_hb_screen_scot, open_hb_surgery_scot, 
    kpi_4_1, kpi_4_2, evar_hb_screen_scot, evar_hb_surgery_scot)
 
 
@@ -294,7 +294,9 @@ aaa_extract <- aaa_extract %>%
 # Check: date_death from aaa_extract matches date_of_death from deaths
 aaa_extract %>% count(date_death == date_of_death)
 ##
-
+# AMc note: where date_death & date_of_death are both populated, date matches
+# most of discrepancy comes from 129 cases where date_of_death is populated but
+# date_death is NA
 
 ### 6: Cumulative Mortality by Surgery Type ----
 # Flag individuals who had surgery within last 1, 3 or 5 years
