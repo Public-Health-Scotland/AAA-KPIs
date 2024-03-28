@@ -86,7 +86,9 @@ history_building <- function(df, season) {
       
       ## New historical database ----
       new_hist_db <- bind_rows(hist_db, df) |>
-        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
+        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.1 Scotland SIMD", 
+                                        "KPI 1.1 Scotland SIMD Sept coverage",
+                                        "KPI 1.2a", "KPI 1.2a Sept coverage", 
                                         "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
                                         "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
                                         "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD",
@@ -673,4 +675,3 @@ report_db <- report_db |>
 
 write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 #write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
-
