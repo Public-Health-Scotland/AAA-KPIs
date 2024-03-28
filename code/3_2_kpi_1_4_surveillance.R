@@ -37,7 +37,7 @@ rm (output_path, simd_path, fy_list, fy_tibble,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Functions
-history_building <- function(df, season) {
+history_building <- function(df, season){
   
   df
   
@@ -50,20 +50,20 @@ history_building <- function(df, season) {
     
     if (season == "autumn") {
       ## Combine data from this script (KPI 1.4 a & b)
-      kpi_1_4 <- kpi_1_4 |>
+      df <- df |>
         filter(fin_year == kpi_report_years[3])
       
-      kpi_1 <- bind_rows(kpi_1, kpi_1_4)
+      new_hist_db <- bind_rows(hist_db, df)
       
-      print(table(kpi_1$kpi, kpi_1$fin_year)) 
+      print(table(new_hist_db$kpi, new_hist_db$fin_year)) 
       
       ## Write out new historic file
-      write_rds(kpi_1, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+      write_rds(new_hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2.rds"))
       # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/2_1_invite_attend_", yymm, ".rds"),
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2.rds"),
                 mode = "664", use_umask = FALSE)
       
-      print("You made history! Proceed to the next step")
+      print("You made history! Proceed to the next script.")
       
     } else {
       
@@ -557,10 +557,25 @@ kpi_1 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 table(kpi_1$kpi, kpi_1$fin_year)
 table(kpi_1_4$kpi, kpi_1_4$fin_year)
-# Check that the data for years 1 & 2 matches data already stored in the block
+# Check that the data for kpi_report_years 1&2 matches data already stored in the block
+
+# keep only new records for most recent complete year
+kpi_1_4 <- kpi_1_4 |>
+  filter(fin_year == kpi_report_years[3])
+
+# add to summary already created (includes most recent year's kpi 1.1-1.3)
+report_db <- bind_rows(kpi_1, kpi_1_4)
+
+table(report_db$kpi, report_db$fin_year)
+
+## Write out new invite_attend file
+write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+
 
 # call in historical db to run next funtion
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
+
+table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
 history_building(kpi_1_4, season)
