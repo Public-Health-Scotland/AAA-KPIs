@@ -715,6 +715,14 @@ qa_batch_scot <- qa_batch_list |> left_join(qa_batch_scot, by = "std_not_met") |
          group = std_not_met,
          value = n)
   
+
+## NOTE: QA_BATCH_HB NOW WON'T WORK AS IF THERE IS >0 ROWS WE WILL INTRODUCE NAS
+
+## NEED TO FIND A WAY OF DISCENRING WHETHER HB_SCREEN NA COMES FROM DATA 
+# OR IF IT IS AN NA INTRODUCED WHEN THERE ARE NO RECORDS FOR THAT STD_NOT_MET REASON
+# Q: WHEN THERE ARE SO FEW OF THESE, IS IT LIKELY THAT RECORDS WILL EVER COME IN WITH HB_SCREEN AS AN NA???
+
+
 # HB of screening total ---
 qa_batch_hb <- extract2 %>%
   filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
@@ -725,20 +733,46 @@ qa_batch_hb <- extract2 %>%
                                  audit_batch_fail == "04" ~ "Other with notes")) %>%
   group_by(std_not_met, hb_screen) %>%
   summarise(n = n()) %>%
-  ungroup() |> 
-  group_by(hb_screen) |> 
-  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
   ungroup()
 
-# Insert any missing detail categories and arrange
-qa_batch_hb <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
-  mutate(n = ifelse(is.na(n), 0, n)) |> 
+# sometimes the above will filter out ALL rows, so need to account for this
 
+if (nrow(qa_batch_hb) > 0) {
+  qa_batch_hb <- qa_batch_hb %>%
+    group_by(hb_screen) %>% 
+    group_modify(~adorn_totals(.x, where = "row", name = "Total")) %>% 
+    ungroup()
+} else {
+  qa_batch_hb <- data.frame(std_not_met = character(),
+                                          hb_screen = character(),
+                                          n = integer(),
+                                          stringsAsFactors = FALSE)
+}
+
+# if no rows, below snippet doesn't work as there are no rows to join
+
+if(nrow(qa_batch_hb)==0){
+  x <- tibble(std_not_met = c("Screener","Equipment",
+                              "Location", "Other with notes", "Total"), 
+              hb_screen = c("Scotland", "Scotland", "Scotland", "Scotland",
+                            "Scotland"), 
+              n = c(0, 0, 0, 0, 0))
+  
+  qa_batch_hb <- bind_rows(qa_batch_hb, x)
+  
+  rm(x)
+}
+
+
+# Insert any missing detail categories and arrange
+qa_batch_hb1 <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
+  mutate(n = ifelse(is.na(n), 0, n)) |>
   mutate(kpi = "QA Batch standard not met: Reason",
          financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
          value = n)
+
 
 # HB of screening recall advice ---
 qa_batch_recall <- extract2 %>%
@@ -828,7 +862,9 @@ qa_detail <- rename(qa_detail, hb_screen = detail)
 # after new historical file has been created, as data is recalculated for each 
 # report and not retained in historical file
 kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b,  
-                   qa_batch_scot, qa_batch_hb, qa_batch_recall)
+                   qa_batch_scot, qa_batch_hb, qa_batch_recall) %>% 
+  rename(fin_year = financial_year,
+         hbres = hb_screen) # done to make formatting easier in Write Excel
 
 
 ### Historical database ---
@@ -836,7 +872,7 @@ kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b,
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 
 table(hist_db$kpi, hist_db$fin_year)
-table(kpi_2$kpi, kpi_2$financial_year)
+table(kpi_2$kpi, kpi_2$fin_year)
 
 # Could this be made into a function that gets sourced?
 if (season == "spring") {
@@ -855,9 +891,7 @@ if (season == "spring") {
     
     ## Combine data from current to historical
     current_kpi <- kpi_2 |> 
-      filter(financial_year == kpi_report_years[3]) |> 
-      rename(fin_year = financial_year, ## decide how these should be standardized
-             hbres = hb_screen) 
+      filter(financial_year == kpi_report_years[3])
     
     print(table(current_kpi$kpi, current_kpi$fin_year)) 
     
@@ -885,7 +919,7 @@ rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list,
 
 ### Current database ---
 ## Take current reporting years from new historic
-kpi_2_full <- hist_db |> 
+kpi_2_full <- bind_rows(hist_db, kpi_2) |> 
   filter(fin_year %in% c(kpi_report_years))
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
