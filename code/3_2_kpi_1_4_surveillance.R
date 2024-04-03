@@ -262,7 +262,7 @@ check_dups <- annual_surveillance_w_excl %>%
 
 # Save annual surveillance cohort (only if needed for checking)
 # saveRDS(annual_surveillance_w_excl, paste0(temp_path, 
-#                                            "/2_4_kpi_1_4a_annual.rds"))
+#                                            "/3_2_kpi_1_4a_annual.rds"))
 
 rm(annual_exclusions, annual_surveillance_cohort, annual_surveillance_f_up,
    check_dups)
@@ -379,7 +379,7 @@ check_interval
 
 # # Save quarterly surveillance file (only if needed for checking)
 # saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
-#                                               "/2_5_kpi_1_4b_quarterly.rds"))
+#                                               "/3_2_kpi_1_4b_quarterly.rds"))
 
 rm(quarterly_exclusions_list, quarterly_surveillance_cohort,
    quarterly_surveillance_f_up, check_interval)
