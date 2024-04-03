@@ -29,7 +29,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, hb_tibble, 
+rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, 
     cut_off_date, cutoff_date, year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 # Cover base file location
@@ -714,14 +714,6 @@ qa_batch_scot <- qa_batch_list |> left_join(qa_batch_scot, by = "std_not_met") |
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
          value = n)
-  
-
-## NOTE: QA_BATCH_HB NOW WON'T WORK AS IF THERE IS >0 ROWS WE WILL INTRODUCE NAS
-
-## NEED TO FIND A WAY OF DISCENRING WHETHER HB_SCREEN NA COMES FROM DATA 
-# OR IF IT IS AN NA INTRODUCED WHEN THERE ARE NO RECORDS FOR THAT STD_NOT_MET REASON
-# Q: WHEN THERE ARE SO FEW OF THESE, IS IT LIKELY THAT RECORDS WILL EVER COME IN WITH HB_SCREEN AS AN NA???
-
 
 # HB of screening total ---
 qa_batch_hb <- extract2 %>%
@@ -730,38 +722,15 @@ qa_batch_hb <- extract2 %>%
   mutate(std_not_met = case_when(audit_batch_fail == "01" ~ "Screener",
                                  audit_batch_fail == "02" ~ "Equipment",
                                  audit_batch_fail == "03" ~ "Location",
-                                 audit_batch_fail == "04" ~ "Other with notes")) %>%
+                                 audit_batch_fail == "04" ~ "Other with notes"),
+         # assign "Unknown" to hb_screen NAs to be used in group_by function
+         hb_screen = replace_na(hb_screen, "Unknown")) %>%
   group_by(std_not_met, hb_screen) %>%
   summarise(n = n()) %>%
+  ungroup() |> 	
+  group_by(hb_screen) |> 	
+  group_modify(~adorn_totals(.x, where = "row", name = "Total")) |> 
   ungroup()
-
-# sometimes the above will filter out ALL rows, so need to account for this
-
-if (nrow(qa_batch_hb) > 0) {
-  qa_batch_hb <- qa_batch_hb %>%
-    group_by(hb_screen) %>% 
-    group_modify(~adorn_totals(.x, where = "row", name = "Total")) %>% 
-    ungroup()
-} else {
-  qa_batch_hb <- data.frame(std_not_met = character(),
-                                          hb_screen = character(),
-                                          n = integer(),
-                                          stringsAsFactors = FALSE)
-}
-
-# if no rows, below snippet doesn't work as there are no rows to join
-
-if(nrow(qa_batch_hb)==0){
-  x <- tibble(std_not_met = c("Screener","Equipment",
-                              "Location", "Other with notes", "Total"), 
-              hb_screen = c("Scotland", "Scotland", "Scotland", "Scotland",
-                            "Scotland"), 
-              n = c(0, 0, 0, 0, 0))
-  
-  qa_batch_hb <- bind_rows(qa_batch_hb, x)
-  
-  rm(x)
-}
 
 
 # Insert any missing detail categories and arrange
@@ -771,7 +740,22 @@ qa_batch_hb1 <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |>
          financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = std_not_met,
-         value = n)
+         value = n) %>% 
+  # remove hb_screen NAs - only produced if there is no data in the "group"
+  filter(!is.na(hb_screen))
+
+
+# alternative way of doing it - bigger datasets
+# hb_tibble <- hb_tibble %>% rename(hb_screen = hbres)
+# 
+# qa_batch_hb1 <- crossing(hb_tibble, qa_batch_list) %>%  
+#   left_join(qa_batch_hb, by = c("hb_screen", "std_not_met")) %>% 
+#   mutate(n = ifelse(is.na(n), 0, n)) |>
+#   mutate(kpi = "QA Batch standard not met: Reason",
+#          financial_year = kpi_report_years[3]) |> 
+#   select(hb_screen, kpi, financial_year, 
+#          group = std_not_met,
+#          value = n)
 
 
 # HB of screening recall advice ---
@@ -787,7 +771,9 @@ qa_batch_recall <- extract2 %>%
                                    audit_batch_outcome == "04" ~ 
                                      "No recall: Referred to vascular",
                                    audit_batch_outcome == "05" ~ 
-                                     "No recall: Verified by 2nd opinion"))
+                                     "No recall: Verified by 2nd opinion"),
+         # assign "Unknown" to hb_screen NAs to be used in group_by function
+         hb_screen = replace_na(hb_screen, "Unknown"))
 
 # Health Board total  
 qa_batch_recall_hb <- qa_batch_recall |> 
@@ -806,7 +792,9 @@ qa_batch_recall_hb <- qa_recall_list |> left_join(qa_batch_recall_hb,
          financial_year = kpi_report_years[3]) |> 
   select(hb_screen, kpi, financial_year, 
          group = recall_advice,
-         value = n)
+         value = n) %>% 
+  # remove hb_screen NAs - only produced if there is no data in the "group"
+  filter(!is.na(hb_screen))
 
 # Scotland total  
 qa_batch_recall_scot <- qa_batch_recall |> 
