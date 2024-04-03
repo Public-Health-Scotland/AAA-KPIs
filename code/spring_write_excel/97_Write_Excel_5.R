@@ -10,9 +10,9 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the multiple RDS files create in the XXXX script 
-# and transforms the data to print directly into the theme 4 Excel file for 
-# both the spring and autumn MEGs.
+# This script calls in the RDS file created in the 9_5_screen_result_tables.R 
+# script and transforms the data to print directly into the theme 5 Excel file  
+# for both the spring and autumn MEGs.
 
 
 #### 1: Housekeeping ----
@@ -27,21 +27,23 @@ library(openxlsx)
 rm(list=ls())
 gc()
 
+### !!MANUALLY UPDATED VARIABLES!! ##
 
-## Values
+meg_month <- "April"
+
+# Automatically-updated variables:
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, 
     fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years,
     cutoff_date, end_current, end_date, start_date,
-    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Define reporting years
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
 year_uu <- year_xx - 3
-meg_month <- "December"
 
 
 ## File paths

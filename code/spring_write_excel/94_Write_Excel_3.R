@@ -31,8 +31,12 @@ library(reporter)
 rm(list=ls())
 gc()
 
+### !!MANUALLY UPDATED VARIABLES!! ##
 
-## Values
+meg_month <- "April"
+
+
+## Automated values
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, fy_list, hb_list,
@@ -43,18 +47,15 @@ rm (exclusions_path, extract_path, hist_path, simd_path, fy_list, hb_list,
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
-meg_month <- "December"
-
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 ### 2: Import data ----
-# KPI 2.1a/b and 2.2
+# KPI 2.1a/b and 2.2 %>% 
 theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
-
 
 ### 3: Format data ----
 ## KPI 2.1a ----
@@ -278,7 +279,7 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
                           "for screening.")
 
 
-wb <- loadWorkbook(paste0(template_path, "/3 Quality Assurance_",
+wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
                           season, ".xlsx"))
 
 ## Table of Contents ---

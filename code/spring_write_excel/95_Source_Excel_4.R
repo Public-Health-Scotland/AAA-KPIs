@@ -19,7 +19,11 @@ library(dplyr)
 library(lubridate)
 library(stringr)
 
+### !!MANUALLY UPDATED VARIABLES!! ##
 
+meg_month <- "April"
+
+# Automatically-updated variables:
 ## Define reporting years
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
@@ -27,7 +31,6 @@ year_vv <- year_xx - 2
 year_yy <- year_xx + 1
 year_3 <- year_xx - 3
 year_5 <- year_xx - 5
-meg_month <- "December"
 
 
 ## KPI 4.1 previous stats

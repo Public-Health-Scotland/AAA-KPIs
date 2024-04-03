@@ -21,18 +21,28 @@ library(readr)
 library(tidyr)
 library(stringr)
 library(openxlsx)
+library(lubridate)
 
 
 rm(list=ls())
 gc()
 
+### !!MANUALLY UPDATED VARIABLES!! ##
 
-## Values
+meg_month <- "April"
+
+
+## Automated values
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, extract_path, hist_path, simd_path, hb_list, fy_tibble, hb_tibble, 
-    cut_off_date, cutoff_date, end_current, end_date, start_date,
-    year1_end, year1_start, year2_end, year2_start, year1, year2)
+rm (exclusions_path, extract_path, hist_path, simd_path, hb_list, fy_tibble, 
+    hb_tibble, cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1)
+
+year_xx <- year(cut_off_date)
+year_ww <- year_xx - 1
+year_vv <- year_xx - 2
+
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
@@ -66,12 +76,34 @@ kpi_1.1 <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.1 year2 ----
+# autumn!!
+## Data for currently active year and extended coverage to 1 Sept
+# kpi_1.1_y2 <- theme2 |> 
+#   filter(kpi %in% c("KPI 1.1", "KPI 1.1 Sept coverage"),
+#          fin_year == year2) |> 
+#   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+#   select(hbres, FY_kpi_group, value) |>
+#   # match Excel output
+#   pivot_wider(names_from = FY_kpi_group, values_from = value)
+
+# spring
 ## Data for currently active year and extended coverage to 1 Sept
 kpi_1.1_y2 <- theme2 |> 
-  filter(kpi %in% c("KPI 1.1", "KPI 1.1 Sept coverage"),
+  filter(kpi %in% c("KPI 1.1"),
          fin_year == year2) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(hbres, FY_kpi_group, value) |>
+  # match Excel output
+  pivot_wider(names_from = FY_kpi_group, values_from = value)
+
+
+## KPI 1.1 Scotland SIMD ----
+## Data for three most recent complete years and extended coverage to 1 Sept
+kpi_1.1_simd <- theme2 |> 
+  filter(kpi %in% c("KPI 1.1 Scotland SIMD", "KPI 1.1 Scotland SIMD Sept coverage"),
+         fin_year %in% kpi_report_years) |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |>
+  select(hbres, simd, FY_kpi_group, value) |>
   # match Excel output
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
@@ -95,9 +127,21 @@ kpi_1.2a_sept <- kpi_1.2a_sept[ , c(1, 2, 5, 6, 3, 7, 8, 4, 9, 10)]
 kpi_1.2a <- kpi_1.2a[, -c(8:11)]
 
 ## KPI 1.2a year2 ----
+# autumn
+## Data for currently active year and extended coverage to 1 Sept
+# kpi_1.2a_y2 <- theme2 |> 
+#   filter(kpi %in% c("KPI 1.2a", "KPI 1.2a Sept coverage"),
+#          fin_year == year2) |> 
+#   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+#   select(hbres, FY_kpi_group, value) |>
+#   # match Excel output
+#   pivot_wider(names_from = FY_kpi_group, values_from = value)
+
+
+# spring
 ## Data for currently active year and extended coverage to 1 Sept
 kpi_1.2a_y2 <- theme2 |> 
-  filter(kpi %in% c("KPI 1.2a", "KPI 1.2a Sept coverage"),
+  filter(kpi %in% c("KPI 1.2a"),
          fin_year == year2) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(hbres, FY_kpi_group, value) |>
@@ -237,6 +281,7 @@ kpi_1.3a_y2 <- select(kpi_1.3a_y2, -c(hbres, simd)) # to match Excel table
 
 wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
+
 # options("openxlsx.dateFormat" = "dd/mm/yyyy")
 
 ## Table of Contents ---
@@ -249,40 +294,46 @@ writeData(wb, sheet = "Table of Contents", tab_1.2b_add, startRow = 17)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, startRow = 7, colNames = FALSE)
 
 ## KPI 1.1 Additional (20YY-YY)
-writeData(wb, sheet = "KPI 1.1 Additional (20YY-YY)", 
+writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", 
           kpi_1.1_y2, startRow = 9, colNames = FALSE)
 names(wb)[[3]] <- paste0("KPI 1.1 Additional (", year2, ")")
+
+## KPI 1.1 SIMD
+writeData(wb, sheet = "KPI 1.1 SIMD", 
+          kpi_1.1_simd, startRow = 7, colNames = FALSE)
 
 ## KPI 1.2a ---
 writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
 
+# autumn only
 ## KPI 1.2a Coverage by 1 Sept
-writeData(wb, sheet = "Coverage by 1 Sept", 
-          kpi_1.2a_sept, startRow = 7, colNames = FALSE)
+# writeData(wb, sheet = "Coverage by 1 Sept", 
+#           kpi_1.2a_sept, startRow = 7, colNames = FALSE)
 
 ## KPI 1.2a Additional (20YY-YY)
-writeData(wb, sheet = "KPI 1.2a Additional (20YY-YY)", 
+writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", 
           kpi_1.2a_y2, startRow = 9, colNames = FALSE)
 
 ## KPI 1.2b ---
 writeData(wb, sheet = "KPI 1.2b", kpi_1.2b, startRow = 7, colNames = FALSE)
 
 ## KPI 1.2b Additional (20YY-YY)
-writeData(wb, sheet = "KPI 1.2b Additional (20YY-YY)", 
+writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", 
           kpi_1.2b_y2, startRow = 9, colNames = FALSE)
 names(wb)[[8]] <- paste0("KPI 1.2b Additional (", year2, ")")
 
 ## KPI 1.3a ---
 writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
 
+# autumn only
 ## KPI 1.3a Coverage by 1 Sept by SIMD
-writeData(wb, sheet = "Coverage by 1 Sept by SIMD", 
-          kpi_1.3a_sept, startRow = 7, colNames = FALSE)
+# writeData(wb, sheet = "Coverage by 1 Sept by SIMD", 
+#           kpi_1.3a_sept, startRow = 7, colNames = FALSE)
 
-## KPI 1.3a Additional (20YY-YY)
-writeData(wb, sheet = "KPI 1.2a Additional (20YY-YY)",
-          kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
-names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
+# KPI 1.3a Additional (20XX-YY)
+writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
+         kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
+names(wb)[[6]] <- paste0("KPI 1.3a Additional (", year2, ")")
 
 ## KPI 1.3a HB SIMD
 writeData(wb, sheet = "KPI 1.3a HB SIMD", 
@@ -291,15 +342,16 @@ writeData(wb, sheet = "KPI 1.3a HB SIMD",
 ## KPI 1.3b ---
 writeData(wb, sheet = "KPI 1.3b", kpi_1.3b, startRow = 7, colNames = FALSE)
 
+# sheet doesn't exist
 ## KPI 1.3b HB SIMD
-writeData(wb, sheet = "KPI 1.3b HB SIMD", 
-          kpi_1.3b_hb, startRow = 8, colNames = FALSE)
+# writeData(wb, sheet = "KPI 1.3b HB SIMD", 
+#           kpi_1.3b_hb, startRow = 8, colNames = FALSE)
 
 ## KPI 1.4a ---
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a, startRow = 7, colNames = FALSE)
 
 ## KPI 1.4b
-writeData(wb, sheet = "KPI 1.4b", kpi_1.2b_y2, startRow = 7, colNames = FALSE)
+writeData(wb, sheet = "KPI 1.4b", kpi_1.4b, startRow = 7, colNames = FALSE)
 
 ## Table 6: Surveillance
 writeData(wb, sheet = "6) Surveillance", t6_surveill,

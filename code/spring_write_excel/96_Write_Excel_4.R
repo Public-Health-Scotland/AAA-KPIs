@@ -31,12 +31,12 @@ gc()
 
 
 ## Values
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path,
     fy_list, hb_list, fy_tibble, hb_tibble,
-    cut_off_date, cutoff_date, end_current, end_date, start_date,
-    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
+     cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
    
 
 ## File paths
@@ -267,7 +267,7 @@ today <- paste0("Workbook created ", Sys.Date())
 wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
                           season, ".xlsx"))
 ## Source notes script
-source(here::here("code/9992_Source_Excel_4.R"))
+source(here::here(paste0("code/", season, "_write_excel/95_Source_Excel_4.R")))
 
 rm(list=ls(pattern = "theme4_"))
 
@@ -293,19 +293,21 @@ writeData(wb, sheet = "KPI 4.1", kpi_4_1, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 4.2", kpi_4_2, startRow = 7, colNames = FALSE)
 
 ## KPI 4.1 Additional ---
+## UPDATE/CHECK LINES EACH RUN ##
 writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_A, startRow = 7, 
           startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, startRow = 24, 
+writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, startRow = 25, 
           startCol = 2)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, startRow = 42, 
+writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, startRow = 44, 
           startCol = 2)
 
 ## KPI 4.2 Additional ---
+## UPDATE/CHECK LINES EACH RUN ##
 writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_A, startRow = 7, 
           startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, startRow = 24, 
+writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, startRow = 25, 
           startCol = 2)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, startRow = 42, 
+writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, startRow = 44, 
           startCol = 2)
 
 ## Table 7: Vascular Referrals ---
@@ -328,12 +330,12 @@ writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes6, startRow = 33,
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes7, startRow = 38, 
           startCol = 2, colNames = FALSE)
 
-## KPI 4 1-year Mortality ---
-writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, startRow = 8, 
-          colNames = FALSE)
-
 ## KPI 4 1,3,5-year Cumulative Mortality ---
 writeData(wb, sheet = "1, 3, 5-year mortality", kpi_4_cum_mort, startRow = 8, 
+          colNames = FALSE)
+
+## KPI 4 1-year Mortality ---
+writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, startRow = 8, 
           colNames = FALSE)
 
 ## AAA Repairs ---
@@ -354,7 +356,7 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths1,
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths2, 
           startRow = 10, colNames = FALSE)
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3, 
-          startRow = 24, colNames = FALSE)
+          startRow = 23, colNames = FALSE)
 
 ## Save ----
 saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
