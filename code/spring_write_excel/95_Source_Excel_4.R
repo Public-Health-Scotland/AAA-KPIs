@@ -19,11 +19,6 @@ library(dplyr)
 library(lubridate)
 library(stringr)
 
-### !!MANUALLY UPDATED VARIABLES!! ##
-
-meg_month <- "April"
-
-# Automatically-updated variables:
 ## Define reporting years
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1

@@ -27,12 +27,7 @@ library(lubridate)
 rm(list=ls())
 gc()
 
-### !!MANUALLY UPDATED VARIABLES!! ##
-
-meg_month <- "April"
-
-
-## Automated values
+## Values
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, hb_list, fy_tibble, 

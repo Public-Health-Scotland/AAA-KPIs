@@ -27,11 +27,7 @@ library(openxlsx)
 rm(list=ls())
 gc()
 
-### !!MANUALLY UPDATED VARIABLES!! ##
 
-meg_month <- "April"
-
-# Automatically-updated variables:
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, 

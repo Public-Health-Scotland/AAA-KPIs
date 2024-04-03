@@ -50,7 +50,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, extract_path, output_path, fy_tibble,
+rm (exclusions_path, extract_path, output_path, fy_tibble, meg_month,
     cut_off_date, cutoff_date, end_current, end_date, start_date)
 
 # SIMD levels
