@@ -259,6 +259,7 @@ mortality_hb <- mortality %>%
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / unfit_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / unfit_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / unfit_5_year, 1)) %>% 
+  ungroup() %>% 
   # add on mortality_scotland
   bind_rows(mortality_scotland) %>% 
   mutate(hbres = case_when(is.na(hbres) ~ "Scotland", 

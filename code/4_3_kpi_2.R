@@ -620,7 +620,6 @@ detail <- qa_standard %>%
 
 # Change FY variable to generalized level
 detail <- detail |> 
-  filter(financial_year %in% c(kpi_report_years)) |> # should already be filtered
   mutate(financial_year = case_when(financial_year == kpi_report_years[[1]] ~ "year1",
                                     financial_year == kpi_report_years[[2]] ~ "year2",
                                     financial_year == kpi_report_years[[3]] ~ "year3",
@@ -698,8 +697,7 @@ rm(qa_standard, detail, summary_detail, summary_text, summary, qa_detail_list)
 ## and batch standard not met screens by recall advice by HB of screening
 # Scotland total ---
 qa_batch_scot <- extract2 %>%
-  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
-         !is.na(audit_batch_fail)) %>%
+  filter(!is.na(audit_batch_fail)) %>%
   mutate(std_not_met = case_when(audit_batch_fail == "01" ~ "Screener",
                                  audit_batch_fail == "02" ~ "Equipment",
                                  audit_batch_fail == "03" ~ "Location",
@@ -721,8 +719,7 @@ qa_batch_scot <- qa_batch_list |> left_join(qa_batch_scot, by = "std_not_met") |
 
 # HB of screening total ---
 qa_batch_hb <- extract2 %>%
-  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
-         !is.na(audit_batch_fail)) %>%
+  filter(!is.na(audit_batch_fail)) %>%
   mutate(std_not_met = case_when(audit_batch_fail == "01" ~ "Screener",
                                  audit_batch_fail == "02" ~ "Equipment",
                                  audit_batch_fail == "03" ~ "Location",
@@ -764,8 +761,7 @@ qa_batch_hb1 <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |>
 
 # HB of screening recall advice ---
 qa_batch_recall <- extract2 %>%
-  filter(!(screen_result %in% c('05','06')), # not an external result (+ve or -ve)
-         !is.na(audit_batch_outcome)) %>%
+  filter(!is.na(audit_batch_outcome)) %>%
   mutate(recall_advice = case_when(audit_batch_outcome == "01" ~ 
                                      "Immediate recall",
                                    audit_batch_outcome == "02" ~ 
