@@ -15,11 +15,15 @@
 
 ### UPDATE THESE IN SPRING AND AUTUMN RUNS ###
 
-# year (AAAA) and month (BB) at time of running
-# e.g. autumn (usually september) AAAA09, spring (usually march) AAAA03
+# year (YYYY) and month (MM) at time of running
+# e.g. autumn (usually september) YYYY09, spring (usually march) YYYY03
 yymm <- 202403
 
 season <- "spring" # options are "spring" or "autumn"
+
+# date that most recent extract was downloaded
+# format: date + month e.g. 1 September
+extract_date <- "1 March"
 
 # month in which MEG is planned
 meg_month <- "April"
@@ -133,5 +137,4 @@ cut_off_date <- end_current # How is this date defined??
 
 # remove temporary variables
 rm(current_fy, fy_start, fy_end)
-
 

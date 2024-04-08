@@ -29,8 +29,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, meg_month,
-    cut_off_date, cutoff_date, year1_end, year1_start, year2_end, year2_start, year1, year2)
+rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble,
+    meg_month, cut_off_date, cutoff_date, year1_end, year1_start, year2_end, 
+    year2_start, year1, year2, extract_date)
 
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
@@ -491,7 +492,7 @@ table_4 <- bind_rows(sup_tab_4_eligible, sup_tab_4_sr) |>
   pivot_longer(!health_board:financial_year, 
                names_to = "group", values_to = "value")
 
-rm(extract_sup_4, non_vis_lookup, non_vis_lookup_2, non_vis_match, extract_sr,
+rm(extract_sup_4, non_vis_lookup, non_vis_match, extract_sr,
    sup_tab_4_eligible, sup_tab_4_sr)
 
 
@@ -552,7 +553,10 @@ qa_reason <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
               names_glue = "{audit_fail_reason_text}_n") |> 
   clean_names()
   
-qa_reason <- qa_reason |> 
+qa_reason <- crossing(hb_tibble, kpi_report_years) %>% 
+  left_join(qa_reason, by= c("hbres"="hb_screen", "kpi_report_years"="financial_year")) |> 
+  rename(hb_screen = hbres,
+         financial_year = kpi_report_years) %>% 
   mutate(calliper_p = round_half_up(calliper_n/standard_not_met_n*100, 1),
          angle_p = round_half_up(angle_n/standard_not_met_n*100, 1),
          image_quality_p = round_half_up(image_quality_n/standard_not_met_n*100, 1),
