@@ -23,7 +23,7 @@ season <- "spring" # options are "spring" or "autumn"
 
 # date that most recent extract was downloaded
 # format: date + month e.g. 1 September
-extract_date <- "1 March"
+extract_date <- "7 March"
 
 # month in which MEG is planned
 meg_month <- "April"
