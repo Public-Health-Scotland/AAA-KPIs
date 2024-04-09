@@ -10,7 +10,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the RDS file create in the 7_3_KPI_2.R script 
+# This script calls in the RDS file create in the 4_3_KPI_2.R script 
 # and transforms the data to print directly into the theme 3 Excel file for 
 # the autumn MEG.
 # 
@@ -190,7 +190,19 @@ qa_batch_hb <- theme_3 |>
   mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
-  select(hbres, FY_group, value) |> 
+  select(hbres, FY_group, value)
+
+# the above retains HBs from historical db which have no values within kpi_report_years
+# remove them below
+ 
+qa_batch_hb <- qa_batch_hb %>% 
+  group_by(hbres) %>% 
+  # sum values, will be 0 if no records present for kpi_report_years
+  mutate(count = sum(value)) %>% 
+  # remove anything with no records
+  filter(count>0) %>% 
+  ungroup() %>% 
+  select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
   #! Do not change the last pipe to |> or next line of code will not work!!
@@ -203,7 +215,19 @@ qa_recall <- theme_3 |>
   mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
-  select(hbres, FY_group, value) |> 
+  select(hbres, FY_group, value)
+
+# the above retains HBs from historical db which have no values within kpi_report_years
+# remove them below
+
+qa_recall <- qa_recall %>% 
+  group_by(hbres) %>% 
+  # sum values, will be 0 if no records present for kpi_report_years
+  mutate(count = sum(value)) %>% 
+  # remove anything with no records
+  filter(count>0) %>% 
+  ungroup() %>% 
+  select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
   #! Do not change the last pipe to |> or next line of code will not work!!
@@ -246,6 +270,17 @@ screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx)
 
+kpi_2_note1 <- paste0("1. Screened 1 April ", year_ww, " to 28 February ",
+                        year_xx, ": provisional rates are presented for the ",
+                        "11-month period 1 April ", year_ww, " to 28 February ",
+                        year_xx, " as data are not yet available for the full ",
+                        "financial year ending 31 March ", year_xx, " from the ",
+                        "PHS extract at ", extract_date, " ", year_xx, ". Data ",
+                        "for the complete financial year ending 31 March ", year_xx,
+                        " will be produced from the PHS data extract at 1 ",
+                        "September ", year_xx, ".")
+
+
 # Table 4
 eligible_year_vv <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
                            year_vv, {supsc('r')})
@@ -285,24 +320,31 @@ writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 23)
 
 addStyle(wb, "Table of Contents", style = report_type_style, rows = 5, cols = 1)
+showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 2.1a ---
 writeData(wb, sheet = "KPI 2.1a", kpi_2_1a, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.1a", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1a", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.1a", screened_year_xx, startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 2.1a", kpi_2_note1, startRow = 30)
+showGridLines(wb, "KPI 2.1a", showGridLines = FALSE)
 
 ## KPI 2.1b ---
 writeData(wb, sheet = "KPI 2.1b", kpi_2_1b, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.1b", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1b", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.1b", screened_year_xx, startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 2.1b", kpi_2_note1, startRow = 30)
+showGridLines(wb, "KPI 2.1b", showGridLines = FALSE)
 
 ## KPI 2.2 ---
 writeData(wb, sheet = "KPI 2.2", kpi_2_2, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.2", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.2", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.2", screened_year_xx, startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 2.2", kpi_2_note1, startRow = 30)
+showGridLines(wb, "KPI 2.2", showGridLines = FALSE)
 
 ## KPI 2.2 Additional A ---
 writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_top, startRow = 8, 
@@ -315,6 +357,7 @@ writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_ww, startRow = 4,
           startCol = 10)
 writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx, startRow = 25, 
           startCol = 2)
+showGridLines(wb, "KPI 2.2 Additional (A)", showGridLines = FALSE)
 
 ## KPI 2.2 Additional B ---
 writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, startRow = 8, 
@@ -327,6 +370,7 @@ writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_ww, startRow = 4,
           startCol = 15)
 writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx, startRow = 25, 
           startCol = 2)
+showGridLines(wb, "KPI 2.2 Additional (B)", showGridLines = FALSE)
 
 ## Table 4: Eligible, no final result ---
 writeData(wb, sheet = "4) Eligible no final result", table_4_top, startRow = 8, 
@@ -341,6 +385,7 @@ writeData(wb, sheet = "4) Eligible no final result", eligible_year_xx, startRow 
           startCol = 2)
 writeData(wb, sheet = "4) Eligible no final result", self_ref_year_xx, startRow = 24, 
           startCol = 9)
+showGridLines(wb, "4) Eligible no final result", showGridLines = FALSE)
 
 ## QA standard not met reason ---
 writeData(wb, sheet = "QA standard not met reason", qa_reason_top, startRow = 8, 
@@ -353,6 +398,7 @@ writeData(wb, sheet = "QA standard not met reason", screened_year_ww, startRow =
           startCol = 11)
 writeData(wb, sheet = "QA standard not met reason", screened_year_xx, startRow = 25, 
           startCol = 2)
+showGridLines(wb, "QA standard not met reason", showGridLines = FALSE)
 
 ## QA standard not met detail ---
 writeData(wb, sheet = "QA standard not met detail", qa_detail, startRow = 9,
@@ -370,16 +416,17 @@ writeData(wb, sheet = "QA standard not met detail", screened_year_ww, startRow =
 writeData(wb, sheet = "QA standard not met detail", screened_year_xx, startRow = 7, 
           startCol = 6)
 
-writeData(wb, sheet = "QA standard not met detail", qa_detail_note1, startRow = 30)
+#writeData(wb, sheet = "QA standard not met detail", qa_detail_note1, startRow = 30)
 #writeData(wb, sheet = "QA standard not met detail", qa_detail_note2, startRow = 31)
 writeData(wb, sheet = "QA standard not met detail", qa_detail_note3, startRow = 32)
+showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 
 ## Batch QA standard not met ---
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, startRow = 7, 
           colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, startRow = 18, 
           colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_recall, startRow = 29, 
+writeData(wb, sheet = "Batch QA standard not met", qa_recall, startRow = 27, 
           colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 5, 
           startCol = 2)
@@ -399,6 +446,7 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 
           startCol = 8)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 25, 
           startCol = 14)
+showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
 ## Save ----
 saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"), 
