@@ -21,6 +21,7 @@ library(lubridate)
 library(forcats)
 library(stringr)
 library(tidylog)
+library(tidyr)
 
 
 rm(list = ls())
@@ -384,13 +385,13 @@ sup_tab_4_eligible <- non_vis_match %>%
 
 sup_tab_4_eligible <- sup_tab_4_eligible %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  select(health_board = hb_screen, 
+  select(hb_screen, 
          financial_year = fin_year_66,
          tested_n = n,
          non_vis_n, non_vis_p,
          non_vis_2_more_n, non_vis_2_more_p,
          non_vis_1_n, non_vis_1_p) %>%
-  mutate(kpi = "Table 4: Eligible cohort", .after = health_board)
+  mutate(kpi = "Table 4: Eligible cohort", .after = hb_screen)
   
 
 ## CAN THIS BE DELETED?? LOOKS LIKE DUPLICATION? 
@@ -478,10 +479,10 @@ sup_tab_4_sr <- bind_cols(extract_sr, sup_tab_4_sr) |>
   mutate(non_vis_p = round_half_up(non_vis_n/n*100, 1),
          non_vis_2_more_p = round_half_up(non_vis_2_more_n/n*100, 1),
          non_vis_1_p = round_half_up(non_vis_1_n/n*100, 1)) |> 
-  mutate(health_board = "Scotland",
+  mutate(hb_screen = "Scotland",
          kpi = "Table 4: Self-referral",
          financial_year = kpi_report_years[[3]]) |> 
-  select(health_board, kpi, financial_year,
+  select(hb_screen, kpi, financial_year,
          tested_n = n,
          non_vis_n, non_vis_p,
          non_vis_2_more_n, non_vis_2_more_p,
@@ -489,7 +490,7 @@ sup_tab_4_sr <- bind_cols(extract_sr, sup_tab_4_sr) |>
 
 # Combine eligible cohort and self-referrals and reshape
 table_4 <- bind_rows(sup_tab_4_eligible, sup_tab_4_sr) |> 
-  pivot_longer(!health_board:financial_year, 
+  pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
 rm(extract_sup_4, non_vis_lookup, non_vis_match, extract_sr,
@@ -592,31 +593,31 @@ detail <- qa_standard %>%
                                  value == "12" ~ "Image Quality - Section Width",
                                  value == "13" ~ "Image Quality - Image Size",
                                  value == "14" ~ "Anatomy - see QA notes"),
-    detail_text = fct_relevel(detail_text,
-                              "Calliper - APL",
-                              "Calliper - APT",
-                              "Calliper - Anterior Calliper",
-                              "Calliper - Posterior Calliper",
-                              "Angle - APL",
-                              "Angle - APT",
-                              "Angle - Image Angle",
-                              "Angle - Measurement Angle",
-                              "Image Quality - Gain",
-                              "Image Quality - Depth",
-                              "Image Quality - Focus",
-                              "Image Quality - Section Width",
-                              "Image Quality - Image Size",
-                              "Anatomy - see QA notes"),
-    summary_text = case_when(
-      str_detect(detail_text, "Calliper") ~ "Total (Calliper)",
-      str_detect(detail_text, "Angle") ~ "Total (Angle)",
-      str_detect(detail_text, "Image Quality") ~ "Total (Quality)",
-      str_detect(detail_text, "Anatomy") ~ "Total (Anatomy)"),
-    summary_text = fct_relevel(summary_text,
-                               "Total (Calliper)",
-                               "Total (Angle)",
-                               "Total (Quality)",
-                               "Total (Anatomy)")) 
+         detail_text = fct_relevel(detail_text,
+                                   "Calliper - APL",
+                                   "Calliper - APT",
+                                   "Calliper - Anterior Calliper",
+                                   "Calliper - Posterior Calliper",
+                                   "Angle - APL",
+                                   "Angle - APT",
+                                   "Angle - Image Angle",
+                                   "Angle - Measurement Angle",
+                                   "Image Quality - Gain",
+                                   "Image Quality - Depth",
+                                   "Image Quality - Focus",
+                                   "Image Quality - Section Width",
+                                   "Image Quality - Image Size",
+                                   "Anatomy - see QA notes"),
+         summary_text = case_when(
+           str_detect(detail_text, "Calliper") ~ "Total (Calliper)",
+           str_detect(detail_text, "Angle") ~ "Total (Angle)",
+           str_detect(detail_text, "Image Quality") ~ "Total (Quality)",
+           str_detect(detail_text, "Anatomy") ~ "Total (Anatomy)"),
+         summary_text = fct_relevel(summary_text,
+                                    "Total (Calliper)",
+                                    "Total (Angle)",
+                                    "Total (Quality)",
+                                    "Total (Anatomy)")) 
 
 # Change FY variable to generalized level
 detail <- detail |> 
@@ -636,6 +637,7 @@ summary_detail <- detail %>%
   pivot_wider(names_from = financial_year,
               values_from = n) %>%
   rename(detail = detail_text) %>%
+  mutate_at(vars(year1:year3), ~ifelse(is.na(.), 0, .)) %>% 
   mutate(year1_p = round_half_up(year1/sum(year1)*100, 1),
          year2_p = round_half_up(year2/sum(year2)*100, 1),
          year3_p = round_half_up(year3/sum(year3)*100, 1))
@@ -687,7 +689,12 @@ qa_detail <- qa_detail |>
                                     str_detect(financial_year, "year3") ~ kpi_report_years[[3]]),
          group = case_when(str_detect(group, "_n") ~ "n",
                            str_detect(group, "_p") ~ "p")) |> 
-  mutate(value = ifelse(is.na(value), 0, value))
+  mutate(value = ifelse(is.na(value), 0, value),
+         hb_screen = "Scotland")
+
+qa_detail <- qa_detail %>% 
+  mutate(group = paste(qa_detail$detail, qa_detail$group, sep = "_")) %>% 
+  select(hb_screen, kpi, financial_year, group, value)
 
 rm(qa_standard, detail, summary_detail, summary_text, summary, qa_detail_list)
 
@@ -735,7 +742,7 @@ qa_batch_hb <- extract2 %>%
 
 
 # Insert any missing detail categories and arrange
-qa_batch_hb1 <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
+qa_batch_hb <- qa_batch_list |> left_join(qa_batch_hb, by = "std_not_met") |> 
   mutate(n = ifelse(is.na(n), 0, n)) |>
   mutate(kpi = "QA Batch standard not met: Reason",
          financial_year = kpi_report_years[3]) |> 
@@ -835,16 +842,6 @@ names(qa_batch_scot)
 names(qa_batch_hb)
 names(qa_batch_recall)
 
-## Temporarily change table_4 from "health_board" to "hb_screen"; Eventually,
-## should go back and change variable (will need to go back into scripts 1 & 2.)
-table_4 <- rename(table_4, hb_screen = health_board)
-
-## This doesn't really work, but I want a nice, neat package at the moment, 
-## so I'm doing it anyway. It would make sense to concatenate the "detail" variable 
-## with the "group" variable and add Scotland as the hb_screen, but that would 
-## mean having to undo that in the Excel output script, creating more unecessary work.
-qa_detail <- rename(qa_detail, hb_screen = detail)
-
 # Combine
 # Note: Table 4 and QA standard not met (reason and detail) not added until 
 # after new historical file has been created, as data is recalculated for each 
@@ -934,6 +931,7 @@ kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |>
   arrange(kpi, fin_year, hbres)
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
+# note "table 4: self-referral" should only be in most recent FY as is cumulative
 
 ## Save data block
 write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))

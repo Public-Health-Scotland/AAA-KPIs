@@ -167,11 +167,14 @@ qa_reason_bot <- theme_3 |>
 ## QA standard not met Detail ----
 qa_detail <- theme_3 |> 
   filter(kpi == "QA Not Met: Detail") |> 
+  mutate(detail = substr(group, 1, nchar(group)-2),
+         group = case_when(str_detect(group, "_n") ~ "n",
+                           str_detect(group, "_p") ~ "p")) |>
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
+  select(detail, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(-hbres)
+  select(-detail)
 
 
 ## Batch QA standard not met ----
