@@ -172,6 +172,10 @@ extract_audit <- extract %>%
                                        TRUE ~ 0),
          # passed audit
          standard_met_n = if_else(audit_result == '01', 1, 0),
+         # failed audit
+         standard_not_met_n = case_when(audit_result=='02' ~ 1,
+                                        is.na(audit_result) ~ 1,
+                                        TRUE ~ 0),
          # immediate recall
          imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
          # recall in current cycle
