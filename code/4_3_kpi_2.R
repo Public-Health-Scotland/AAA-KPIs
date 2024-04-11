@@ -213,7 +213,7 @@ kpi_2_2_add_a <- extract_audit %>%
             no_audit_result_n = sum(no_audit_result_n),
             audit_n2 = sum(audit_n),
             standard_met_n = sum(standard_met_n),
-            standard_not_met_n = audit_n - standard_met_n,
+            standard_not_met_n = sum(standard_not_met_n),
             ) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
@@ -268,7 +268,6 @@ kpi_2_2_add_b <- extract_audit %>%
   summarise(
     audit_n = sum(audit_n),
     standard_met_n = sum(standard_met_n),
-    standard_not_met_n = (audit_n - standard_met_n),
     standard_not_met_n = sum(standard_not_met_n),
     imm_recall_n = sum(imm_recall_n),
     recall_cc_n = sum(recall_cc_n),
@@ -511,7 +510,10 @@ qa_standard <- extract %>%
   # GC - add to issues (Which part?)
   mutate(
     audit_n = if_else(audit_flag == '01', 1, 0),
-    standard_met_n = if_else(audit_result == '01', 1, 0), # Haven't these been removed?
+    standard_met_n = if_else(audit_result == '01', 1, 0),
+    standard_not_met_n = case_when(audit_result=='02' ~ 1,
+                                   is.na(audit_result) ~ 1,
+                                   TRUE ~ 0),# Haven't these been removed?
     audit_fail_reason_text = case_when(audit_fail_reason == '01' ~ "calliper",
                                        audit_fail_reason == "02" ~ "angle",
                                        audit_fail_reason == '03' ~ "image quality",
@@ -527,7 +529,7 @@ qa_standard <- extract %>%
 qa_standard_sum <- qa_standard %>%
   group_by(financial_year, hb_screen, audit_fail_reason_text) %>%
   ##!! Would it not make more sense to sum(audit_result) below?
-  summarise(standard_not_met_n = sum(audit_n) - sum(standard_met_n)) |>  
+  summarise(standard_not_met_n = sum(standard_not_met_n)) |>  
   ungroup() %>%
   group_by(financial_year, audit_fail_reason_text) |> 
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |> 
