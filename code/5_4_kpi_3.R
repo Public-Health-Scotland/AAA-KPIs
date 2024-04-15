@@ -71,6 +71,29 @@ kpi_3_1 %>% count(screen_to_screen)
 kpi_3_1 %>% count(seen)
 kpi_3_1 %>% count(screen_to_screen_group)
 
+
+# This section should be applied to the spring MEG run because vascular data for
+# the year end is not complete at that stage - it should not be run when
+# producing data for the complete year end from the September extract
+# these numbers get used in the provisional note of kpi 3.1 in theme 4 excel
+if (season == "spring"){
+  
+  provisional <- kpi_3_1 %>% 
+    filter(financial_year == kpi_report_years[3]) %>% 
+    mutate(pending_appt = 
+             case_when(!is.na(date_referral_true) & is.na(date_seen_outpatient) ~ 1, 
+                       TRUE ~ 0))
+  
+  pending <- provisional %>% count(pending_appt)
+  print(pending)
+  
+  rm(pending, provisional)
+  
+}
+# for the provisional footnote, the total = sum of pending_appt %in% c(0, 1), 
+# then separated out into "seen" and "not seen" by these flags
+
+
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
 # date_seen_outpatient is populated and screen_to_screen is greater than or equal 
 # to zero
