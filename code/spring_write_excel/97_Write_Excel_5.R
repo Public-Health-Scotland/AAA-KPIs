@@ -105,7 +105,7 @@ if (season == "spring") {
   
   # Spring
   pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " is scheduled ",
-                     "to be published in March ", year_xx, ". Final data will be ",
+                     "to be published in April ", year_yy, ". Final data will be ",
                      "produced from data extracted for PHS in September ", year_xx, ".")
   report_type <- "Provisional/partial data"
   report_type_style <- createStyle(fontSize = 12, fontName = "Arial",

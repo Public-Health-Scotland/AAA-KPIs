@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 999_Write_Excel_2.R
 # 
-# Karen Hotopp
+# Karen Hotopp & Aoife McCarthy
 # Sept 2023
 # 
 # Write out to AAA Excel workbook 2: Invitation and Attendance
@@ -289,6 +289,9 @@ year2 <- gsub("/", "-", year2)
 # bold black fonr used in some headers
 bold_black_style_header <- createStyle(fontSize = 14, fontName = "Arial",
                                 textDecoration = "bold", fontColour = "#000000")
+# orange style for notes needing manual contribution
+orange_font <- createStyle(fontSize = 11, fontName = "Arial", 
+                           fontColour = "#ff9f00", wrapText = TRUE)
 # turned 66 in year... titles for KPI tables
 turn66_year_vv <- paste0("Turned 66 in year ending 31 March ", year_vv, '\n',
                          "(became eligible in year ending 31 March ", year_uu, ")")
@@ -298,7 +301,6 @@ turn66_year_xx <- paste0("Turned 66 in year ending 31 March ", year_xx, '\n',
                          "(became eligible in year ending 31 March ", year_ww, ")")
 turn66_year_yy <- paste0("Turned 66 in year ending 31 March ", year_yy, '\n',
                          "(became eligible in year ending 31 March ", year_xx, ")")
-# date of extract
 
 # note on additional cohort sheets about eligibility dates
 add_cohort_note <- paste0("Data for latest annual cohort eligible for screening ",
@@ -326,8 +328,6 @@ prov_data_note <- paste0("1. Data for year ending 31 March ", year_xx,
                          "cohort of men offered screening before age 66 and the ",
                          "uptake rate. Data will be finalised from the PHS data ",
                          "extract at 1 September ", year_xx, ".")
-
-
 
 
 ### Table of Contents ----
@@ -476,6 +476,13 @@ writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", turn66_year_yy, startRow =
 
 ## footnotes
 
+kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage, ",
+                           "the equivalent percentages of men offered screening ",
+                           "before age 66 were {x}% (", year_vv, "/", 
+                           substr(year_ww, 3,4), ") and {x}% (", year_ww, "/",
+                           substr(year_xx, 3,4), ").")
+writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_add_note1, startRow = 31)
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = orange_font, rows = 31, cols = 1)
 
 ### AMc note: this footnote is probably too hard to figure out tbh
 # need to call in 2_1_invite_attend files from prior 2 years
@@ -542,7 +549,10 @@ writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_ww, startRow = 4,
 writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_xx, startRow = 4,
           startCol = 9)
 
-### AMc NOTE: the footnotes in the template need updating!!!!!
+## footnotes ---
+
+writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note1, startRow = 120)
+writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note3, startRow = 122)
 
 showGridLines(wb, "KPI 1.1 SIMD", showGridLines = FALSE)
 
@@ -621,6 +631,16 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow 
 
 showGridLines(wb, "KPI 1.2a Additional (20XX-YY)", showGridLines = FALSE)
 
+## footnotes
+
+kpi_1.3a_add_note1 <- paste0("1. For the previous eligible cohort at this stage, ",
+                             "the equivalent percentage of men tested before age ",
+                             "66 and 3 months was {x}% (", year_ww, "/", 
+                             substr(year_xx, 3, 4), ").")
+writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_add_note1, startRow = 26)
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = orange_font, rows = 26, cols = 1)
+
+
 ## data ---
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
           kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
@@ -663,7 +683,11 @@ addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = add_performance_style, row
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", turn66_year_yy, startRow = 6,
           startCol = 2)
 
-### AMc note: footnote for this is hard to calculate!!!
+kpi_1.2badd_foot <- paste0("1. The equivalent figure for the previous eligible ",
+                           "cohort in Scotland at this stage was {x}% (", 
+                           year_ww, "/", substr(year_xx, 3, 4), ").")
+writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", kpi_1.2badd_foot, startRow = 31)
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", orange_font, rows = 31, cols = 1)
 
 showGridLines(wb, "KPI 1.2b Additional (20XX-YY)", showGridLines = FALSE)
 

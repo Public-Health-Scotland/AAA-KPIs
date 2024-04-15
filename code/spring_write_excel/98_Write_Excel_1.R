@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 98_Write_Excel_1.R
 # 
-# Karen Hotopp
+# Karen Hotopp & Aoife McCarthy
 # February 2024
 # 
 # DESCRIPTION
@@ -53,7 +53,7 @@ kpi_1 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds")) |>
          !simd %in% c("Total", "Unknown"),
          str_ends(group, "_p")) |> 
   # match Excel tables
-  pivot_wider(names_from = fin_year, values_from = value)
+  pivot_wider(names_from = fin_year, values_from = value) 
 
 ## KPI 2
 kpi_2 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))|> 
@@ -62,7 +62,7 @@ kpi_2 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))|>
          hbres == "Scotland",
          str_ends(group, "_p")) |> 
   # match Excel tables
-  pivot_wider(names_from = fin_year, values_from = value)
+  pivot_wider(names_from = fin_year, values_from = value) 
 
 ## KPI 3
 kpi_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds")) |> 
@@ -72,7 +72,7 @@ kpi_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds")) |>
          health_board == "Scotland",
          str_ends(group, "_p")) |> 
   # match Excel tables
-  pivot_wider(names_from = financial_year, values_from = value)
+  pivot_wider(names_from = financial_year, values_from = value) 
 
 ## KPI 4
 kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |> 
@@ -85,6 +85,8 @@ kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |>
   pivot_wider(names_from = financial_year, values_from = value)
 
 
+
+
 ## Save out files to use in publication
 write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
 write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
@@ -95,10 +97,14 @@ write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 ### AMC additions below:
 
 ## Format for Excel input
-kpi_1 <- kpi_1 %>% select(-c(hbres, kpi, simd, group))
-kpi_2 <- kpi_2 %>% select(-c(hbres, kpi, group, std_not_met, n))
-kpi_3 <- kpi_3 %>% select(-c(health_board, kpi, group))
-kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group))
+kpi_1 <- kpi_1 %>% select(-c(hbres, kpi, simd, group)) %>% 
+  mutate_all(.funs = function(x) paste0(x, "%"))
+kpi_2 <- kpi_2 %>% select(-c(hbres, kpi, group)) %>% 
+  mutate_all(.funs = function(x) paste0(x, "%"))
+kpi_3 <- kpi_3 %>% select(-c(health_board, kpi, group)) %>% 
+  mutate_all(.funs = function(x) paste0(x, "%"))
+kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group)) %>% 
+  mutate_all(.funs = function(x) paste0(x, "%"))
 
 ### 3: Output to Excel ----
 
@@ -186,7 +192,7 @@ summary_note1 <- paste0("r  Data are revised since published on ",
 year_end_vv <- paste0("Year ending", '\n', "31 March ", year_vv)
 year_end_ww <- paste0("Year ending", '\n', "31 March ", year_ww)
 year_end_xx <- paste0("Year ending", '\n', "31 March ", year_xx, '\n',
-                      "provisional/partial", '\n', "data)")
+                      "(provisional/partial", '\n', "data)")
 
 # Styles
 # bold_red_font <- createStyle(fontSize = 12, fontName = "Arial",
@@ -194,8 +200,15 @@ year_end_xx <- paste0("Year ending", '\n', "31 March ", year_xx, '\n',
 bold_black_font <- createStyle(fontSize = 12, fontName = "Arial",
                                textDecoration = "bold", fontColour = "#000000")
 # orange font used for provisional notes that need manually updating in final book
-orange_font <- createStyle(fontSize = 12, fontName = "Arial", 
-                           fontColour = "#ff4500", wrapText = TRUE)
+orange_font <- createStyle(fontSize = 11, fontName = "Arial",
+                           fontColour = "#ff9f00", wrapText = TRUE)
+# summary header white font
+white_font <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
+                          fontColour = "#ffffff", wrapText = TRUE,
+                          border = c("top", "bottom", "left", "right"),
+                          borderStyle = "medium", halign = "center", valign = "bottom",
+                          textDecoration = "bold")
+
 
 # Data Notes
 writeData(wb, "Data Notes", data_header, startRow = 2)
@@ -212,7 +225,9 @@ writeData(wb, "Data Notes", extract_note3, startRow = 23)
 writeData(wb, "Data Notes", extract_note4, startRow = 24)
 writeData(wb, "Data Notes", extract_note5, startRow = 25)
 writeData(wb, "Data Notes", extract_note6, startRow = 25, startCol = 2)
+addStyle(wb, "Data Notes", orange_font, rows = 25, cols = 2)
 writeData(wb, "Data Notes", extract_note6, startRow = 27, startCol = 2)
+addStyle(wb, "Data Notes", orange_font, rows = 27, cols = 2)
 
 writeData(wb, "Data Notes", cohort_note1.1, startRow = 39)
 writeData(wb, "Data Notes", cohort_note1.2, startRow = 39, startCol = 2)
@@ -232,14 +247,56 @@ writeData(wb, "Scotland Summary", meg_review, startRow = 3)
 addStyle(wb, "Scotland Summary", bold_black_font, rows = 3, cols = 1)
 writeData(wb, "Scotland Summary", today, startRow = 5)
 
+writeData(wb, "Scotland Summary", year_end_vv, startRow = 10, startCol = 6)
+addStyle(wb, "Scotland Summary", white_font, rows = 10, cols = 6)
+writeData(wb, "Scotland Summary", year_end_ww, startRow = 10, startCol = 7)
+addStyle(wb, "Scotland Summary", white_font, rows = 10, cols = 7)
+writeData(wb, "Scotland Summary", year_end_xx, startRow = 10, startCol = 8)
+addStyle(wb, "Scotland Summary", white_font, rows = 10, cols = 8)
+
 writeData(wb, "Scotland Summary", kpi_1, startRow = 12,
           startCol = 6, colNames = FALSE)
 writeData(wb, "Scotland Summary", kpi_2, startRow = 22,
           startCol = 6, colNames = FALSE)
 writeData(wb, "Scotland Summary", kpi_3, startRow = 26,
           startCol = 6, colNames = FALSE)
+# kpi 3 revised superscripts
+kpi3_r1 <- kpi_3[1,1] %>% pull() %>% paste0(., {supsc('r')})
+kpi3_r2 <- kpi_3[1,2] %>% pull() %>% paste0(., {supsc('r')})
+kpi3_r3 <- kpi_3[2,1] %>% pull() %>% paste0(., {supsc('r')})
+kpi3_r4 <- kpi_3[2,2] %>% pull() %>% paste0(., {supsc('r')})
+kpi3_r5 <- kpi_3[3,1] %>% pull() %>% paste0(., {supsc('r')})
+kpi3_r6 <- kpi_3[3,2] %>% pull() %>% paste0(., {supsc('r')})
+writeData(wb, "Scotland Summary", kpi3_r1, startRow = 26, startCol = 6)
+writeData(wb, "Scotland Summary", kpi3_r2, startRow = 26, startCol = 7)
+writeData(wb, "Scotland Summary", kpi3_r3, startRow = 27, startCol = 6)
+writeData(wb, "Scotland Summary", kpi3_r4, startRow = 27, startCol = 7)
+writeData(wb, "Scotland Summary", kpi3_r5, startRow = 28, startCol = 6)
+writeData(wb, "Scotland Summary", kpi3_r6, startRow = 28, startCol = 7)
+
 writeData(wb, "Scotland Summary", kpi_4, startRow = 31,
           startCol = 6, colNames = FALSE)
+
+# 5-year titles for kpi 4
+
+rolling_font <- createStyle(fontSize = 12, fontName = "Arial",
+                               textDecoration = "bold", fontColour = "#000000",
+                            wrapText = TRUE, border = c("top", "bottom", "left", "right"),
+                            borderStyle = "medium", halign = "center", valign = "center")
+
+rolling1 <- paste0("Results for ", year_uu-4, "/", substr(year_vv-4, 3, 4), " - ", 
+                   '\n', year_uu, "/", substr(year_vv, 3, 4))
+rolling2 <- paste0("Results for ", year_vv-4, "/", substr(year_ww-4, 3, 4), " - ", 
+                   '\n', year_vv, "/", substr(year_ww, 3, 4))
+rolling3 <- paste0("Results for ", year_ww-4, "/", substr(year_xx-4, 3, 4), " - ", 
+                   '\n', year_ww, "/", substr(year_xx, 3, 4))
+
+writeData(wb, "Scotland Summary", rolling1, startRow = 30, startCol = 6)
+addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 6)
+writeData(wb, "Scotland Summary", rolling2, startRow = 30, startCol = 7)
+addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 7)
+writeData(wb, "Scotland Summary", rolling3, startRow = 30, startCol = 8)
+addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 8)
 
 writeData(wb, "Scotland Summary", summary_note1, startRow = 44)
 addStyle(wb, "Scotland Summary", orange_font, rows =44, cols = 1)

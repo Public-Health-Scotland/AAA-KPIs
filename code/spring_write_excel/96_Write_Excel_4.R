@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 9991_Write_Excel_4.R
 # 
-# Karen Hotopp
+# Karen Hotopp & Aoife McCarthy
 # Oct 2023
 # 
 # Write out to AAA Excel workbook 4: Referral Treatment and Outcomes
@@ -199,35 +199,50 @@ vasc_refs <- select(theme4_referral, -source_ref_to_vasc)
 ## Vascular Referrals: Outcomes ----
 vasc_outcomes1 <- theme4_outcomes |> 
   filter(result_size == "large" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes2 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes3 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes4 <- theme4_outcomes |> 
   filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes5 <- theme4_outcomes |> 
   filter(result_size == "small" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes6 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes7 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 ## Vascular Referrals: AAA Repairs ----
 aaa_repairs <- theme4_repairs |> 

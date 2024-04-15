@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 9991_Write_Excel_3.R
 # 
-# Karen Hotopp
+# Karen Hotopp & Aoife McCarthy
 # Nov 2023
 # 
 # Write out to AAA Excel workbook 3: Quality Assurance
@@ -42,6 +42,7 @@ rm (exclusions_path, extract_path, hist_path, simd_path, fy_list, hb_list,
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
+year_yy <- year_xx + 1
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
@@ -165,6 +166,7 @@ qa_reason_bot <- theme_3 |>
 
 
 ## QA standard not met Detail ----
+
 qa_detail <- theme_3 |> 
   filter(kpi == "QA Not Met: Detail") |> 
   mutate(detail = substr(group, 1, nchar(group)-2),
@@ -201,7 +203,9 @@ qa_batch_hb <- theme_3 |>
 qa_batch_hb <- qa_batch_hb %>% 
   group_by(hbres) %>% 
   # sum values, will be 0 if no records present for kpi_report_years
-  mutate(count = sum(value)) %>% 
+  mutate(count = sum(value),
+         hbres= case_when(hbres=="Scotland" ~ "Total", 
+                          TRUE ~ hbres)) %>% 
   # remove anything with no records
   filter(count>0) %>% 
   ungroup() %>% 
@@ -226,7 +230,9 @@ qa_recall <- theme_3 |>
 qa_recall <- qa_recall %>% 
   group_by(hbres) %>% 
   # sum values, will be 0 if no records present for kpi_report_years
-  mutate(count = sum(value)) %>% 
+  mutate(count = sum(value),
+         hbres= case_when(hbres=="Scotland" ~ "Total", 
+                          TRUE ~ hbres)) %>% 
   # remove anything with no records
   filter(count>0) %>% 
   ungroup() %>% 
@@ -256,7 +262,7 @@ today <- paste0("Workbook created ", Sys.Date())
 meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
 
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
-                   "supplementary information are planned for publication in March ", year_xx)
+                   "supplementary information are planned for publication in April ", year_yy)
 report_type <- "Due for publication"
 report_type_style <- createStyle(fontSize = 12, fontName = "Arial",
                                  textDecoration = "bold", fontColour = "#000000")
@@ -293,6 +299,20 @@ eligible_year_xx <- paste0("Eligible cohort: Turned 66 in year ending 31 March "
                            year_xx)
 self_ref_year_xx <- paste0("Self referrals: cumulative period from implementation ",
                            "to 31 March ", year_xx)
+
+# QA standard not met detail standard not met totals from previous tab (reason)
+
+std_not_met_y1 <- qa_reason_top %>% filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[1]) & contains("Reason_standard_not_met_n")) %>% 
+  pull()
+         
+std_not_met_y2 <- qa_reason_top %>% filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[2]) & contains("Reason_standard_not_met_n")) %>% 
+  pull()
+
+std_not_met_y3 <- qa_reason_bot %>% filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[3]) & contains("Reason_standard_not_met_n")) %>% 
+  pull()
 
 # QA standard not met detail notes
 # qa_detail_note2 <- paste0("2. Over the 3 years presented, there were a total of ",
@@ -404,6 +424,13 @@ writeData(wb, sheet = "QA standard not met reason", screened_year_xx, startRow =
 showGridLines(wb, "QA standard not met reason", showGridLines = FALSE)
 
 ## QA standard not met detail ---
+
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y1, startRow = 5,
+          startCol = 2)
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y2, startRow = 5,
+          startCol = 4)
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y3, startRow = 5,
+          startCol = 6)
 writeData(wb, sheet = "QA standard not met detail", qa_detail, startRow = 9,
           startCol = 2, colNames = FALSE)
 writeData(wb, sheet = "QA standard not met detail", screened_year_vv, startRow = 4, 
@@ -429,7 +456,7 @@ writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, startRow = 7,
           colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, startRow = 18, 
           colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_recall, startRow = 27, 
+writeData(wb, sheet = "Batch QA standard not met", qa_recall, startRow = 26, 
           colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 5, 
           startCol = 2)
