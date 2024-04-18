@@ -470,11 +470,11 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 
           startCol = 7)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 14, 
           startCol = 12)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 25, 
+writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 22, 
           startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 25, 
+writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 22, 
           startCol = 8)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 25, 
+writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 22, 
           startCol = 14)
 showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
