@@ -20,6 +20,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
+library
 
 
 rm(list=ls())
@@ -105,6 +106,7 @@ kpi_3 <- kpi_3 %>% select(-c(health_board, kpi, group)) %>%
   mutate_all(.funs = function(x) paste0(x, "%"))
 kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group)) %>% 
   mutate_all(.funs = function(x) paste0(x, "%"))
+
 
 ### 3: Output to Excel ----
 
@@ -260,20 +262,6 @@ writeData(wb, "Scotland Summary", kpi_2, startRow = 22,
           startCol = 6, colNames = FALSE)
 writeData(wb, "Scotland Summary", kpi_3, startRow = 26,
           startCol = 6, colNames = FALSE)
-# kpi 3 revised superscripts
-kpi3_r1 <- kpi_3[1,1] %>% pull() %>% paste0(., {supsc('r')})
-kpi3_r2 <- kpi_3[1,2] %>% pull() %>% paste0(., {supsc('r')})
-kpi3_r3 <- kpi_3[2,1] %>% pull() %>% paste0(., {supsc('r')})
-kpi3_r4 <- kpi_3[2,2] %>% pull() %>% paste0(., {supsc('r')})
-kpi3_r5 <- kpi_3[3,1] %>% pull() %>% paste0(., {supsc('r')})
-kpi3_r6 <- kpi_3[3,2] %>% pull() %>% paste0(., {supsc('r')})
-writeData(wb, "Scotland Summary", kpi3_r1, startRow = 26, startCol = 6)
-writeData(wb, "Scotland Summary", kpi3_r2, startRow = 26, startCol = 7)
-writeData(wb, "Scotland Summary", kpi3_r3, startRow = 27, startCol = 6)
-writeData(wb, "Scotland Summary", kpi3_r4, startRow = 27, startCol = 7)
-writeData(wb, "Scotland Summary", kpi3_r5, startRow = 28, startCol = 6)
-writeData(wb, "Scotland Summary", kpi3_r6, startRow = 28, startCol = 7)
-
 writeData(wb, "Scotland Summary", kpi_4, startRow = 31,
           startCol = 6, colNames = FALSE)
 
