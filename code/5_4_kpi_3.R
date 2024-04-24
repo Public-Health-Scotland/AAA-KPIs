@@ -450,7 +450,7 @@ write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"))
 Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"),
           mode = "664", use_umask = FALSE)
 
-table(hist_db$fin_year, hist_db$kpi) 
+table(hist_db$financial_year, hist_db$kpi) 
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
 # 2012/13                45                45               9
 # 2013/14                45                45              27
@@ -464,16 +464,36 @@ table(hist_db$fin_year, hist_db$kpi)
 # 2021/22                45                45              24
 # 2022/23                45                45              24
 
-# Write current year file
-write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
-# Change permissions to give the group read/write
-Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
-          mode = "664", use_umask = FALSE)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  # Write current year file
+  write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
+  # Change permissions to give the group read/write
+  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
+            mode = "664", use_umask = FALSE)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 
 ## Save report file
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
-write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

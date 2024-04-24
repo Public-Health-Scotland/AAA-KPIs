@@ -113,9 +113,18 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
-                                          yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
+                                            yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 rm(vascular_referral_count, aaa_extract)
 
 
@@ -295,8 +304,17 @@ annual_less <- resout_list |>
 ## Combine annual totals ----
 annual <- rbind(annual_great, annual_less)
 
-write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
 
@@ -443,6 +461,16 @@ repairs_current <- hb_tibble |>
   left_join(repairs_current, by = "hbres") 
 
 
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
-write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
+if (user_in == "yes"){
+  write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

@@ -67,7 +67,7 @@ history_building <- function(df, season){
       
     } else {
       
-      print("Go check your calendar!")
+      stop("Go check your calendar!")
       
     }
   }
@@ -377,6 +377,18 @@ check_interval <- quarterly_surveillance_w_excl %>%
 check_interval
 # 36 days is minimum (all should be >30)
 
+user_in <- dlgInput("Have you checked check_interval for quarterly surveillance? Enter 'yes' or 'no' below.")$res
+
+if(user_in == "yes"){
+  print("Great, carry on")
+} else {
+  if (user_in == "no") {
+    stop("Go and check the interval for quarterly surveillance before proceeding!")
+  } else {
+    stop("Ensure you have entered 'yes' or 'no' for user_in")
+  }
+}
+
 # # Save quarterly surveillance file (only if needed for checking)
 # saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
 #                                               "/3_2_kpi_1_4b_quarterly.rds"))
@@ -569,8 +581,17 @@ report_db <- bind_rows(kpi_1, kpi_1_4)
 table(report_db$kpi, report_db$fin_year)
 
 ## Write out new invite_attend file
-write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 
 # call in historical db to run next funtion
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
@@ -578,5 +599,16 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-history_building(kpi_1_4, season)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  history_building(kpi_1_4, season)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 
