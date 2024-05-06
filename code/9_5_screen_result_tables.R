@@ -355,5 +355,16 @@ table_5 <- bind_rows(individual_years, all_years) |>
 theme5_tables <- bind_rows(table_1, table_2, table_3, table_5)
 
 # Save
-write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

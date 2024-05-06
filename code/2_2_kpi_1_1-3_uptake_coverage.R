@@ -108,7 +108,7 @@ history_building <- function(df, season) {
       
     } else { 
       
-      print("Do you know what season it is?! Go back and figure yourself out.")
+      stop("Do you know what season it is?! Go back and figure yourself out.")
       
     }
   }
@@ -271,7 +271,18 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 
 #invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
@@ -645,7 +656,20 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-history_building(kpi_summary, season)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  history_building(kpi_summary, season)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
+
+
 
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
@@ -673,5 +697,15 @@ table(report_db$kpi, report_db$fin_year) # current year (year1) should match
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 #write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking

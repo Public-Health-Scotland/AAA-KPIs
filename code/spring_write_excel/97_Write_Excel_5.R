@@ -40,6 +40,7 @@ year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
 year_uu <- year_xx - 3
+year_yy <- year_xx + 1
 
 
 ## File paths

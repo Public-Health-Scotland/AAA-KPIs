@@ -72,26 +72,34 @@ kpi_1.1 <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.1 year2 ----
-# autumn!!
-## Data for currently active year and extended coverage to 1 Sept
-# kpi_1.1_y2 <- theme2 |> 
-#   filter(kpi %in% c("KPI 1.1", "KPI 1.1 Sept coverage"),
-#          fin_year == year2) |> 
-#   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-#   select(hbres, FY_kpi_group, value) |>
-#   # match Excel output
-#   pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-# spring
-## Data for currently active year and extended coverage to 1 Sept
-kpi_1.1_y2 <- theme2 |> 
-  filter(kpi %in% c("KPI 1.1"),
-         fin_year == year2) |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |>
-  # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
-
+if (season == "spring") {
+  ## Data for currently active year only
+  kpi_1.1_y2 <- theme2 |> 
+    filter(kpi %in% c("KPI 1.1"),
+           fin_year == year2) |> 
+    mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+    select(hbres, FY_kpi_group, value) |>
+    # match Excel output
+    pivot_wider(names_from = FY_kpi_group, values_from = value)
+  
+} else {
+  
+  if (season == "autumn") {
+    # Data for currently active year and extended coverage to 1 Sept
+    kpi_1.1_y2 <- theme2 |>
+      filter(kpi %in% c("KPI 1.1", "KPI 1.1 Sept coverage"),
+             fin_year == year2) |>
+      mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |>
+      select(hbres, FY_kpi_group, value) |>
+      # match Excel output
+      pivot_wider(names_from = FY_kpi_group, values_from = value)
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
 
 ## KPI 1.1 Scotland SIMD ----
 ## Data for three most recent complete years and extended coverage to 1 Sept
@@ -123,26 +131,34 @@ kpi_1.2a_sept <- kpi_1.2a_sept[ , c(1, 2, 5, 6, 3, 7, 8, 4, 9, 10)]
 kpi_1.2a <- kpi_1.2a[, -c(8:11)]
 
 ## KPI 1.2a year2 ----
-# autumn
-## Data for currently active year and extended coverage to 1 Sept
-# kpi_1.2a_y2 <- theme2 |> 
-#   filter(kpi %in% c("KPI 1.2a", "KPI 1.2a Sept coverage"),
-#          fin_year == year2) |> 
-#   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-#   select(hbres, FY_kpi_group, value) |>
-#   # match Excel output
-#   pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-
-# spring
-## Data for currently active year and extended coverage to 1 Sept
-kpi_1.2a_y2 <- theme2 |> 
-  filter(kpi %in% c("KPI 1.2a"),
-         fin_year == year2) |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |>
-  # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+if (season == "spring") {
+  ## Data for currently active year only
+  kpi_1.2a_y2 <- theme2 |> 
+    filter(kpi %in% c("KPI 1.2a"),
+           fin_year == year2) |> 
+    mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+    select(hbres, FY_kpi_group, value) |>
+    # match Excel output
+    pivot_wider(names_from = FY_kpi_group, values_from = value)
+  
+} else {
+  
+  if (season == "autumn") {
+    # Data for currently active year and extended coverage to 1 Sept
+    kpi_1.2a_y2 <- theme2 |>
+      filter(kpi %in% c("KPI 1.2a", "KPI 1.2a Sept coverage"),
+             fin_year == year2) |>
+      mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |>
+      select(hbres, FY_kpi_group, value) |>
+      # match Excel output
+      pivot_wider(names_from = FY_kpi_group, values_from = value)
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
 
 ## KPI 1.2b year1 ----
 ## Data for currently active year and extended coverage to 1 Sept
@@ -194,26 +210,36 @@ kpi_1.3a_hb <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.3a year2 ----
-## Data for currently active year and extended coverage to 1 Sept
-# autumn
-# kpi_1.3a_y2 <- theme2 |> 
-#   filter(kpi %in% c("KPI 1.3a Scotland SIMD", "KPI 1.3a Sept coverage"),
-#          fin_year == year2,
-#          hbres ==  "Scotland") |> 
-#   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-#   select(hbres, simd, FY_kpi_group, value) |>
-#   # match Excel output
-#   pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-# spring
-kpi_1.3a_y2 <- theme2 |> 
-  filter(kpi %in% c("KPI 1.3a Scotland SIMD"),
-         fin_year == year2,
-         hbres ==  "Scotland") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hbres, simd, FY_kpi_group, value) |>
-  # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+if (season == "spring") {
+  ## Data for currently active year only
+  kpi_1.3a_y2 <- theme2 |> 
+    filter(kpi %in% c("KPI 1.3a Scotland SIMD"),
+           fin_year == year2,
+           hbres ==  "Scotland") |> 
+    mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+    select(hbres, simd, FY_kpi_group, value) |>
+    # match Excel output
+    pivot_wider(names_from = FY_kpi_group, values_from = value)
+  
+} else {
+  
+  if (season == "autumn") {
+    # Data for currently active year and extended coverage to 1 Sept
+    kpi_1.3a_y2 <- theme2 |>
+      filter(kpi %in% c("KPI 1.3a Scotland SIMD", "KPI 1.3a Sept coverage"),
+             fin_year == year2,
+             hbres ==  "Scotland") |>
+      mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |>
+      select(hbres, simd, FY_kpi_group, value) |>
+      # match Excel output
+      pivot_wider(names_from = FY_kpi_group, values_from = value)
+    
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
 
 kpi_1.3a_y2 <- select(kpi_1.3a_y2, -c(hbres, simd)) # to match Excel table
 
@@ -358,10 +384,21 @@ writeData(wb, sheet = "KPI 1.2a", prov_data_note, startRow = 30, colNames = FALS
 showGridLines(wb, "KPI 1.2a", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
 
-# autumn only
+
 ### KPI 1.2a Coverage by 1 Sept ----
-# writeData(wb, sheet = "Coverage by 1 Sept", 
-#           kpi_1.2a_sept, startRow = 7, colNames = FALSE)
+if (season == "spring") {
+  print("Carry on!")
+} else {
+  
+  if (season == "autumn") {
+    writeData(wb, sheet = "Coverage by 1 Sept",
+              kpi_1.2a_sept, startRow = 7, colNames = FALSE)
+  } else {
+    
+    stop("Go check your calendar!")
+    
+  }
+}
 
 ### KPI 1.2a Additional (20XX-YY) ----
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_cohort_note, startRow = 3)
@@ -426,9 +463,20 @@ writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
 
 # autumn only
 ### KPI 1.3a Coverage by 1 Sept by SIMD ----
-# writeData(wb, sheet = "Coverage by 1 Sept by SIMD", 
-#           kpi_1.3a_sept, startRow = 7, colNames = FALSE)
 
+if (season == "spring") {
+  print("Carry on!")
+} else {
+  
+  if (season == "autumn") {
+    writeData(wb, sheet = "Coverage by 1 Sept by SIMD",
+              kpi_1.3a_sept, startRow = 7, colNames = FALSE)
+  } else {
+    
+    print("Go check your calendar!")
+    
+  }
+}
 
 
 ### KPI 1.3a HB SIMD ----
