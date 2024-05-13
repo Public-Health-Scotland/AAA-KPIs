@@ -23,7 +23,8 @@ pacman::p_load(
   arsenal,
   glue,
   readr,
-  tidylog
+  tidylog,
+  svDialogs
 )
 
 rm(list = ls())
