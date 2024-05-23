@@ -184,7 +184,6 @@ if (season == "autumn"){
 
 ### KPI 1.2a Additional (20XX-YY) Notes ----
 ## footnotes
-# AMc note: footnote 1 slightly too hard to compute automatically?
 kpi_1.2a_add_note2 <- paste0("2. Some men in this cohort have not reached age ",
                              "66 and 3 months yet. The oldest men in the cohort ",
                              "will reach this age on 1 July ", year_xx, 
@@ -234,8 +233,6 @@ kpi_1.4a_head2 <- paste0("Due to attend annual surveillance in year ending 31",
 kpi_1.4a_head3 <- paste0("Due to attend annual surveillance from 1 April ",
                          year_ww, " -", '\n', "31 January ", year_xx, '\n',
                          "(partial data for financial year)")
-kpi_1.4a_head4 <- paste0("Tested before 1 March ", year_xx, '\n', "(includes ",
-                         "men tested more than 6", '\n', "weeks from due date)")
 
 ## footnotes 
 kpi_1.4a_note1 <- paste0("1. Due to attend surveillance 1 April ", year_ww, 
@@ -257,8 +254,6 @@ kpi_1.4b_head2 <- paste0("Due to attend quarterly surveillance in year ending 31
 kpi_1.4b_head3 <- paste0("Due to attend quarterly surveillance from 1 April ",
                          year_ww, " -", '\n', "31 January ", year_xx, '\n',
                          "(partial data for financial year)")
-kpi_1.4b_head4 <- paste0("Tested before 1 March ", year_xx, '\n', "(includes ",
-                         "men tested more than 6", '\n', "weeks from due date)")
 
 ### Table 6: Surveillance Notes ----
 ## table headers

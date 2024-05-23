@@ -394,15 +394,15 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
           kpi_1.2a_y2, startRow = 9, colNames = FALSE)
 
 ### KPI 1.3a Additional (20XX-YY) ----
-writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 31,
+writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 32,
           startCol = 2)
 
 showGridLines(wb, "KPI 1.2a Additional (20XX-YY)", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_add_note1, startRow = 26)
 addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = orange_font, rows = 26, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
-          kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
-names(wb)[[6]] <- paste0("KPI 1.3a Additional (", year2, ")")
+          kpi_1.3a_y2, startRow = 35, startCol = 2, colNames = FALSE)
+names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
 
 ### KPI 1.2b ----
 
@@ -490,9 +490,7 @@ writeData(wb, sheet = "KPI 1.3b", kpi_1.3b, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head1, startRow = 4,
           startCol = 2)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head2, startRow = 4,
-          startCol = 4)
-writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head3, startRow = 4,
-          startCol = 6)
+          startCol = 5)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head3, startRow = 4,
           startCol = 8)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_note1, startRow = 30, colNames = FALSE)
@@ -503,9 +501,7 @@ writeData(wb, sheet = "KPI 1.4a", kpi_1.4a, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head1, startRow = 4,
           startCol = 2)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2, startRow = 4,
-          startCol = 4)
-writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, startRow = 4,
-          startCol = 6)
+          startCol = 5)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, startRow = 4,
           startCol = 8)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4a_note1, startRow = 30, colNames = FALSE)
