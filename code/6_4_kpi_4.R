@@ -1,5 +1,5 @@
 ###############################################################################
-# 9_4_kpi_4.R
+# 6_4_kpi_4.R
 # Calum Purdie & Karen Hotopp
 # 17/01/2023
 # 
@@ -31,6 +31,7 @@ library(zoo)
 library(stringr)
 library(janitor)
 library(tidylog)
+library(svDialogs)
 
 rm(list = ls())
 gc()
@@ -38,6 +39,10 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
+rm (exclusions_path, hist_path, output_path, simd_path, qpmg_month,
+    fy_list, hb_list, hb_tibble, kpi_report_years, season,
+    cutoff_date, end_current, end_date, start_date, extract_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 # Define cumulative cut-off years
 cut_off_date_1 <- cut_off_date - years(1)
@@ -236,7 +241,7 @@ evar_hb_surgery <- fy_tibble |> left_join(evar_hb_surgery,
   mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
   mutate(surg_method = "EVAR", .before = financial_year)
 
-rm(fy_tibble, fy_list, hb_list, open_hb_screen_scot, open_hb_surgery_scot, 
+rm(fy_tibble, open_hb_screen_scot, open_hb_surgery_scot, 
    kpi_4_1, kpi_4_2, evar_hb_screen_scot, evar_hb_surgery_scot)
 
 
@@ -290,7 +295,9 @@ aaa_extract <- aaa_extract %>%
 # Check: date_death from aaa_extract matches date_of_death from deaths
 aaa_extract %>% count(date_death == date_of_death)
 ##
-
+# AMc note: where date_death & date_of_death are both populated, date matches
+# most of discrepancy comes from 129 cases where date_of_death is populated but
+# date_death is NA
 
 ### 6: Cumulative Mortality by Surgery Type ----
 # Flag individuals who had surgery within last 1, 3 or 5 years
@@ -454,7 +461,18 @@ table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
 
 ###
-write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
-write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
+  write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
+  write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

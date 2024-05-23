@@ -12,7 +12,7 @@
 
 
 ## Notes:
-# This script covers three parts of the theme 4 MEG report:
+# This script covers three parts of the theme 4 QPMG report:
 # - Unfit for Surgery
 # - Unfit for Surgery Follow-up
 # - Unfit Follow-up Deaths by Cause
@@ -28,6 +28,7 @@ library(forcats)
 library(janitor)
 library(stringr)
 library(tidylog)
+library(svDialogs)
 
 
 rm(list = ls())
@@ -36,12 +37,15 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, fy_list, season)
+rm (exclusions_path, hist_path, output_path, simd_path, fy_list, hb_list,
+    fy_tibble, season, cutoff_date, end_current, end_date, start_date, 
+    year1_end, year1_start, year2_end, year2_start, year1, year2, qpmg_month,
+    extract_date)
 
 
 ## Values
 # Set cut off date as end of latest financial year.
-# Where an interim update is being provided for the MEG (for instance, in March)
+# Where an interim update is being provided for the QPMG (for instance, in March)
 # the final output tables will need to include a footnote to indicate that it 
 # represents a partial financial year (e.g. 1 April to end of February).
 # Define 1, 3, 5-year periods
@@ -64,6 +68,7 @@ table(extract$screen_result)
 # 01 (positive) = 898; 02 (negative) = 7    Sep 2022
 # 01 (positive) = 1012; 02 (negative) = 7   Mar 2023
 # 01 (positive) = 1016; 02 (negative) = 7   Sep 2023
+# 01 (positive) = 1148; 02 (negative) = 9   Mar 2023
 
 table(extract$result_outcome, extract$size_dichot)
 
@@ -143,9 +148,17 @@ unfit_current <- rbind(unfit_current, unfit_cum)
 unfit_current <- hb_tibble |> 
   left_join(unfit_current, by = "hbres")
 
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
-write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
-
+if (user_in == "yes"){
+  write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 rm(unfit_cum, unfit_fy, unfit_hist, unfit_surgery)
 
 
@@ -198,7 +211,7 @@ deaths <- deaths %>%
   slice(n()) %>% 
   ungroup()
 
-# Combine and calculate time between surgery and death
+# Combine and calculate time between screen and death
 extract <- extract %>% 
   left_join(deaths) %>% 
   mutate(screen_to_death = time_length(date_screen %--% date_of_death, 
@@ -255,6 +268,7 @@ mortality_hb <- mortality %>%
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / unfit_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / unfit_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / unfit_5_year, 1)) %>% 
+  ungroup() %>% 
   # add on mortality_scotland
   bind_rows(mortality_scotland) %>% 
   mutate(hbres = case_when(is.na(hbres) ~ "Scotland", 
@@ -267,9 +281,17 @@ mortality_hb <- hb_tibble |>
   left_join(mortality_hb, by = "hbres") |> 
   mutate_all(~ifelse(is.nan(.), NA, .))
 
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
-write_rds(mortality_hb, paste0(temp_path, "/4_9_unfit_follow-up_", yymm, ".rds"))
-
+if (user_in == "yes"){
+  write_rds(mortality_hb, paste0(temp_path, "/4_9_unfit_follow-up_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 
 #------------------------Unfit Follow-up Deaths by Cause-----------------------#
 
@@ -360,7 +382,7 @@ non_aaa_deaths <- cause_of_death %>%
   mutate(category = if_else(underlying_cause_of_death %in% paste0("I71", c(3:6, 8:9)),
                             "Total AAA-related deaths", category)) %>% 
   # unsure why COVID isn't being correctly labelled above...
-  mutate(category = if_else(is.na(category), "COVID-19", category)) |> 
+  # mutate(category = if_else(is.na(category), "COVID-19", category)) |> 
   group_by(category) %>% 
   summarise(count_n = n()) |> 
   group_modify(~ adorn_totals(.x, where = "row", name = "Total deaths")) |>
@@ -388,6 +410,14 @@ total_unfit <- unfit_current |>
 
 ### 6: Combine and save ----
 all_deaths <- bind_rows(total_unfit, total_deaths, non_aaa_deaths, aaa_deaths)
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
-write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
-
+if (user_in == "yes"){
+  write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}

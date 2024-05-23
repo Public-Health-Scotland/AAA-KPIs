@@ -1,7 +1,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 9991_Write_Excel_4.R
 # 
-# Karen Hotopp
+# Karen Hotopp & Aoife McCarthy
 # Oct 2023
 # 
 # Write out to AAA Excel workbook 4: Referral Treatment and Outcomes
@@ -31,9 +31,12 @@ gc()
 
 
 ## Values
-source(here::here("code/0_housekeeping_theme_4.R"))
+source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, fy_tibble, fy_list, extract_path)
+rm (exclusions_path, extract_path, hist_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble,
+     cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
    
 
 ## File paths
@@ -196,35 +199,50 @@ vasc_refs <- select(theme4_referral, -source_ref_to_vasc)
 ## Vascular Referrals: Outcomes ----
 vasc_outcomes1 <- theme4_outcomes |> 
   filter(result_size == "large" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes2 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes3 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes4 <- theme4_outcomes |> 
   filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes5 <- theme4_outcomes |> 
   filter(result_size == "small" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes6 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 vasc_outcomes7 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type, result_outcome))
+  select(-c(result_size, outcome_type)) %>% 
+  # remove rows where all the years have NAs (these not included in wb)
+  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  relocate(result_outcome, .after = "cumulative")
 
 ## Vascular Referrals: AAA Repairs ----
 aaa_repairs <- theme4_repairs |> 
@@ -264,50 +282,61 @@ today <- paste0("Workbook created ", Sys.Date())
 wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
                           season, ".xlsx"))
 ## Source notes script
-source(here::here("code/9992_Source_Excel_4.R"))
+source(here::here(paste0("code/", season, "_write_excel/95_Source_Excel_4.R")))
 
 rm(list=ls(pattern = "theme4_"))
 
 
 ## Table of Contents ---
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
+showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 3.1 ---
 writeData(wb, sheet = "KPI 3.1", kpi_3_1, startRow = 7, colNames = FALSE)
+showGridLines(wb, "KPI 3.1", showGridLines = FALSE)
 
 ## KPI 3.2 HB Residence ---
 writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3_2_res, startRow = 7, 
           colNames = FALSE)
+showGridLines(wb, "KPI 3.2 HB Residence", showGridLines = FALSE)
 
 ## KPI 3.2 HB Surgery ---
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3_2_surg, startRow = 7, 
           colNames = FALSE)
+showGridLines(wb,  "KPI 3.2 HB Surgery", showGridLines = FALSE)
 
 ## KPI 4.1 ---
 writeData(wb, sheet = "KPI 4.1", kpi_4_1, startRow = 7, colNames = FALSE)
+showGridLines(wb, "KPI 4.1", showGridLines = FALSE)
 
 ## KPI 4.2 ---
 writeData(wb, sheet = "KPI 4.2", kpi_4_2, startRow = 7, colNames = FALSE)
+showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 
 ## KPI 4.1 Additional ---
+## UPDATE/CHECK LINES EACH RUN ##
 writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_A, startRow = 7, 
           startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, startRow = 24, 
+writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, startRow = 25, 
           startCol = 2)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, startRow = 42, 
+writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, startRow = 44, 
           startCol = 2)
+showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
 
 ## KPI 4.2 Additional ---
+## UPDATE/CHECK LINES EACH RUN ##
 writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_A, startRow = 7, 
           startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, startRow = 24, 
+writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, startRow = 25, 
           startCol = 2)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, startRow = 42, 
+writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, startRow = 44, 
           startCol = 2)
+showGridLines(wb, "KPI 4.2 Additional", showGridLines = FALSE)
 
 ## Table 7: Vascular Referrals ---
 writeData(wb, sheet = "7) Vascular referrals", vasc_refs, startRow = 7,
           startCol = 2, colNames = FALSE)
+showGridLines(wb, "7) Vascular referrals", showGridLines = FALSE)
 
 ## Vascular Referral Outcomes ---
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes1, startRow = 5, 
@@ -324,26 +353,32 @@ writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes6, startRow = 33,
           startCol = 2, colNames = FALSE)
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes7, startRow = 38, 
           startCol = 2, colNames = FALSE)
-
-## KPI 4 1-year Mortality ---
-writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, startRow = 8, 
-          colNames = FALSE)
+showGridLines(wb, "Vascular KPIs background", showGridLines = FALSE)
 
 ## KPI 4 1,3,5-year Cumulative Mortality ---
 writeData(wb, sheet = "1, 3, 5-year mortality", kpi_4_cum_mort, startRow = 8, 
           colNames = FALSE)
+showGridLines(wb, "1, 3, 5-year mortality", showGridLines = FALSE)
+
+## KPI 4 1-year Mortality ---
+writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, startRow = 8, 
+          colNames = FALSE)
+showGridLines(wb, "1-year mortality rates", showGridLines = FALSE)
 
 ## AAA Repairs ---
 writeData(wb, sheet = "AAA Repairs", aaa_repairs, startRow = 7, 
           colNames = FALSE)
+showGridLines(wb, "AAA Repairs", showGridLines = FALSE)
 
 ## Unfit for Surgery ---
 writeData(wb, sheet = "Unfit for surgery", unfit_surgery, startRow = 7, 
           colNames = FALSE)
+showGridLines(wb, "Unfit for surgery", showGridLines = FALSE)
 
 ## Unfit for Surgery Follow-up ---
 writeData(wb, sheet = "Unfit for surgery follow-up", unfit_followup, 
           startRow = 7, colNames = FALSE)
+showGridLines(wb, "Unfit for surgery follow-up", showGridLines = FALSE)
 
 ## Unfit Follow-up Deaths ---
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths1, 
@@ -351,7 +386,8 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths1,
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths2, 
           startRow = 10, colNames = FALSE)
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3, 
-          startRow = 24, colNames = FALSE)
+          startRow = 23, colNames = FALSE)
+showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 ## Save ----
 saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 

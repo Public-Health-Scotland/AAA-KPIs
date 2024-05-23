@@ -10,9 +10,9 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the multiple RDS files create in the XXXX script 
-# and transforms the data to print directly into the theme 4 Excel file for 
-# both the spring and autumn MEGs.
+# This script calls in the RDS file created in the 9_5_screen_result_tables.R 
+# script and transforms the data to print directly into the theme 5 Excel file  
+# for both the spring and autumn MEGs.
 
 
 #### 1: Housekeeping ----
@@ -28,20 +28,19 @@ rm(list=ls())
 gc()
 
 
-## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm(hb_list, extract_path, current_year, current_year_start,
-   cut_off_12m, cut_off_3m, cutoff_date, exclusions_path, financial_quarters,
-   financial_year_due, hist_path, last_date, next_year, next_year_start, prev_year,
-   year1, year1_end, year1_start, year2, year2_end, year2_start, simd_path)
+rm (exclusions_path, extract_path, hist_path, simd_path, 
+    fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years,
+    cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Define reporting years
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
 year_uu <- year_xx - 3
-meg_month <- "December"
+year_yy <- year_xx + 1
 
 
 ## File paths
@@ -100,14 +99,14 @@ table_five <- theme_5 |>
 ### Setup workbook ---
 ## Notes and Headers
 today <- paste0("Workbook created ", Sys.Date())
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
 ## Seasonal
 if (season == "spring") {
   
   # Spring
   pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " is scheduled ",
-                     "to be published in March ", year_xx, ". Final data will be ",
+                     "to be published in April ", year_yy, ". Final data will be ",
                      "produced from data extracted for PHS in September ", year_xx, ".")
   report_type <- "Provisional/partial data"
   report_type_style <- createStyle(fontSize = 12, fontName = "Arial",
@@ -173,7 +172,7 @@ rm(theme_5, temp_path)
 
 ## Table of Contents ---
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
-writeData(wb, "Table of Contents", meg_review, startRow = 4)
+writeData(wb, "Table of Contents", qpmg_review, startRow = 4)
 writeData(wb, "Table of Contents", report_type, startRow = 5)
 writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 16)

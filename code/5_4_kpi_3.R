@@ -1,5 +1,5 @@
 ###############################################################################
-# kpi_3.R
+# 5_4_kpi_3.R
 # Calum Purdie & Karen Hotopp
 # 17/01/2023
 # 
@@ -14,7 +14,7 @@
 ## Notes: 
 ## For KPI 3.2, numbers from published data may have minor revisions due 
 # to updates of the data recorded on the Scottish AAA Call-Recall System. 
-# Therefore, all KPI data is recalculated for each MEG.
+# Therefore, all KPI data is recalculated for each QPMG.
 
 ## From Sept 2023, KPI 3.2 now includes analysis by HB of surgery (in addition 
 # to HB of residence) as management information.
@@ -27,6 +27,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tidylog)
+library(svDialogs)
 
 
 rm(list = ls())
@@ -35,7 +36,9 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path)
+rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, 
+    qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
+    year1, year2, extract_date)
 
 
 #### 2: Data Manipulation ----
@@ -68,6 +71,29 @@ kpi_3_1 <- aaa_extract %>%
 kpi_3_1 %>% count(screen_to_screen)
 kpi_3_1 %>% count(seen)
 kpi_3_1 %>% count(screen_to_screen_group)
+
+
+# This section should be applied to the spring QPMG run because vascular data for
+# the year end is not complete at that stage - it should not be run when
+# producing data for the complete year end from the September extract
+# these numbers get used in the provisional note of kpi 3.1 in theme 4 excel
+if (season == "spring"){
+  
+  provisional <- kpi_3_1 %>% 
+    filter(financial_year == kpi_report_years[3]) %>% 
+    mutate(pending_appt = 
+             case_when(!is.na(date_referral_true) & is.na(date_seen_outpatient) ~ 1, 
+                       TRUE ~ 0))
+  
+  pending <- provisional %>% count(pending_appt)
+  print(pending)
+  
+  rm(pending, provisional)
+  
+}
+# for the provisional footnote, the total = sum of pending_appt %in% c(0, 1), 
+# then separated out into "seen" and "not seen" by these flags
+
 
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
 # date_seen_outpatient is populated and screen_to_screen is greater than or equal 
@@ -170,6 +196,8 @@ rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
 kpi_3_2 <- aaa_extract %>% 
   filter(result_outcome %in% c("11", "12", "13", "14", "15", "16", "17") | 
            (result_outcome == "20" & surg_method == "03" & !is.na(date_surgery))) %>% 
+  # AMC new: december 31 filter because of follow-up time (mentioned in footnotes of excel)
+  filter(date_screen <= dmy(paste("31-12-", substr(start_date, 1, 4)))) %>% 
   mutate(screen_to_surgery = time_length(date_screen %--% date_surgery, 
                                          "days"), 
          surgery = case_when(screen_to_surgery <= 56 ~ 1, 
@@ -194,7 +222,7 @@ kpi_3_2 %>% filter(is.na(date_surgery)) %>% count(result_outcome)
 kpi_3_2 <- kpi_3_2 %>% 
   filter(screen_to_surgery >= 0 | is.na(screen_to_surgery))
 
-# This section should be applied to the spring MEG run because vascular data for
+# This section should be applied to the spring QPMG run because vascular data for
 # the year end is not complete at that stage - it should not be run when
 # producing data for the complete year end from the September extract
 ##!! How/Where is this used??
@@ -277,7 +305,7 @@ table(kpi_3_2_res$health_board, kpi_3_2_res$financial_year) # all hbres/FY are 3
 
 kpi_3_2_res <- kpi_3_2_res |> 
   # remove NAs for numerical counts and replace w 0
-  # not sure if this needs to be done?
+  # leaves _p var as NA, which helps when creating Excel wbs
   mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
                              is.na(value) ~ 0, TRUE ~ value))
 
@@ -437,16 +465,36 @@ table(hist_db$financial_year, hist_db$kpi)
 # 2021/22                45                45              24
 # 2022/23                45                45              24
 
-# Write current year file
-write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
-# Change permissions to give the group read/write
-Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
-          mode = "664", use_umask = FALSE)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  # Write current year file
+  write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
+  # Change permissions to give the group read/write
+  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
+            mode = "664", use_umask = FALSE)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 
 ## Save report file
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
-write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

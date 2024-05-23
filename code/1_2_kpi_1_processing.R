@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~
-# 1_2_processing_for_KPI_11-13.R
+# 1_2_kpi_1_processing.R
 # Angus Morton
 # 19/10/2022
 #
@@ -19,7 +19,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(tidylog)
-
+library(svDialogs)
 
 rm(list = ls())
 gc()
@@ -27,10 +27,10 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(gpd_lookups, year1_start, year1_end, year2_start, year2_end,
-   cut_off_12m, cut_off_3m, prev_year, current_year, current_year_start, 
-   next_year_start, financial_year_due, financial_quarters, last_date,
-   next_year, date_cut_off)
+rm (hist_path, output_path, simd_path, extract_date,
+    fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years, season,
+    cut_off_date, end_current, end_date, start_date, qpmg_month,
+    year1_end, year1_start, year2_end, year2_start, year1, year2, yymm)
 
 
 ### Step 2: Import data ----
@@ -211,7 +211,7 @@ prior_sur <- prior_sur %>%
   filter(screen_type == "02")
 
 table(prior_sur$screen_type)
-# 02: 283
+# 02: 287
 
 
 ### B: Only an external result recorded ---
@@ -222,7 +222,7 @@ external_only <- aaa_extract %>%
   distinct(upi, screen_result)
 
 table(external_only$screen_result)
-# 05: 132 
+# 05: 135
 # 06: 583
 
 external_only <- select(external_only, upi)
@@ -245,7 +245,7 @@ deceased <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(deceased$pat_inelig)
-# 15: 5036  
+# 15: 5281 
 # 16: 1107
 
 deceased <- deceased %>% select(upi) %>% arrange(upi)
@@ -267,7 +267,7 @@ prior_scr <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(prior_scr$pat_inelig)
-# 21: 863
+# 21: 891
 
 prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
 
@@ -293,7 +293,7 @@ optout <- optout %>%
   distinct(upi, pat_inelig)
 
 table(optout$pat_inelig)
-# 01: 2211
+# 01: 2280
 
 optout <- optout %>% select(upi) %>% arrange(upi)
 
@@ -319,7 +319,7 @@ repaired <- repaired %>%
   distinct(upi, pat_inelig)
 
 table(repaired$pat_inelig)
-# 04: 225
+# 04: 228
 
 repaired <- repaired %>% select(upi) %>% arrange(upi)
 
@@ -345,7 +345,7 @@ vasc_sur <- vasc_sur %>%
   distinct(upi, pat_inelig)
 
 table(vasc_sur$pat_inelig)
-# 06: 536
+# 06: 571
 
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
@@ -371,7 +371,7 @@ referred <- referred %>%
   distinct(upi, pat_inelig)
 
 table(referred$pat_inelig)
-# 19: 9
+# 19: 13
 
 referred <- referred %>% select(upi) %>% arrange(upi)
 
@@ -397,7 +397,7 @@ unfit <- unfit %>%
   distinct(upi, pat_inelig)
 
 table(unfit$pat_inelig)
-# 18: 435
+# 18: 457
 
 unfit <- unfit %>% select(upi) %>% arrange(upi)
 
@@ -438,7 +438,7 @@ other <- other %>%
 
 table(other$pat_inelig)
 #   11   12   17 
-# 1085 1189 1364 
+# 1112 1219 1418 
 
 other <- other %>% distinct(upi) %>% arrange(upi)
 
@@ -451,8 +451,8 @@ temp_gana <- aaa_exclusions %>%
   mutate(exlength = date_end - date_start)
 
 table(temp_gana$pat_inelig)
-# 25: 1066  
-# 26: 484
+# 25: 1564 
+# 26: 512
 
 temp_gana <- temp_gana %>% distinct(upi) %>% arrange(upi)
 
@@ -531,6 +531,15 @@ cohort1 <- cohort1 %>%
          inresult,
          inoffer)
 
-write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 

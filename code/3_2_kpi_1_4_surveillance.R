@@ -23,7 +23,8 @@ pacman::p_load(
   arsenal,
   glue,
   readr,
-  tidylog
+  tidylog,
+  svDialogs
 )
 
 rm(list = ls())
@@ -32,12 +33,12 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, simd_path, output_path, cutoff_date, year1, year2, 
-   year1_start, year1_end, year2_start, year2_end, start_date, end_date, 
-   end_current, cut_off_date)
+rm (output_path, simd_path, fy_list, fy_tibble, qpmg_month, extract_date,
+    cut_off_date, cutoff_date, end_current, end_date, start_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Functions
-history_building <- function(df, season) {
+history_building <- function(df, season){
   
   df
   
@@ -50,24 +51,24 @@ history_building <- function(df, season) {
     
     if (season == "autumn") {
       ## Combine data from this script (KPI 1.4 a & b)
-      kpi_1_4 <- kpi_1_4 |>
+      df <- df |>
         filter(fin_year == kpi_report_years[3])
       
-      kpi_1 <- bind_rows(kpi_1, kpi_1_4)
+      new_hist_db <- bind_rows(hist_db, df)
       
-      print(table(kpi_1$kpi, kpi_1$fin_year)) 
+      print(table(new_hist_db$kpi, new_hist_db$fin_year)) 
       
       ## Write out new historic file
-      write_rds(kpi_1, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+      write_rds(new_hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2.rds"))
       # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/2_1_invite_attend_", yymm, ".rds"),
+      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2.rds"),
                 mode = "664", use_umask = FALSE)
       
-      print("You made history! Proceed to the next step")
+      print("You made history! Proceed to the next script.")
       
     } else {
       
-      print("Go check your calendar!")
+      stop("Go check your calendar!")
       
     }
   }
@@ -89,6 +90,7 @@ aaa_exclusions %>% nrow()
 # 133,707 rows 2022/09
 # 143,256 rows 2023/03
 # 153,558 rows 2023/09
+# 164,471 rows 2024/03
 
 # organize data
 aaa_exclusions %<>%
@@ -126,6 +128,7 @@ aaa_extract %<>%
 # 523,774 rows 2022/09
 # 551,027 rows 2023/03
 # 579,917 rows 2023/09
+# 609,774 rows 2024/03
 
 ### 2.4: Create cohort of all of the screenings ----
 screened_cohort <- aaa_extract %>% 
@@ -187,6 +190,16 @@ check_dups <- annual_surveillance_cohort %>%
   filter(n > 1)
 # 10, look more reasonable
 # KH: not clear 
+
+# for Spring run, introduce date filter to allow enough follow-up time 
+# to accurately represent KPI 1.4a
+# i.e. need date_next_screen_due to be >6 weeks before March extract date
+# not required in autumn as Sept extract allows enough f-up time from FY end
+
+if (season == "spring"){
+  annual_surveillance_cohort <- annual_surveillance_cohort %>% 
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-01"))
+}
 
 ### 3.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -250,7 +263,7 @@ check_dups <- annual_surveillance_w_excl %>%
 
 # Save annual surveillance cohort (only if needed for checking)
 # saveRDS(annual_surveillance_w_excl, paste0(temp_path, 
-#                                            "/2_4_kpi_1_4a_annual.rds"))
+#                                            "/3_2_kpi_1_4a_annual.rds"))
 
 rm(annual_exclusions, annual_surveillance_cohort, annual_surveillance_f_up,
    check_dups)
@@ -275,6 +288,16 @@ quarterly_surveillance_cohort <- aaa_extract %>%
   select(upi, hbres, fy_due, date_screen_surv, date_next_screen_due)
 
 ## Duplicates are expected in this cohort
+
+# for Spring run, introduce date filter to allow enough follow-up time 
+# to accurately represent KPI 1.4b
+# i.e. need date_next_screen_due to be >4 weeks before March extract date
+# not required in autumn as Sept extract allows enough f-up time from FY end
+
+if (season == "spring"){
+  quarterly_surveillance_cohort <- quarterly_surveillance_cohort %>% 
+    filter(date_next_screen_due <= paste0(substr(yymm, 1, 4), "-01-01"))
+}
 
 ### 4.2: Identify those with follow-up within appropriate timeframe ----
 
@@ -355,9 +378,21 @@ check_interval <- quarterly_surveillance_w_excl %>%
 check_interval
 # 36 days is minimum (all should be >30)
 
+user_in <- dlgInput("Have you checked check_interval for quarterly surveillance? Enter 'yes' or 'no' below.")$res
+
+if(user_in == "yes"){
+  print("Great, carry on")
+} else {
+  if (user_in == "no") {
+    stop("Go and check the interval for quarterly surveillance before proceeding!")
+  } else {
+    stop("Ensure you have entered 'yes' or 'no' for user_in")
+  }
+}
+
 # # Save quarterly surveillance file (only if needed for checking)
 # saveRDS(quarterly_surveillance_w_excl, paste0(temp_path, 
-#                                               "/2_5_kpi_1_4b_quarterly.rds"))
+#                                               "/3_2_kpi_1_4b_quarterly.rds"))
 
 rm(quarterly_exclusions_list, quarterly_surveillance_cohort,
    quarterly_surveillance_f_up, check_interval)
@@ -440,6 +475,7 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 85 rows 2022/09
 # 94 rows 2023/03
 # 97 rows 2023/09
+# 100 rows 2024/03
 
 ## Step 7: Create KPI output ----
 ## KPI 1.4a
@@ -534,8 +570,57 @@ kpi_1 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 table(kpi_1$kpi, kpi_1$fin_year)
 table(kpi_1_4$kpi, kpi_1_4$fin_year)
-# Check that the data for years 1 & 2 matches data already stored in the block
+# Check that the data for kpi_report_years 1&2 matches data already stored in the block
+
+# keep only new records for most recent complete year
+kpi_1_4 <- kpi_1_4 |>
+  filter(fin_year == kpi_report_years[3])
+
+
+## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
+user_in <- dlgInput("Does the kpi_1 dataframe already contain KPI 1.4 for the most recent complete financial year (check results of table(kpi_1$kpi, kpi_1$fin_year) above) ? Enter 'yes' or 'no' below.")$res
+
+if (user_in == "no"){
+  report_db <- bind_rows(kpi_1, kpi_1_4)
+} else {
+  if (user_in == "yes"){
+    stop("Either remove the KPI 1.4 rows from kpi_1 and run again, or check that these rows match those in kpi_1_4, reassign kpi_1 df to one called 'report_db' and continue.")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
+table(report_db$kpi, report_db$fin_year)
+
+## Write out new invite_attend file
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
+# call in historical db to run next funtion
+hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
+
+table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-history_building(kpi_1_4, season)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  history_building(kpi_1_4, season)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

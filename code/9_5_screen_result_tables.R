@@ -17,6 +17,7 @@ library(readr)
 library(janitor)
 library(phsmethods)
 library(tidylog)
+library(svDialogs)
 
 
 rm(list = ls())
@@ -25,19 +26,19 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(exclusions_path, cutoff_date, cut_off_12m, cut_off_3m, 
-   prev_year, current_year, current_year_start, next_year_start,
-   financial_year_due, financial_quarters, last_date, next_year)
+rm (exclusions_path, hist_path, output_path, simd_path,
+    fy_list, hb_list, fy_tibble, hb_tibble, season,
+    cutoff_date, end_current, extract_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
-
-# Define dob cut-offs for each year
-# WHAT DEFINES THESE YEARS???
-dob_one_start <- as.Date("1954-04-01") # 69 years
-dob_one_end <- as.Date("1955-03-31")
-dob_two_start <- as.Date("1955-04-01") # 68 years
-dob_two_end <- as.Date("1956-03-31")
-dob_three_start <- as.Date("1956-04-01") # 67 years
-dob_three_end <- as.Date("1957-03-31")
+# Define dob cut-offs for each year - classifies people turining 66 in each
+# kpi report year
+dob_one_start <- ymd(start_date) - years(68)
+dob_one_end <- ymd(end_date) - years(68)
+dob_two_start <- ymd(start_date) - years(67)
+dob_two_end <- ymd(end_date) - years(67)
+dob_three_start <- ymd(start_date) - years(66)
+dob_three_end <- ymd(end_date) - years(66)
 
 
 ## Functions
@@ -316,7 +317,7 @@ table_3 <- calculate_totals(table_three_data, simd2020v2_sc_quintile,
 # Filter for self referrals and initial screens (including QA initial screens)
 # Filter for tested (+ve, -ve, non-visualisation screen result)
 aaa_extract <- aaa_extract %>% 
-  filter(date_screen <= date_cut_off, 
+  filter(date_screen <= cut_off_date, 
          pat_elig == "03" & screen_type %in% c("01", "03"), 
          screen_result %in% c("01", "02", "04"))
 
@@ -355,5 +356,16 @@ table_5 <- bind_rows(individual_years, all_years) |>
 theme5_tables <- bind_rows(table_1, table_2, table_3, table_5)
 
 # Save
-write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

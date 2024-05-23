@@ -1,5 +1,5 @@
 ###############################################################################
-# vascular_referrals.R
+# 7_4_vascular_referrals.R
 # Calum Purdie & Karen Hotopp & Salomi Barkat
 # 16/02/2023
 # 
@@ -11,7 +11,7 @@
 
 
 ## Notes:
-# This script covers three parts of the theme 4 MEG report:
+# This script covers three parts of the theme 4 QPMG report:
 # - Table 7: Vascular Referrals
 # - Vascular Referral Outcomes
 # - AAA Repair Operations
@@ -25,6 +25,7 @@ library(readr)
 library(janitor)
 library(forcats)
 library(tidylog)
+library(svDialogs)
 
 rm(list = ls())
 gc()
@@ -32,12 +33,26 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, season)
+rm (exclusions_path, hist_path, output_path, simd_path, hb_list, season,
+    cutoff_date, end_current, end_date, start_date, qpmg_month, extract_date,
+    year1_end, year1_start, year2_end, year2_start, year1, year2)
 
+# list of result outcomes in custom order (99, 98, 97, 96 all newly assigned values)
 resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07',
                                          '08','11','12','13','15','16','20','97',
                                          '09','10','14','17','18','19', '96'))
 
+# adding in result outcome detail
+resout_list <- resout_list %>% 
+  mutate(outcome_type = case_when(result_outcome %in%
+                                    c('01','02','03','04','05','06','07','08',
+                                      '11','12','13','15','16','20') ~ "final outcome",
+                                  result_outcome %in% c('09','10','14','17',
+                                                        '18','19') ~ "non-final outcome",
+                                  result_outcome == "99" ~ "Total",
+                                  result_outcome == "98" ~ "Total: final outcome",
+                                  result_outcome == "97" ~ "Total: non-final outcome",
+                                  result_outcome == "96" ~ "Total: no outcome recorded"))
 
 #----------------------Table 7: Vascular Referrals-----------------------------#
 
@@ -47,7 +62,7 @@ resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07'
 # error
 aaa_extract <- read_rds(extract_path) %>% 
   # referred to vascular
-  filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
+  filter(!is.na(date_referral_true) & largest_measure >= 5.5,
          date_screen <= cut_off_date, 
          result_outcome != "02")
 
@@ -99,9 +114,18 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
-                                          yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
+                                            yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 rm(vascular_referral_count, aaa_extract)
 
 
@@ -124,6 +148,7 @@ vasc <- read_rds(extract_path) %>%
 table(vasc$screen_result)
 # 01 - 962, 02 - 01, Mar 2023
 # 01 - 978, 02 - 01, Sep 2023
+# 01 - 1067, 02 - 01 Mar 2024
 
 ## Who has negative screen_result?
 neg <- vasc[vasc$screen_result == "02",]
@@ -134,6 +159,7 @@ rm(neg)
 table(vasc$result_size)
 # 01 - 957, 02 - 6, Mar 2023
 # 01 - 973, 02 - 6, Sep 2023
+# large - 1062, small - 6, Mar 2024
 
 table(vasc$result_outcome, vasc$result_size)
 
@@ -200,28 +226,23 @@ greater_grantot <- vasc %>%
 ## Combine into >=5.5cm df
 annual_great <- greater_grantot %>% 
   rbind(greater_subtotal, greater) %>% 
-  mutate(cummulative = rowSums(pick(where(is.numeric)), na.rm = TRUE))
+  mutate(cumulative = rowSums(pick(where(is.numeric)), na.rm = TRUE))%>% 
+  pivot_longer(cols= any_of(fy_list), names_to = "financial_year", values_to = "n")
 
-## Referrals with no outcome recorded ----
-# This should be 0 records, but need to keep track and add to final table
-vasc %>% filter(outcome_type == "no outcome recorded")
-# If no records, manually add record of 0 to annual_greater
-annual_great <- annual_great |>  
-  add_row(outcome_type = "Total: no outcome recorded", 
-          result_outcome = "96")
+# ensure all FYs accounted for
+annual_great <- fy_tibble %>% 
+  left_join(annual_great) %>% 
+  pivot_wider(names_from = financial_year, values_from = n) %>% 
+  filter(!is.na(result_outcome))
 
 # Organize records by result_outcome
 annual_great <- resout_list |> 
-  left_join(annual_great) |> 
-  mutate(result_size = "large",
-         outcome_type = case_when(result_outcome %in% c("04", "05") ~ "final outcome",
-                                  result_outcome == "14" ~ "non-final outcome",
-                                  TRUE ~ outcome_type)) |> 
-  select(result_size, outcome_type, result_outcome, all_of(fy_list), cummulative)
-
+  left_join(annual_great, by = "result_outcome") |> 
+  rename(outcome_type = outcome_type.x) %>% 
+  mutate(result_size = "large") %>% 
+  select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 ## Size < 5.5cm ----
-# Check financial years, as not all present in data and will need to be added
 
 ## Referrals with final & non-final outcomes
 less <- vasc %>% 
@@ -245,8 +266,7 @@ less_subtotal <- vasc %>%
   pivot_wider(names_from = financial_year, values_from = cases) %>% 
   mutate(result_outcome = case_when(outcome_type == "final outcome" ~ "98",
                                     outcome_type == "non-final outcome" ~ "97")
-         , .after = outcome_type) %>% 
-  # check for non-final outcome; likely 0, but need to adjust below if record present
+         , .after = outcome_type) %>%
   glimpse()
 
 ## Grand total: final & non-final outcome
@@ -263,32 +283,39 @@ less_grantot <- vasc %>%
   glimpse()  
 
 ## Combine into <5.5cm df
-annual_less <- less_grantot %>% 
+annual_less <- less_grantot %>%
   rbind(less_subtotal, less) |>  
-  # add in row for non-final outcome, as this is 0 (from less_subtotal above)
-  add_row(outcome_type = "Total: non-final outcome", 
-          result_outcome = "97") %>% 
-  mutate(result_size = "small",
-         cummulative = rowSums(pick(where(is.numeric)), na.rm = TRUE)) %>% 
-  # is there a better way of doing this?? Need to manually check what years needed
-  mutate(`2012/13` = NA,
-         `2014/15` = NA,
-         `2016/17` = NA,
-         `2017/18` = NA,
-         `2019/20` = NA,
-         `2021/22` = NA) %>% 
-  # reorder columns
-  select(result_size, outcome_type, result_outcome, all_of(fy_list), cummulative)
+  mutate(cumulative = rowSums(pick(where(is.numeric)), na.rm = TRUE)) %>% 
+  pivot_longer(cols= any_of(fy_list), names_to = "financial_year", values_to = "n")
+
+# ensure all FYs accounted for
+annual_less <- fy_tibble %>% 
+  left_join(annual_less) %>% 
+  pivot_wider(names_from = financial_year, values_from = n) %>% 
+  filter(!is.na(result_outcome))
+
+# organise by result outcome detail
+annual_less <- resout_list |> 
+  left_join(annual_less, by = "result_outcome") |> 
+  rename(outcome_type = outcome_type.x) %>% 
+  mutate(result_size = "small") %>% 
+  select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 
 ## Combine annual totals ----
-annual <- rbind(annual_great, annual_less) %>% 
-  mutate(outcome_type = case_when(result_outcome == "98" ~ "Total: final outcome",
-                                  result_outcome == "97" ~ "Total: non-final outcome",
-                                  TRUE ~ outcome_type))
+annual <- rbind(annual_great, annual_less)
 
-write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
 
@@ -306,6 +333,7 @@ extract <- read_rds(extract_path) %>%
 table(extract$surg_method, useNA = "ifany")
 # 296 EVAR (01), 335 open (02), Mar 2023
 # 328 EVAR (01), 372 open (02), Sep 2023
+# 369 EVAR (01), 401 open (02), Mar 2024
 
 ###
 check <- extract[extract$surg_method == "03",]
@@ -324,11 +352,12 @@ extract <- extract |>
 ## 16 (approp for surgery and died within 30 days)
 table(extract$result_outcome, extract$surg_method)
 
-#   Feb 2023  Sep 2023
-#     01  02    01  02
-# 15 294 328   326 364
-# 16   1   7     1   8
-# 20   1   0     1   0
+#   Feb 2023  Sep 2023    Mar 2024 
+#     01  02    01  02    01  02
+# 15 294 328   326 364    366 391
+# 16   1   7     1   8    1  10
+# 17                      1   0
+# 20   1   0     1   0    1   0
 
 ## One record has result_outcome == 20 (other final outcome)
 check <- extract[extract$result_outcome == "20",]
@@ -348,9 +377,10 @@ extract <- extract |>
 
 table(extract$surg_method)
 # 327 EVAR (01), 372 open (02), Sep 2023
+# 367 EVAR (01), 401 open (02), Mar 2024
 ## Check this against the total number of operations as identified in
 ## KPI 4.1/4.2 Additional A
-check <- read_rds(paste0(temp_path, "/4_2_kpi_4_202309.rds")) |> 
+check <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |> 
   filter(financial_year == "Cumulative",
          group == "procedures_n")
 View(check)
@@ -420,7 +450,7 @@ repairs_current <- repairs_all %>%
   filter(fy_surgery %in% kpi_report_years) 
 
 # Cumulative totals
-repairs_cum <- repairs_current %>% 
+repairs_cum <- repairs_all %>% 
   group_by(hbres, surg_method) %>% 
   summarize(n = sum(n)) %>% 
   ungroup() %>% 
@@ -432,6 +462,16 @@ repairs_current <- hb_tibble |>
   left_join(repairs_current, by = "hbres") 
 
 
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
-write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
+if (user_in == "yes"){
+  write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 

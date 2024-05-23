@@ -43,6 +43,7 @@ library(phsmethods)
 library(stringr)
 library(forcats)
 library(tidylog)
+library(svDialogs)
 
 rm(list = ls())
 gc()
@@ -50,8 +51,8 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(fy_tibble, hb_list, exclusions_path, extract_path, output_path, 
-   cutoff_date, start_date, end_date, end_current, cut_off_date)
+rm (exclusions_path, extract_path, output_path, fy_tibble, qpmg_month,
+    cut_off_date, cutoff_date, end_current, end_date, start_date, extract_date)
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
@@ -86,7 +87,9 @@ history_building <- function(df, season) {
       
       ## New historical database ----
       new_hist_db <- bind_rows(hist_db, df) |>
-        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.2a", "KPI 1.2a Sept coverage", 
+        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.1 Scotland SIMD", 
+                                        "KPI 1.1 Scotland SIMD Sept coverage",
+                                        "KPI 1.2a", "KPI 1.2a Sept coverage", 
                                         "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
                                         "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
                                         "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD",
@@ -106,7 +109,7 @@ history_building <- function(df, season) {
       
     } else { 
       
-      print("Do you know what season it is?! Go back and figure yourself out.")
+      stop("Do you know what season it is?! Go back and figure yourself out.")
       
     }
   }
@@ -263,13 +266,24 @@ rm(pc_simd, simd_path)
 
 
 ##!! Is it possible to add KPI 1.2a/b prisoners??
-## (KPI1.2a/b prisoners is fall MEG only)
+## (KPI1.2a/b prisoners is fall QPMG only)
 
 
 
 
 ### Step 4: Save out basefiles ----
-write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
 
 #invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
@@ -293,7 +307,7 @@ kpi_1_1<- kpi_1_1 |>
          coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
   select(hbres, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
          coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
-         offer_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         offer_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_1 <- kpi_1_1 |> 
@@ -311,6 +325,60 @@ kpi_1_1 <- kpi_1_1 |>
 
 kpi_1_1 <- hb_tibble |> left_join(kpi_1_1, by = "hbres")
 
+## KPI 1.1 Scotland SIMD ----
+# KPI 1.1: individuals offered screen before 66 (+ additional COVID info)
+# grouped by Scotland-level SIMD quintiles
+kpi_1_1_simd <- invite_uptake  |> 
+  select(hbres, simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
+  group_by(hbres, simd2020v2_sc_quintile) |> 
+  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  glimpse() # _not_assigned: what do these rows do??
+
+# Scotland
+kpi_1_1_simd_scot <- invite_uptake  |> 
+  select(simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
+  group_by(simd2020v2_sc_quintile) |> 
+  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
+  glimpse()
+
+# Combine & order by SIMD
+kpi_1_1_simd <- bind_rows(kpi_1_1_simd_scot, kpi_1_1_simd) |> 
+  mutate(simd2020v2_sc_quintile = if_else(is.na(simd2020v2_sc_quintile), 
+                                          "Unknown", simd2020v2_sc_quintile))
+kpi_1_1_simd <- simd_level |> left_join(kpi_1_1_simd, 
+                                        by = c("simd" = "simd2020v2_sc_quintile"))
+
+rm(kpi_1_1_simd_scot) # tidy environment
+
+kpi_1_1_simd <- kpi_1_1_simd  |> 
+  mutate(coverage_year1 = (offer_year1/cohort_year1)*100,
+         coverage_year2 = (offer_year2/cohort_year2)*100,
+         coverage_add_year1 = (offer_add_year1/cohort_year1)*100,
+         coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
+  select(hbres, simd, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
+         coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
+         offer_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
+
+# Reformat to match historical data
+kpi_1_1_simd <- kpi_1_1_simd |> 
+  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
+  mutate(group = fin_year, .after = fin_year) |> 
+  mutate(kpi = if_else(str_detect(fin_year, "_add_"), "KPI 1.1 Scotland SIMD Sept coverage", 
+                       "KPI 1.1 Scotland SIMD"), .after = hbres) |> 
+  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
+                              str_detect(fin_year, "_year2") ~ year2),
+         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
+                           str_detect(group, "offer") ~ "offer_n",
+                           str_detect(group, "coverage") ~ "coverage_p")) |> 
+  relocate(simd, .after = fin_year) |>
+  glimpse()
+
+kpi_1_1_simd <- hb_tibble |> left_join(kpi_1_1_simd, by = "hbres")
 
 ## KPI 1.2a ----
 kpi_1_2a <- invite_uptake  |> 
@@ -328,7 +396,7 @@ kpi_1_2a <- kpi_1_2a  |>
          coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
   select(hbres, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
          coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
-         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_2a <- kpi_1_2a |> 
@@ -415,7 +483,7 @@ kpi_1_3a <- kpi_1_3a  |>
          coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
   select(hbres, simd, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
          coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
-         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_3a <- kpi_1_3a |> 
@@ -566,7 +634,7 @@ rm(kpi_1_3a_scot, kpi_1_3b_scot, hb_tibble, simd_level)
 
 
 ## Join summaries ----
-kpi_summary <- rbind(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a,  
+kpi_summary <- rbind(kpi_1_1, kpi_1_1_simd, kpi_1_2a, kpi_1_2b, kpi_1_3a,  
                      kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb) |> 
   mutate(value = janitor::round_half_up(value, 1))
 
@@ -575,7 +643,7 @@ table(kpi_summary$kpi, kpi_summary$fin_year)
 # Change NaNs to NAs
 kpi_summary$value[is.nan(kpi_summary$value)] <- NA
 
-rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
+rm(kpi_1_1, kpi_1_1_simd, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 
 
 ### Step 6: Add historical data ----
@@ -589,7 +657,20 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-history_building(kpi_summary, season)
+user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+
+if (user_in == "yes"){
+  history_building(kpi_summary, season)
+} else {
+  if (user_in == "no"){
+    print("No history updated, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+
+
+
 
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
@@ -617,6 +698,15 @@ table(report_db$kpi, report_db$fin_year) # current year (year1) should match
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
-#write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
+user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
+if (user_in == "yes"){
+  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
+} else {
+  if (user_in == "no"){
+    print("No output saved, carry on")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
+#write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
