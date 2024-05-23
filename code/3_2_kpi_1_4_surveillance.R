@@ -576,8 +576,19 @@ table(kpi_1_4$kpi, kpi_1_4$fin_year)
 kpi_1_4 <- kpi_1_4 |>
   filter(fin_year == kpi_report_years[3])
 
-# add to summary already created (includes most recent year's kpi 1.1-1.3)
-report_db <- bind_rows(kpi_1, kpi_1_4)
+
+## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
+user_in <- dlgInput("Does the kpi_1 dataframe already contain KPI 1.4 for the most recent complete financial year (check results of table(kpi_1$kpi, kpi_1$fin_year) above) ? Enter 'yes' or 'no' below.")$res
+
+if (user_in == "no"){
+  report_db <- bind_rows(kpi_1, kpi_1_4)
+} else {
+  if (user_in == "yes"){
+    stop("Either remove the KPI 1.4 rows from kpi_1 and run again, or check that these rows match those in kpi_1_4, reassign kpi_1 df to one called 'report_db' and continue.")
+  } else {
+    stop("Check your answer is either 'yes' or 'no' please")
+  }
+}
 
 table(report_db$kpi, report_db$fin_year)
 
