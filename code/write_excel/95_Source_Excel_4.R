@@ -55,16 +55,33 @@ rate_4_1yr <- rate_4_1yr |>
 ### Table of Contents ----
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)
-meg_review <- paste0("For review at QPMG in ", meg_month, " ", year_xx)
-note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
-                   " are released for data quality assurance and management ",
-                   "information purposes and should not be placed in the public ",
-                   "domain. The information can be shared locally with those who ",
-                   "have a legitimate need to review the data for quality assurance ",
-                   "or for managerial or operational purposes.")
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
+tab_vasc_desc <- paste0("Vascular KPIs background information: Vascular referral ", 
+                        "outcomes at ", extract_date, " ", year_ww)
+if(season == "spring"){
+  note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
+                     " are released for data quality assurance and management ",
+                     "information purposes and should not be placed in the public ",
+                     "domain. The information can be shared locally with those who ",
+                     "have a legitimate need to review the data for quality assurance ",
+                     "or for managerial or operational purposes.")
+} else {
+  if(season == "autumn"){
+    note_toc <- paste0("The data for the year ending 30 September ", year_xx, 
+                       " are released for data quality assurance and management ",
+                       "information purposes and should not be placed in the public ",
+                       "domain. The information can be shared locally with those who ",
+                       "have a legitimate need to review the data for quality assurance ",
+                       "or for managerial or operational purposes.")
+  }
+  else{
+    stop("Check your seasons!! Should be autumn or spring")
+  }
+}
 
 writeData(wb, "Table of Contents", pub_year, startRow = 3, startCol = 1)
 writeData(wb, "Table of Contents", qpmg_review, startRow = 4, startCol = 1)
+writeData(wb, "Table of Contents", tab_vasc_desc, startRow = 21, startCol = 2)
 writeData(wb, "Table of Contents", note_toc, startRow = 29, startCol = 1)
 
 
@@ -187,9 +204,9 @@ addStyle(wb, "KPI 4.2 Additional", style = orange_font, rows = 62, cols = 1)
 ### Table 7) Vascular referrals ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
-screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx)
+screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx, {supsc('p')})
 
-ending_year_cum <- paste0("Cumulative total from implementation to 31 March ", year_xx)
+ending_year_cum <- paste0("Cumulative total from implementation to 31 March ", year_xx, {supsc('p')})
 
 table_7_prov <- paste0("p  Provisional. Data for year ending 31 March ", year_xx,
                     " are for the 11-month period 1 April ", year_ww, " to 28 ",
@@ -204,7 +221,7 @@ writeData(wb, "7) Vascular referrals", table_7_prov, startRow = 15)
 
 ### Vascular KPIs background ----
 vasc_outcome_title <- paste0("Vascular KPIs background information: Vascular ",
-                             "referral outcomes at 1 March ", year_xx)
+                             "referral outcomes at 1 March ", year_xx, {supsc('1, 2')})
 vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year ",
                          "ending 31 March ", year_xx, " are for the 11-month ",
                          "period 1 April ", year_ww, " to 28 February ", year_xx,
@@ -221,7 +238,7 @@ addStyle(wb, "Vascular KPIs background", style = orange_font, rows = 43, cols = 
 
 ### 1-year mortality rates ----
 operations_title <- paste0("Operations in five-year period ", 
-                           kpi_4_1yr_tail$financial_year)
+                           kpi_4_1yr_tail$financial_year, {supsc('p')})
 
 note_mort <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
                     "for five-year rolling periods and are presented at Scotland ",
@@ -272,7 +289,7 @@ writeData(wb, "1, 3, 5-year mortality", note_prov, startRow = 14, startCol = 1)
 ### AAA Repairs ----
 ending_year_vv <- paste0("Year ending 31 March ", year_vv)
 ending_year_ww <- paste0("Year ending 31 March ", year_ww)
-ending_year_xx <- paste0("Year ending 31 March ", year_xx)
+ending_year_xx <- paste0("Year ending 31 March ", year_xx, {supsc('p')})
 
 writeData(wb, "AAA Repairs", ending_year_vv, startRow = 5, startCol = 2)
 writeData(wb, "AAA Repairs", ending_year_ww, startRow = 5, startCol = 5)
@@ -283,9 +300,9 @@ writeData(wb, "AAA Repairs", kpi_4_note_prov, startRow = 26, startCol = 1)
 ### Unfit for surgery ----
 refer_year_vv <- paste0("Referrals who were screened in year ending 31 March ", year_vv)
 refer_year_ww <- paste0("Referrals who were screened in year ending 31 March ", year_ww)
-refer_year_xx <- paste0("Referrals who were screened in year ending 31 March ", year_xx)
+refer_year_xx <- paste0("Referrals who were screened in year ending 31 March ", year_xx, {supsc('p')})
 refer_year_cum <- paste0("Cumulative total referrals who were screened from ",
-                         "implementation to 31 March ", year_xx)
+                         "implementation to 31 March ", year_xx, {supsc('p')})
 
 unfit_p <- paste0("p  Provisional. Data for the year ending 31 March ", year_xx, 
                   " are for the 11-month period 1 April ", year_ww, " to 28 February ",
@@ -311,7 +328,6 @@ unfit_year_cum5 <- paste0("Cumulative total for operations from implementation "
 writeData(wb, "Unfit for surgery follow-up", unfit_year_cum1, startRow = 4, startCol = 2)
 writeData(wb, "Unfit for surgery follow-up", unfit_year_cum3, startRow = 4, startCol = 5)
 writeData(wb, "Unfit for surgery follow-up", unfit_year_cum5, startRow = 4, startCol = 8)
-writeData(wb, "Unfit for surgery follow-up", note_cum, startRow = 24, startCol = 1)
 writeData(wb, "Unfit for surgery follow-up", note_cum, startRow = 24, startCol = 1)
 writeData(wb, "Unfit for surgery follow-up", note_prov, startRow = 26, startCol = 1)
 
