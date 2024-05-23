@@ -11,7 +11,7 @@
 
 ## Notes:
 # This script automates the titles and notes for each tab of the theme 4 Excel
-# workbook for each (spring/autumn) MEG. (Spring to be added in spring 2024!)
+# workbook for each (spring/autumn) QPMG. (Spring to be added in spring 2024!)
 
 
 #### 1: Housekeeping ----
@@ -55,7 +55,7 @@ rate_4_1yr <- rate_4_1yr |>
 ### Table of Contents ----
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+meg_review <- paste0("For review at QPMG in ", meg_month, " ", year_xx)
 note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
                    " are released for data quality assurance and management ",
                    "information purposes and should not be placed in the public ",
@@ -64,7 +64,7 @@ note_toc <- paste0("The data for the year ending 31 March ", year_xx,
                    "or for managerial or operational purposes.")
 
 writeData(wb, "Table of Contents", pub_year, startRow = 3, startCol = 1)
-writeData(wb, "Table of Contents", meg_review, startRow = 4, startCol = 1)
+writeData(wb, "Table of Contents", qpmg_review, startRow = 4, startCol = 1)
 writeData(wb, "Table of Contents", note_toc, startRow = 29, startCol = 1)
 
 

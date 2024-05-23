@@ -11,7 +11,7 @@
 
 ## Notes:
 # This script is only run in the autumn and uses AAA GP extract downloaded
-# from BOXI. The script can be run after the MEG has been convened.
+# from BOXI. The script can be run after the QPMG has been convened.
 
 
 ### Step 1 : load packages ----
@@ -29,7 +29,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, hist_path, output_path, simd_path, meg_month, extract_date,
+rm (exclusions_path, hist_path, output_path, simd_path, qpmg_month, extract_date,
     fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years, season,
     cut_off_date, cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)

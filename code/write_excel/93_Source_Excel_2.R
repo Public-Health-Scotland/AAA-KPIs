@@ -11,7 +11,7 @@
 
 ## Notes:
 # This script automates the titles and notes for each tab of the theme 2 Excel
-# workbook for each (spring/autumn) MEG.
+# workbook for each (spring/autumn) QPMG.
 
 ## Styles ----
 # bold black fonr used in some headers
@@ -69,7 +69,7 @@ pub_year <- paste0("Data for year ending 31 March ", year_xx,
                    " scheduled to be published in April ",  year_yy,
                    " (final data will be produced from data extracted for PHS in ",
                    "September ", year_xx, ").")
-meg_note <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_note <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 today <- paste0("Workbook created ", Sys.Date())
 
 ## TOC contents

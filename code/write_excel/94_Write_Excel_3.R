@@ -12,7 +12,7 @@
 ## Notes:
 # This script calls in the RDS file create in the 4_3_KPI_2.R script 
 # and transforms the data to print directly into the theme 3 Excel file for 
-# the autumn MEG.
+# the autumn QPMG.
 # 
 # Future work to be done to add spring printing out.
 
@@ -261,7 +261,7 @@ qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |>
 ### Setup workbook ---
 ## Notes & Headers
 today <- paste0("Workbook created ", Sys.Date())
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)

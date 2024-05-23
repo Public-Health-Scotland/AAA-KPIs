@@ -99,7 +99,7 @@ table_five <- theme_5 |>
 ### Setup workbook ---
 ## Notes and Headers
 today <- paste0("Workbook created ", Sys.Date())
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
 ## Seasonal
 if (season == "spring") {
@@ -172,7 +172,7 @@ rm(theme_5, temp_path)
 
 ## Table of Contents ---
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
-writeData(wb, "Table of Contents", meg_review, startRow = 4)
+writeData(wb, "Table of Contents", qpmg_review, startRow = 4)
 writeData(wb, "Table of Contents", report_type, startRow = 5)
 writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 16)

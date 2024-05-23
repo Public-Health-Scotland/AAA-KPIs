@@ -11,7 +11,7 @@
 
 
 ## Notes:
-# This script covers three parts of the theme 4 MEG report:
+# This script covers three parts of the theme 4 QPMG report:
 # - Table 7: Vascular Referrals
 # - Vascular Referral Outcomes
 # - AAA Repair Operations
@@ -34,7 +34,7 @@ gc()
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, hist_path, output_path, simd_path, hb_list, season,
-    cutoff_date, end_current, end_date, start_date, meg_month, extract_date,
+    cutoff_date, end_current, end_date, start_date, qpmg_month, extract_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 # list of result outcomes in custom order (99, 98, 97, 96 all newly assigned values)

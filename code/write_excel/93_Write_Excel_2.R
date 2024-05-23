@@ -12,7 +12,7 @@
 ## Notes:
 # This script calls in the 3_invite_attend_yyyymm.rds file create in the
 # 2_2_kpi_1_1-1_3_uptake_coverage.R script and transforms the data to print 
-# directly into the theme 2 Excel file for the MEG.
+# directly into the theme 2 Excel file for the QPMG.
 
 
 #### 1: Housekeeping ----
@@ -299,7 +299,7 @@ source(here::here(paste0("code/", season, "_write_excel/93_Source_Excel_2.R")))
 
 ### Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, startRow = 3)
-writeData(wb, sheet = "Table of Contents", meg_note, startRow = 4)
+writeData(wb, sheet = "Table of Contents", qpmg_note, startRow = 4)
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add, startRow = 12)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add_desc, startRow = 12,

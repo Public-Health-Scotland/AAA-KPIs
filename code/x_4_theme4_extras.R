@@ -10,18 +10,18 @@
 # - AAA size outcomes
 # - Vascular tracker update
 # - Deaths pre-surgical assessment
-# - MEG letters
+# - QPMG letters
 # 
 # Written/run on R Studio Server
 # R version 3.6.1
 ##########################################################
 
 
-##!! The portion of this that goes into the MEG workbook has been moved. The 
+##!! The portion of this that goes into the QPMG workbook has been moved. The 
 ## below is extra code that may have already been rewritten (to check quarterly
 ## extract for vascular tracker update) or needs to be checked if it still needs
-## to be included. Is the MEG reports the correct place for this? Or are they 
-## independent analyses that should sit outside the MEG reporting??
+## to be included. Is the QPMG reports the correct place for this? Or are they 
+## independent analyses that should sit outside the QPMG reporting??
 
 
 
@@ -75,7 +75,7 @@ resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07'
 ### A: Vascular Tracker Update ----
 # Extract details of non-final outcomes and other final outcomes to provide 
 # to NSD. This information is then tied into the vascular referral tracker
-# to inform the MEG of their latest status.
+# to inform the QPMG of their latest status.
 
 track <- vasc %>% 
   filter(result_size == 1) %>% 
@@ -108,14 +108,14 @@ mort <- vasc %>%
 write_rds(mort, paste0(wd_path, "/temp/4_mortalities_CHI.rds"))
 
 
-### C: CHIs for MEG Letters ----
+### C: CHIs for QPMG Letters ----
 # Extract CHI numbers for relevant vascular referrals
-# THIS IS RUN AFTER MEG DISCUSSION!
+# THIS IS RUN AFTER QPMG DISCUSSION!
 
 letter <- vasc %>%
   filter(result_size == 1)
 
-##!! Ask MEG what is actually needed in letters 
+##!! Ask QPMG what is actually needed in letters 
 
 # # From SPSS:
 # # Died before surgical assessment completed.
@@ -126,7 +126,7 @@ letter <- vasc %>%
 # # Other final outcome (result outcome = 20) in latest year.
 # filter(outcome_type = 2) | (financial_year == "2021/22" & result_outcome == "20")
 # 
-# # Nov2020 MEG: chi numbers needed for:
+# # Nov2020 QPMG: chi numbers needed for:
 # # (a) Other final outcome (result outcome = 20) in 2018/2019 and 2019/20
 # # (b) Ongoing assessment by vascular (result outcome=18 ) in 2018/19.
 # filter((financial_year %in% c("2018/19", "2019/20") & result_outcome == "20") |
