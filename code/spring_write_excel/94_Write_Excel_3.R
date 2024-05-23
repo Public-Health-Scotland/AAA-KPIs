@@ -191,8 +191,6 @@ qa_batch_scot <- theme_3 |>
 # Reason -- HBs
 qa_batch_hb <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Reason") |> 
-  # move Scotland to end of list
-  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
   select(hbres, FY_group, value)
@@ -212,14 +210,15 @@ qa_batch_hb <- qa_batch_hb %>%
   select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
+  # move Total (Scotland) to bottom to match Excel
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Total", after = Inf)) |> 
+  arrange(hbres) %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
 
 # Recall Advice
 qa_recall <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Recall Advice") |> 
-  # move Scotland to end of list
-  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
   select(hbres, FY_group, value)
@@ -239,6 +238,9 @@ qa_recall <- qa_recall %>%
   select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
+  # move Total (Scotland) to bottom to match Excel
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Total", after = Inf)) |> 
+  arrange(hbres) %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
 
