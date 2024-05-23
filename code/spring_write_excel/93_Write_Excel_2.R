@@ -81,9 +81,7 @@ if (season == "spring") {
     select(hbres, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.1_y2 <- theme2 |>
@@ -93,11 +91,8 @@ if (season == "spring") {
       select(hbres, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -140,9 +135,7 @@ if (season == "spring") {
     select(hbres, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.2a_y2 <- theme2 |>
@@ -152,11 +145,8 @@ if (season == "spring") {
       select(hbres, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -220,9 +210,7 @@ if (season == "spring") {
     select(hbres, simd, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.3a_y2 <- theme2 |>
@@ -233,11 +221,8 @@ if (season == "spring") {
       select(hbres, simd, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -389,14 +374,11 @@ writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
 if (season == "spring") {
   print("Carry on!")
 } else {
-  
   if (season == "autumn") {
     writeData(wb, sheet = "Coverage by 1 Sept",
               kpi_1.2a_sept, startRow = 7, colNames = FALSE)
   } else {
-    
     stop("Go check your calendar!")
-    
   }
 }
 
@@ -467,14 +449,11 @@ writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
 if (season == "spring") {
   print("Carry on!")
 } else {
-  
   if (season == "autumn") {
     writeData(wb, sheet = "Coverage by 1 Sept by SIMD",
               kpi_1.3a_sept, startRow = 7, colNames = FALSE)
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
