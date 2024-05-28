@@ -33,3 +33,4 @@ shiny app admin/
 *.[fF][sS][tT]
 # other files #
 scrap.R
+package_scrap.R
