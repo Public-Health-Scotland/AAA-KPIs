@@ -34,3 +34,4 @@ shiny app admin/
 # other files #
 scrap.R
 package_scrap.R
+parquet_conversion.R
