@@ -14,7 +14,7 @@
 ## Notes: 
 ## For KPI 3.2, numbers from published data may have minor revisions due 
 # to updates of the data recorded on the Scottish AAA Call-Recall System. 
-# Therefore, all KPI data is recalculated for each MEG.
+# Therefore, all KPI data is recalculated for each QPMG.
 
 ## From Sept 2023, KPI 3.2 now includes analysis by HB of surgery (in addition 
 # to HB of residence) as management information.
@@ -27,6 +27,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tidylog)
+library(svDialogs)
 
 
 rm(list = ls())
@@ -36,7 +37,7 @@ gc()
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, 
-    meg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
+    qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
     year1, year2, extract_date)
 
 
@@ -72,7 +73,7 @@ kpi_3_1 %>% count(seen)
 kpi_3_1 %>% count(screen_to_screen_group)
 
 
-# This section should be applied to the spring MEG run because vascular data for
+# This section should be applied to the spring QPMG run because vascular data for
 # the year end is not complete at that stage - it should not be run when
 # producing data for the complete year end from the September extract
 # these numbers get used in the provisional note of kpi 3.1 in theme 4 excel
@@ -221,7 +222,7 @@ kpi_3_2 %>% filter(is.na(date_surgery)) %>% count(result_outcome)
 kpi_3_2 <- kpi_3_2 %>% 
   filter(screen_to_surgery >= 0 | is.na(screen_to_surgery))
 
-# This section should be applied to the spring MEG run because vascular data for
+# This section should be applied to the spring QPMG run because vascular data for
 # the year end is not complete at that stage - it should not be run when
 # producing data for the complete year end from the September extract
 ##!! How/Where is this used??

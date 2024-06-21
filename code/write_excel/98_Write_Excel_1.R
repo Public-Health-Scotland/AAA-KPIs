@@ -20,8 +20,6 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
-library
-
 
 rm(list=ls())
 gc()
@@ -115,7 +113,7 @@ wb <- loadWorkbook(paste0(template_path, "/1_Scotland KPI Summary_", season, ".x
 
 # Notes and headers
 today <- paste0("Workbook created ", Sys.Date())
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 data_header <- paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
                       "be published in April ", year_yy, " (final data will be ",
                       "produced from data extracted for PHS in September ",
@@ -214,7 +212,7 @@ white_font <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
 
 # Data Notes
 writeData(wb, "Data Notes", data_header, startRow = 2)
-writeData(wb, "Data Notes", meg_review, startRow = 3)
+writeData(wb, "Data Notes", qpmg_review, startRow = 3)
 addStyle(wb, "Data Notes", bold_black_font, rows = 3, cols = 1)
 writeData(wb, "Data Notes", today, startRow = 5)
 
@@ -245,7 +243,7 @@ showGridLines(wb, "Data Notes", showGridLines = FALSE)
 
 # Scotland Summary
 writeData(wb, "Scotland Summary", data_header, startRow = 2)
-writeData(wb, "Scotland Summary", meg_review, startRow = 3)
+writeData(wb, "Scotland Summary", qpmg_review, startRow = 3)
 addStyle(wb, "Scotland Summary", bold_black_font, rows = 3, cols = 1)
 writeData(wb, "Scotland Summary", today, startRow = 5)
 

@@ -43,6 +43,7 @@ library(phsmethods)
 library(stringr)
 library(forcats)
 library(tidylog)
+library(svDialogs)
 
 rm(list = ls())
 gc()
@@ -50,7 +51,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, extract_path, output_path, fy_tibble, meg_month,
+rm (exclusions_path, extract_path, output_path, fy_tibble, qpmg_month,
     cut_off_date, cutoff_date, end_current, end_date, start_date, extract_date)
 
 # SIMD levels
@@ -265,7 +266,7 @@ rm(pc_simd, simd_path)
 
 
 ##!! Is it possible to add KPI 1.2a/b prisoners??
-## (KPI1.2a/b prisoners is fall MEG only)
+## (KPI1.2a/b prisoners is fall QPMG only)
 
 
 
@@ -306,7 +307,7 @@ kpi_1_1<- kpi_1_1 |>
          coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
   select(hbres, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
          coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
-         offer_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         offer_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_1 <- kpi_1_1 |> 
@@ -361,7 +362,7 @@ kpi_1_1_simd <- kpi_1_1_simd  |>
          coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
   select(hbres, simd, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
          coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
-         offer_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         offer_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_1_simd <- kpi_1_1_simd |> 
@@ -395,7 +396,7 @@ kpi_1_2a <- kpi_1_2a  |>
          coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
   select(hbres, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
          coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
-         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_2a <- kpi_1_2a |> 
@@ -482,7 +483,7 @@ kpi_1_3a <- kpi_1_3a  |>
          coverage_add_year2 = (test_a_add_year2/cohort_year2)*100) |> 
   select(hbres, simd, cohort_year1, test_a_year1, coverage_year1, test_a_add_year1,
          coverage_add_year1, cohort_year2, test_a_year2, coverage_year2,
-         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall MEG
+         test_a_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
 
 # Reformat to match historical data
 kpi_1_3a <- kpi_1_3a |> 

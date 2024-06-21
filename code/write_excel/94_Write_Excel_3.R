@@ -12,7 +12,7 @@
 ## Notes:
 # This script calls in the RDS file create in the 4_3_KPI_2.R script 
 # and transforms the data to print directly into the theme 3 Excel file for 
-# the autumn MEG.
+# the autumn QPMG.
 # 
 # Future work to be done to add spring printing out.
 
@@ -191,8 +191,6 @@ qa_batch_scot <- theme_3 |>
 # Reason -- HBs
 qa_batch_hb <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Reason") |> 
-  # move Scotland to end of list
-  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
   select(hbres, FY_group, value)
@@ -212,14 +210,15 @@ qa_batch_hb <- qa_batch_hb %>%
   select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
+  # move Total (Scotland) to bottom to match Excel
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Total", after = Inf)) |> 
+  arrange(hbres) %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
 
 # Recall Advice
 qa_recall <- theme_3 |> 
   filter(kpi == "QA Batch standard not met: Recall Advice") |> 
-  # move Scotland to end of list
-  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Scotland", after = Inf)) |> 
   arrange(hbres, fin_year) |> 
   mutate(FY_group = paste(fin_year, group, sep = "_")) |> 
   select(hbres, FY_group, value)
@@ -239,6 +238,9 @@ qa_recall <- qa_recall %>%
   select(-count) %>% 
   # match Excel tables
   pivot_wider(names_from = FY_group, values_from = value) %>% 
+  # move Total (Scotland) to bottom to match Excel
+  mutate(hbres = forcats::fct_relevel(as.factor(hbres), "Total", after = Inf)) |> 
+  arrange(hbres) %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
 
@@ -259,7 +261,7 @@ qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |>
 ### Setup workbook ---
 ## Notes & Headers
 today <- paste0("Workbook created ", Sys.Date())
-meg_review <- paste0("For review at MEG in ", meg_month, " ", year_xx)
+qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)

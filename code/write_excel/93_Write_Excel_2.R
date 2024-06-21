@@ -12,7 +12,7 @@
 ## Notes:
 # This script calls in the 3_invite_attend_yyyymm.rds file create in the
 # 2_2_kpi_1_1-1_3_uptake_coverage.R script and transforms the data to print 
-# directly into the theme 2 Excel file for the MEG.
+# directly into the theme 2 Excel file for the QPMG.
 
 
 #### 1: Housekeeping ----
@@ -81,9 +81,7 @@ if (season == "spring") {
     select(hbres, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.1_y2 <- theme2 |>
@@ -93,11 +91,8 @@ if (season == "spring") {
       select(hbres, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -140,9 +135,7 @@ if (season == "spring") {
     select(hbres, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.2a_y2 <- theme2 |>
@@ -152,11 +145,8 @@ if (season == "spring") {
       select(hbres, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -220,9 +210,7 @@ if (season == "spring") {
     select(hbres, simd, FY_kpi_group, value) |>
     # match Excel output
     pivot_wider(names_from = FY_kpi_group, values_from = value)
-  
 } else {
-  
   if (season == "autumn") {
     # Data for currently active year and extended coverage to 1 Sept
     kpi_1.3a_y2 <- theme2 |>
@@ -233,11 +221,8 @@ if (season == "spring") {
       select(hbres, simd, FY_kpi_group, value) |>
       # match Excel output
       pivot_wider(names_from = FY_kpi_group, values_from = value)
-    
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -314,7 +299,7 @@ source(here::here(paste0("code/", season, "_write_excel/93_Source_Excel_2.R")))
 
 ### Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, startRow = 3)
-writeData(wb, sheet = "Table of Contents", meg_note, startRow = 4)
+writeData(wb, sheet = "Table of Contents", qpmg_note, startRow = 4)
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add, startRow = 12)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add_desc, startRow = 12,
@@ -389,14 +374,11 @@ writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
 if (season == "spring") {
   print("Carry on!")
 } else {
-  
   if (season == "autumn") {
     writeData(wb, sheet = "Coverage by 1 Sept",
               kpi_1.2a_sept, startRow = 7, colNames = FALSE)
   } else {
-    
     stop("Go check your calendar!")
-    
   }
 }
 
@@ -412,15 +394,15 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
           kpi_1.2a_y2, startRow = 9, colNames = FALSE)
 
 ### KPI 1.3a Additional (20XX-YY) ----
-writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 31,
+writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 32,
           startCol = 2)
 
 showGridLines(wb, "KPI 1.2a Additional (20XX-YY)", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_add_note1, startRow = 26)
 addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = orange_font, rows = 26, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
-          kpi_1.3a_y2, startRow = 34, startCol = 2, colNames = FALSE)
-names(wb)[[6]] <- paste0("KPI 1.3a Additional (", year2, ")")
+          kpi_1.3a_y2, startRow = 35, startCol = 2, colNames = FALSE)
+names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
 
 ### KPI 1.2b ----
 
@@ -467,14 +449,11 @@ writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
 if (season == "spring") {
   print("Carry on!")
 } else {
-  
   if (season == "autumn") {
     writeData(wb, sheet = "Coverage by 1 Sept by SIMD",
               kpi_1.3a_sept, startRow = 7, colNames = FALSE)
   } else {
-    
-    print("Go check your calendar!")
-    
+    stop("Go check your calendar!")
   }
 }
 
@@ -511,9 +490,7 @@ writeData(wb, sheet = "KPI 1.3b", kpi_1.3b, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head1, startRow = 4,
           startCol = 2)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head2, startRow = 4,
-          startCol = 4)
-writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head3, startRow = 4,
-          startCol = 6)
+          startCol = 5)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head3, startRow = 4,
           startCol = 8)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_note1, startRow = 30, colNames = FALSE)
@@ -524,9 +501,7 @@ writeData(wb, sheet = "KPI 1.4a", kpi_1.4a, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head1, startRow = 4,
           startCol = 2)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2, startRow = 4,
-          startCol = 4)
-writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, startRow = 4,
-          startCol = 6)
+          startCol = 5)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, startRow = 4,
           startCol = 8)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4a_note1, startRow = 30, colNames = FALSE)

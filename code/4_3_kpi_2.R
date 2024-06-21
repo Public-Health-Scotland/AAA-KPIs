@@ -3,7 +3,7 @@
 # Gavin Clark & Karen Hotopp
 # 19/10/2022
 #
-# Processing data for Theme 3 workbook of AAA KPIs for MEG
+# Processing data for Theme 3 workbook of AAA KPIs for QPMG
 # KPI 2: Quality Assurance and Audit of Scans
 #
 # Written/run on R Studio Server, R version 3.6.1
@@ -22,6 +22,7 @@ library(forcats)
 library(stringr)
 library(tidylog)
 library(tidyr)
+library(svDialogs)
 
 
 rm(list = ls())
@@ -31,7 +32,7 @@ gc()
 source(here::here("code/0_housekeeping.R"))
 
 rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble,
-    meg_month, cut_off_date, cutoff_date, year1_end, year1_start, year2_end, 
+    qpmg_month, cut_off_date, cutoff_date, year1_end, year1_start, year2_end, 
     year2_start, year1, year2, extract_date)
 
 # Cover base file location

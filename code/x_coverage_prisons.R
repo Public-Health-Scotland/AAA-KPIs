@@ -135,7 +135,7 @@ practice_history <- practice_history |>
 
 
 ### 3 - Match screening data ----
-#read in invite and uptake rates file created for recent MEG report (this file is one record
+#read in invite and uptake rates file created for recent QPMG report (this file is one record
 #per UPI with the date of their first invite and the scrn_date they were first 'tested')
 #men_screened <- 
 invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))

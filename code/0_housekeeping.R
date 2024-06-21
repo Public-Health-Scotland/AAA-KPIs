@@ -26,8 +26,8 @@ season <- "spring" # options are "spring" or "autumn"
 # format: date + month e.g. 1 September
 extract_date <- "7 March"
 
-# month in which MEG is planned
-meg_month <- "April"
+# month in which QPMG is planned
+qpmg_month <- "April"
 
 
 ### UPDATE THESE IN THE SPRING ONLY ###

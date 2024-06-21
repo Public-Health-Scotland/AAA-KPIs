@@ -13,8 +13,17 @@
 # This script automates the titles and notes for each tab of the theme 2 Excel
 # workbook for each (spring/autumn) QPMG.
 
+<<<<<<< HEAD
 ## Styles ----
 
+||||||| 578ef81
+## General notes
+
+# current reporting year - used for additional management info
+year2 <- gsub("/", "-", year2)
+=======
+## Styles ----
+>>>>>>> main
 # bold black fonr used in some headers
 bold_black_style_header <- createStyle(fontSize = 14, fontName = "Arial",
                                        textDecoration = "bold", fontColour = "#000000")
@@ -74,6 +83,7 @@ pub_year <- paste0("Data for year ending 31 March ", year_xx,
                    "September ", year_xx, ").")
 
 qpmg_note <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
+
 today <- paste0("Workbook created ", Sys.Date())
 
 ## TOC contents
@@ -268,7 +278,6 @@ table6_head2 <- paste0("Screened in year ending 31 March",  '\n',
                        year_ww)
 table6_head3 <- paste0("Screened from 1 April ", year_ww, " - 28",
                        '\n', "February ", year_xx)
-
 
 ### DNA Exclusions Notes ----
 ## footnotes 
