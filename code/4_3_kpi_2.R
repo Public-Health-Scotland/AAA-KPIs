@@ -181,6 +181,36 @@ kpi_2_1b <- bind_rows(kpi_2_1b_scotland, kpi_2_1b_hb) %>%
 
 rm(kpi_2_1b_hb, kpi_2_1b_scotland)
 
+#### KPI 2.1b by Scotland SIMD ----
+
+
+kpi_2_1b_hb_simd <- extract2_dedup_hb %>%
+  group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>%
+  summarise(non_vis_n = sum(non_vis_n),
+            screen_n = sum(screened_n)) %>%
+  ungroup()
+
+kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
+  mutate(hb_screen = "Scotland") %>%
+  group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>% 
+  summarise(non_vis_n = sum(non_vis_n),
+            screen_n = sum(screened_n)) %>%
+  ungroup()
+
+kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+         kpi = "KPI 2.1b",
+         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
+  select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
+  pivot_longer(!hb_screen:simd, 
+               names_to = "group", values_to = "value") |> 
+  arrange(hb_screen, group, simd)
+
+rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
+
+
+
 #### KPI 2.1b device comparison (dc) ----
 # includes additional grouping by "new" or "old" device
 
@@ -1115,10 +1145,11 @@ if (user_in == "yes"){
 }
 
 ## Save data block
-user_in <- dlgInput("Do you want to save the KPI 2 device comparison output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+user_in <- dlgInput("Do you want to save the KPI 2.1b SIMD and KPI 2 device comparison output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
 
 if (user_in == "yes"){
   write_rds(kpi_2_dc, paste0(temp_path, "/3_1_kpi_2_dc_", yymm, ".rds"))
+  write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_1_kpi_2_1b_simd_", yymm, ".rds"))
 } else {
   if (user_in == "no"){
     print("No output saved, carry on")
