@@ -618,7 +618,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 
 ## Current report output ----
 ## Add new records onto full database
-report_db <- bind_rows(hist_db, kpi_summary)
+report_db <- phsaaa::add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
 table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
