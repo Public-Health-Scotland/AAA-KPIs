@@ -20,6 +20,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
+library(phsaaa)
 
 rm(list=ls())
 gc()
@@ -83,14 +84,11 @@ kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |>
   # match Excel tables
   pivot_wider(names_from = financial_year, values_from = value)
 
-
-
-
 ## Save out files to use in publication
-write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
-write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
-write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
-write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 
 
 ### AMC additions below:
