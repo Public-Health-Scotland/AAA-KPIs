@@ -26,6 +26,7 @@ library(janitor)
 library(forcats)
 library(tidylog)
 library(svDialogs)
+library(phsaaa)
 
 rm(list = ls())
 gc()
@@ -114,18 +115,9 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+phsaaa::query_write_rds(vascular_referral_count,
+                        paste0(temp_path, "/4_5_vasc_referrals_", yymm, ".rds"))
 
-if (user_in == "yes"){
-  write_rds(vascular_referral_count, paste0(temp_path, "/4_5_vasc_referrals_", 
-                                            yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
 rm(vascular_referral_count, aaa_extract)
 
 
@@ -305,17 +297,8 @@ annual_less <- resout_list |>
 ## Combine annual totals ----
 annual <- rbind(annual_great, annual_less)
 
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+phsaaa::query_write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
 
-if (user_in == "yes"){
-  write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
 
@@ -456,22 +439,10 @@ repairs_cum <- repairs_all %>%
   ungroup() %>% 
   mutate(fy_surgery = "Cumulative", .after = hbres)
 
-repairs_current <- rbind(repairs_current, repairs_cum)
+repairs_current <- phsaaa::add_new_rows(
+  repairs_current, repairs_cum, fy_surgery, surg_method)
 
 repairs_current <- hb_tibble |> 
   left_join(repairs_current, by = "hbres") 
 
-
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
-
+phsaaa::query_write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
