@@ -167,29 +167,26 @@ extract_note4 <- paste0(year_vv, "/", substr(year_ww, 3,4))
 extract_note5 <- paste0(year_ww, "/", substr(year_xx, 3,4))
 extract_note6 <- paste0(extract_date, " ", year_xx)
 
-cohort_date1.1 <- as.character(as.numeric(year_uu)-66)
-cohort_date1.2 <- as.character(as.numeric(year_uu)-65)
-cohort_note1.1 <- paste0("Born 1 April ", cohort_date1.1, " to 31 March ",
-                         cohort_date1.2)
+cohort_note1.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_uu)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_uu)-65))
 cohort_note1.2 <- paste0("Year ending 31 March ", year_uu)
 cohort_note1.3 <- paste0("Year ending 31 March ", year_vv)
 
-cohort_date2.1 <- as.character(as.numeric(year_vv)-66)
-cohort_date2.2 <- as.character(as.numeric(year_vv)-65)
-cohort_note2.1 <- paste0("Born 1 April ", cohort_date2.1, " to 31 March ",
-                         cohort_date2.2)
+cohort_note2.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_vv)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_vv)-65))
 cohort_note2.2 <- paste0("Year ending 31 March ", year_vv)
 cohort_note2.3 <- paste0("Year ending 31 March ", year_ww)
 
-cohort_date3.1 <- as.character(as.numeric(year_ww)-66)
-cohort_date3.2 <- as.character(as.numeric(year_ww)-65)
-cohort_note3.1 <- paste0("Born 1 April ", cohort_date3.1, " to 31 March ",
-                         cohort_date3.2)
+cohort_note3.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_ww)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_ww)-65))
 cohort_note3.2 <- paste0("Year ending 31 March ", year_ww)
 cohort_note3.3 <- paste0("Year ending 31 March ", year_xx)
-
-rm(cohort_date1.1, cohort_date1.2, cohort_date2.1, cohort_date2.2, cohort_date3.1,
-   cohort_date3.2)
 
 summary_note1 <- paste0("r  Data are revised since published on ",
                         "[publication date [20XX]] ", year_xx, ". For KPI 3.1, ",
