@@ -28,7 +28,7 @@ library(forcats)
 library(janitor)
 library(stringr)
 library(tidylog)
-library(phsaaa)
+library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list = ls())

@@ -25,7 +25,7 @@ pacman::p_load(
   readr,
   tidylog,
   svDialogs,
-  phsaaa
+  phsaaa # to install: devtools::install_github("aoifem01/phsaaa")
 )
 
 rm(list = ls())
