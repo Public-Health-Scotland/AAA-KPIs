@@ -325,10 +325,6 @@ writeData(wb, sheet = "KPI 1.1", turn66_year_ww,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 1.1", turn66_year_xx,
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 1.1", kpi_1.1_head_mgmt,
-          startRow = 5, startCol = 11)
-addStyle(wb, sheet = "KPI 1.1", style = blue_12, 
-         rows = 5, cols = 11)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.1", kpi_1.1_notep, startRow = 29)
   }

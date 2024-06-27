@@ -130,10 +130,6 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 1.1 notes ----
-## headings
-kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, 
-                            '\n', "includes men offered screening after", '\n',
-                            "66th birthday)")
 
 ## footnotes
 
