@@ -13,17 +13,8 @@
 # This script automates the titles and notes for each tab of the theme 2 Excel
 # workbook for each (spring/autumn) QPMG.
 
-<<<<<<< HEAD
 ## Styles ----
 
-||||||| 578ef81
-## General notes
-
-# current reporting year - used for additional management info
-year2 <- gsub("/", "-", year2)
-=======
-## Styles ----
->>>>>>> main
 # bold black fonr used in some headers
 bold_black_style_header <- createStyle(fontSize = 14, fontName = "Arial",
                                        textDecoration = "bold", fontColour = "#000000")
