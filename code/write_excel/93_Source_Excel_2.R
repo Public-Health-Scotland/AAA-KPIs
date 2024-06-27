@@ -68,7 +68,7 @@ add_performance_note <- paste0("Performance against the KPI thresholds for this 
                                "from the PHS data extract at 1 September ",
                                year_yy, ".")
 
-prov_data_note <- paste0("1. Data for year ending 31 March ", year_xx,
+prov_data_note <- paste0("p Data for year ending 31 March ", year_xx,
                          " are provisional: some men in this cohort had not ",
                          "reached age 66 and 3 months by the date of the PHS ",
                          "extract on ", extract_date, " ", year_xx, " (the ",
@@ -197,12 +197,8 @@ kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage,
 
 ## KPI 1.2a Notes ----
 ### table headers ----
-kpi_1.2a_head1 <- eval_seasonal_diff(
-  {paste0("Tested before 1 March ", year_xx, '\n',  " (includes men ",
-          "tested after age 66", '\n', " and 3 months)")}, # spring
-  {kpi_1.2a_head1 <- paste0("Tested before 1 September ", year_xx, '\n',  " (includes men ",
-                            "tested after age 66", '\n', " and 3 months)") } # autumn
-)
+kpi_1.2a_head_mgmt <- paste0("Tested before ", extract_date, " ", year_xx,
+                         " (includes men tested after age 66 and 3 months)")
 
 # autumn only
 ## KPI 1.2a Coverage by 1 Sept notes ----

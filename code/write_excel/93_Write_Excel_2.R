@@ -384,9 +384,13 @@ writeData(wb, sheet = "KPI 1.2a", turn66_year_ww, startRow = 4,
           startCol = 5)
 writeData(wb, sheet = "KPI 1.2a", turn66_year_xx, startRow = 4,
           startCol = 8)
-writeData(wb, sheet = "KPI 1.2a", kpi_1.2a_head1, startRow = 5,
+writeData(wb, sheet = "KPI 1.2a", kpi_1.2a_head_mgmt, startRow = 5,
           startCol = 11)
-writeData(wb, sheet = "KPI 1.2a", prov_data_note, startRow = 30, colNames = FALSE)
+addStyle(wb, "KPI 1.2a", style = blue_12, 
+         rows = 5, cols = 11)
+if(season == "spring") {
+  writeData(wb, sheet = "KPI 1.2a", prov_data_note, startRow = 30, colNames = FALSE)
+}
 showGridLines(wb, "KPI 1.2a", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2a", kpi_1.2a, startRow = 7, colNames = FALSE)
 
