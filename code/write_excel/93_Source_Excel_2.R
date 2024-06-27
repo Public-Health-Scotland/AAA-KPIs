@@ -214,7 +214,7 @@ if (season == "autumn"){
 
 ## KPI 1.2a Additional (20XX-YY) Notes ----
 ### footnotes ----
-kpi_1.2a_add_note2 <- paste0("2. Some men in this cohort have not reached age ",
+kpi_1.2a_add_note2 <- paste0("2. Some individuals in this cohort have not reached age ",
                              "66 and 3 months yet. The oldest men in the cohort ",
                              "will reach this age on 1 July ", year_xx, 
                              " and the youngest men in the cohort will reach ",
