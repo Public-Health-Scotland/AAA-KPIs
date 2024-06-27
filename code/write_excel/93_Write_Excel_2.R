@@ -441,15 +441,19 @@ names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
 
 ### KPI 1.2b ----
 
-writeData(wb, sheet = "KPI 1.2b", turn66_year_vv, startRow = 4,
-          startCol = 2)
-writeData(wb, sheet = "KPI 1.2b", turn66_year_ww, startRow = 4,
-          startCol = 5)
-writeData(wb, sheet = "KPI 1.2b", turn66_year_xx, startRow = 4,
-          startCol = 8)
-writeData(wb, sheet = "KPI 1.2b", prov_data_note, startRow = 30, colNames = FALSE)
+writeData(wb, sheet = "KPI 1.2b", turn66_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 1.2b", turn66_year_ww, 
+          startRow = 4, startCol = 5)
+writeData(wb, sheet = "KPI 1.2b", turn66_year_xx, 
+          startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 1.2b", kpi_1.2b, 
+          startRow = 7, colNames = FALSE)
+if(season == "spring") {
+  writeData(wb, sheet = "KPI 1.2b", prov_data_note, 
+            startRow = 30, colNames = FALSE)
+}
 showGridLines(wb, "KPI 1.2b", showGridLines = FALSE)
-writeData(wb, sheet = "KPI 1.2b", kpi_1.2b, startRow = 7, colNames = FALSE)
 
 ### KPI 1.2b Additional (20YY-YY) ----
 
@@ -474,9 +478,14 @@ writeData(wb, sheet = "KPI 1.3a", turn66_year_ww, startRow = 4,
           startCol = 6)
 writeData(wb, sheet = "KPI 1.3a", turn66_year_xx, startRow = 4,
           startCol = 9)
+writeData(wb, sheet = "KPI 1.3a", kpi_1.2a_head_mgmt, 
+          startRow = 5, startCol = 12)
+addStyle(wb, "KPI 1.3a", style = blue_12, 
+         rows = 5, cols = 12)
+writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 1.3a", prov_data_note, startRow = 120, colNames = FALSE)
 showGridLines(wb, "KPI 1.3a", showGridLines = FALSE)
-writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, startRow = 7, colNames = FALSE)
+
 
 # autumn only
 ### KPI 1.3a Coverage by 1 Sept by SIMD ----
