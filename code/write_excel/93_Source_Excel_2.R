@@ -29,15 +29,15 @@ eval_seasonal_diff <- function(expr_spring, expr_autumn) {
 ## Styles ----
 
 # bold black fonr used in some headers
-bold_black_style_header <- createStyle(fontSize = 14, fontName = "Arial",
-                                       textDecoration = "bold", fontColour = "#000000")
+bold_black_14 <- createStyle(fontSize = 14, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold")
 # orange style for notes needing manual contribution
-orange_font <- createStyle(fontSize = 11, fontName = "Arial", 
+orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
                            fontColour = "#ff9f00", wrapText = TRUE)
 # red performance font 
-add_performance_style <- createStyle(fontSize = 12,  fontColour = "#FF0000", 
-                                     fontName = "Arial", textDecoration = c("bold"),
-                                     wrapText = TRUE)
+bold_red_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
+                           fontName = "Arial", textDecoration = c("bold"),
+                           wrapText = TRUE)
 
 ## General notes ----
 # current reporting year - used for additional management info
@@ -81,13 +81,16 @@ prov_data_note <- paste0("1. Data for year ending 31 March ", year_xx,
 ## Table of Contents notes ----
 
 ## sheet headings
-pub_year <- paste0("Data for year ending 31 March ", year_xx,
-                   " scheduled to be published in April ",  year_yy,
-                   " (final data will be produced from data extracted for PHS in ",
-                   "September ", year_xx, ").")
-
+pub_year <- eval_seasonal_diff(
+  {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
+          "be published in April ", year_yy, " (final data will be ",
+          "produced from data extracted for PHS in September ",
+          year_xx, ").")}, #spring
+  {paste0("KPI data for year ending 31 March ", year_xx, 
+          " and some supplementary information are planned ",
+          "for publication in March ", year_yy, ".")} # autumn
+)
 qpmg_note <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
-
 today <- paste0("Workbook created ", Sys.Date())
 
 ## TOC contents
@@ -96,11 +99,13 @@ tab_1.1_add_desc <- paste0("Percentage of eligible population who are sent an ",
                            "initial offer to screening before age 66: work-in-progress ",
                            "position for men reaching age 66 in year ending 31 March ", 
                            year_yy)
+line_no_tab_1.2a_add <- eval_seasonal_diff({15}, {16})
 tab_1.2a_add <- paste0("1.2a Additional (", year2, ")")
 tab_1.2_add_desc <- paste0("Percentage of eligible population who are tested ",
                            "before age 66 and 3 months: work-in-progress ",
                            "position for men reaching age 66 in year ending ",
                            "31 March ", year_yy)
+line_no_tab_1.2b_add <- eval_seasonal_diff({17}, {18})
 tab_1.2b_add <- paste0("1.2b (uptake) Additional (", year2, ")")
 tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 ",
                             "who are tested before age 66 and 3 months: ",
@@ -108,12 +113,18 @@ tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 "
                             "in year ending 31 March ", year_yy)
 
 ## footnotes
-note_toc <- paste0("The provisional/partial data for the year ending 31 March ", 
-                   year_xx, " are released for data quality assurance and ",
-                   "management information purposes and should not be placed in ",
-                   "the public domain. The information can be shared locally with ",
-                   "those who have a legitimate need to review the data for ",
-                   "quality assurance, managerial or operational purposes.")
+line_no_note_toc <- eval_seasonal_diff({26},{30})
+note_toc_data <- eval_seasonal_diff(
+  {"The provisional/partial "}, # spring version,
+  {"The "} # autumn version
+)
+note_toc <- paste0(note_toc_data, "data for the year ending 31 March ", 
+            year_xx, " are released for data quality assurance and ",
+            "management information purposes and should not be placed in ",
+            "the public domain. The information can be shared locally with ",
+             "those who have a legitimate need to review the data for ",
+             "quality assurance, managerial or operational purposes.")
+rm(note_toc_data)
 
 ## KPI 1.1 notes ----
 ## footnotes - spring only

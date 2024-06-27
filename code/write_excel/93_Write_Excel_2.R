@@ -298,16 +298,21 @@ writeData(wb, sheet = "Table of Contents", pub_year, startRow = 3)
 writeData(wb, sheet = "Table of Contents", qpmg_note, startRow = 4)
 writeData(wb, sheet = "Table of Contents", today, startRow = 6)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add, startRow = 12)
-writeData(wb, sheet = "Table of Contents", tab_1.1_add_desc, startRow = 12,
-          startCol = 2)
-writeData(wb, sheet = "Table of Contents", tab_1.2a_add, startRow = 15)
-writeData(wb, sheet = "Table of Contents", tab_1.2_add_desc, startRow = 15,
-          startCol = 2)
-writeData(wb, sheet = "Table of Contents", tab_1.2b_add, startRow = 17)
-writeData(wb, sheet = "Table of Contents", tab_1.2b_add_desc, startRow = 17,
-          startCol = 2)
-writeData(wb, sheet = "Table of Contents", note_toc, startRow = 26)
-addStyle(wb, "Table of Contents", style = add_performance_style, rows = 26, cols = 1)
+writeData(wb, sheet = "Table of Contents", tab_1.1_add_desc, 
+          startRow = 12, startCol = 2)
+writeData(wb, sheet = "Table of Contents", tab_1.2a_add, 
+          startRow = line_no_tab_1.2a_add)
+writeData(wb, sheet = "Table of Contents", tab_1.2_add_desc, 
+          startRow = line_no_tab_1.2a_add, startCol = 2)
+writeData(wb, sheet = "Table of Contents", tab_1.2b_add, 
+          startRow = line_no_tab_1.2b_add)
+writeData(wb, sheet = "Table of Contents", tab_1.2b_add_desc, 
+          startRow = line_no_tab_1.2b_add, startCol = 2)
+
+writeData(wb, sheet = "Table of Contents", note_toc,
+          startRow = line_no_note_toc)
+addStyle(wb, "Table of Contents", style = bold_red_12, 
+         rows = line_no_note_toc, cols = 1)
 
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
@@ -326,17 +331,23 @@ showGridLines(wb, "KPI 1.1", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, startRow = 7, colNames = FALSE)
 
 ### KPI 1.1 Additional (20YY-YY) ----
-writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_cohort_note, startRow = 3)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_black_style_header, rows = 3, cols = 1)
-writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_performance_note, startRow = 4)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = add_performance_style, rows = 4, cols = 1)
-writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", turn66_year_yy, startRow = 6,
-          startCol = 2)
-writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_add_note1, startRow = 31)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = orange_font, rows = 31, cols = 1)
+writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_cohort_note, 
+          startRow = 3)
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_black_14, 
+         rows = 3, cols = 1)
+writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_performance_note, 
+          startRow = 4)
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_red_12, 
+         rows = 4, cols = 1)
+writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", turn66_year_yy, 
+          startRow = 6, startCol = 2)
+writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_add_note1,
+          startRow = 31)
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = orange_11,
+         rows = 31, cols = 1)
 showGridLines(wb, "KPI 1.1 Additional (20XX-YY)", showGridLines = FALSE)
-writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", 
-          kpi_1.1_y2, startRow = 9, colNames = FALSE)
+writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_y2, 
+          startRow = 9, colNames = FALSE)
 names(wb)[[3]] <- paste0("KPI 1.1 Additional (", year2, ")")
 
 ### KPI 1.1 SIMD ----
@@ -375,9 +386,9 @@ eval_seasonal_diff(
 
 ### KPI 1.2a Additional (20XX-YY) ----
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_cohort_note, startRow = 3)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = bold_black_style_header, rows = 3, cols = 1)
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = bold_black_14, rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_performance_note, startRow = 4)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = add_performance_style, rows = 4, cols = 1)
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = bold_red_12, rows = 4, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 6,
           startCol = 2)
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_add_note2, startRow = 27)
@@ -390,7 +401,7 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow 
 
 showGridLines(wb, "KPI 1.2a Additional (20XX-YY)", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_add_note1, startRow = 26)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = orange_font, rows = 26, cols = 1)
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = orange_11, rows = 26, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)",
           kpi_1.3a_y2, startRow = 35, startCol = 2, colNames = FALSE)
 names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
@@ -410,13 +421,13 @@ writeData(wb, sheet = "KPI 1.2b", kpi_1.2b, startRow = 7, colNames = FALSE)
 ### KPI 1.2b Additional (20YY-YY) ----
 
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_cohort_note, startRow = 3)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = bold_black_style_header, rows = 3, cols = 1)
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = bold_black_14, rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_performance_note, startRow = 4)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = add_performance_style, rows = 4, cols = 1)
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = bold_red_12, rows = 4, cols = 1)
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", turn66_year_yy, startRow = 6,
           startCol = 2)
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", kpi_1.2badd_foot, startRow = 31)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", orange_font, rows = 31, cols = 1)
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", orange_11, rows = 31, cols = 1)
 showGridLines(wb, "KPI 1.2b Additional (20XX-YY)", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", 
           kpi_1.2b_y2, startRow = 9, colNames = FALSE)
