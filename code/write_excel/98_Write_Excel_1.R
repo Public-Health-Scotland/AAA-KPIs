@@ -44,7 +44,7 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 ## Functions
 
-# this should go into phsaaa!!
+# this has been included in phsaaa - migrate over after this PR
 eval_seasonal_diff <- function(expr_spring, expr_autumn) {
   if (season == "spring") {
     eval(substitute(expr_spring), envir = .GlobalEnv)
