@@ -591,16 +591,24 @@ writeData(wb, sheet = "6) Surveillance", table6_head2,
           startRow = 6, startCol = 4)
 writeData(wb, sheet = "6) Surveillance", table6_head3, 
           startRow = 6, startCol = 6)
-showGridLines(wb, "6) Surveillance", showGridLines = FALSE)
 writeData(wb, sheet = "6) Surveillance", t6_surveill,
           startRow = 8, colNames = FALSE)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 1.4b", prov_data_note, 
+            startRow = 25, colNames = FALSE)
+}
+showGridLines(wb, "6) Surveillance", showGridLines = FALSE)
+
 
 ### DNA Exclusions ----
-writeData(wb, sheet = "DNA Exclusions", dna_note1,
-          startRow = 10, colNames = FALSE)
-showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
 writeData(wb, sheet = "DNA Exclusions", dna_exclude,
           startRow = 6, colNames = FALSE)
+if (season == "spring") {
+  writeData(wb, sheet = "DNA Exclusions", dna_note1,
+            startRow = 10, colNames = FALSE)
+}
+
+showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
 
 # ## Prisons
 if (season == "autumn") {

@@ -296,6 +296,6 @@ table6_head3 <- paste0("Screened from 1 April ", year_ww, " - 28",
 
 ## DNA Exclusions Notes ----
 ### footnotes---- 
-dna_note1 <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
+dna_note1 <- paste0("p Data for year ending 31 March ", year_xx, " are ",
                     "provisional; data will be finalised from the PHS data ",
                     "extract at 1 September ", year_xx, ".")
