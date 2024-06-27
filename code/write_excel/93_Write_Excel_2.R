@@ -555,11 +555,16 @@ writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head2,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head3, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_note1, 
-          startRow = 30, colNames = FALSE)
-showGridLines(wb, "KPI 1.4a", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a, 
           startRow = 7, colNames = FALSE)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 1.4a", prov_data_note, 
+            startRow = 29, colNames = FALSE)
+  writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_note1, 
+            startRow = 30, colNames = FALSE)
+}
+showGridLines(wb, "KPI 1.4a", showGridLines = FALSE)
+
 
 ### KPI 1.4b ----
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head1, 
