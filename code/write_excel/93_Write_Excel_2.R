@@ -573,11 +573,16 @@ writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 1.4b", kpi_1.4a_note1, 
-          startRow = 30, colNames = FALSE)
-showGridLines(wb, "KPI 1.4b", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b, 
           startRow = 7, colNames = FALSE)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 1.4b", prov_data_note, 
+            startRow = 29, colNames = FALSE)
+  writeData(wb, sheet = "KPI 1.4b", kpi_1.4a_note1, 
+            startRow = 30, colNames = FALSE)
+}
+showGridLines(wb, "KPI 1.4b", showGridLines = FALSE)
+
 
 ### Table 6: Surveillance----
 writeData(wb, sheet = "6) Surveillance", table6_head1, 
