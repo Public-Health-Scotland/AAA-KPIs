@@ -9,6 +9,19 @@
 # Written/run on Posit WB, R 4.1.2
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+## Functions
+
+# this has been included in phsaaa - migrate over after this PR
+eval_seasonal_diff <- function(expr_spring, expr_autumn) {
+  if (season == "spring") {
+    eval(substitute(expr_spring), envir = .GlobalEnv)
+  } else if (season == "autumn") {
+    eval(substitute(expr_autumn), envir = .GlobalEnv)
+  } else {
+    stop("Go check your calendar!")
+  }
+}
+
 ## Notes:
 # This script automates the titles and notes for each tab of the theme 2 Excel
 # workbook for each (spring/autumn) QPMG.
@@ -166,15 +179,12 @@ kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage,
 
 ### KPI 1.2a Notes ----
 ## table headers
-if (season == "spring") {
-  kpi_1.2a_head1 <- paste0("Tested before 1 March ", year_xx, '\n',  " (includes men ",
-                           "tested after age 66", '\n', " and 3 months)")
-} else {
-  if (season == "autumn") {
-    kpi_1.2a_head1 <- paste0("Tested before 1 September ", year_xx, '\n',  " (includes men ",
-                             "tested after age 66", '\n', " and 3 months)") 
-  }
-}
+kpi_1.2a_head1 <- eval_seasonal_diff(
+  {paste0("Tested before 1 March ", year_xx, '\n',  " (includes men ",
+          "tested after age 66", '\n', " and 3 months)")}, # spring
+  {kpi_1.2a_head1 <- paste0("Tested before 1 September ", year_xx, '\n',  " (includes men ",
+                            "tested after age 66", '\n', " and 3 months)") } # autumn
+)
 
 # autumn only
 ### KPI 1.2a Coverage by 1 Sept notes ----
