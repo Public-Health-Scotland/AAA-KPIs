@@ -83,7 +83,7 @@ prov_data_note <- paste0("1. Data for year ending 31 March ", year_xx,
 
 ## Table of Contents notes ----
 
-## sheet headings
+### sheet headings ----
 pub_year <- eval_seasonal_diff(
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
           "be published in April ", year_yy, " (final data will be ",
@@ -96,7 +96,7 @@ pub_year <- eval_seasonal_diff(
 qpmg_note <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 today <- paste0("Workbook created ", Sys.Date())
 
-## TOC contents
+### TOC contents ----
 tab_1.1_add <- paste0("1.1 Additional (", year2, ")")
 tab_1.1_add_desc <- paste0("Percentage of eligible population who are sent an ",
                            "initial offer to screening before age 66: work-in-progress ",
@@ -115,7 +115,7 @@ tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 "
                             "work-in-progress position for men reaching age 66 ",
                             "in year ending 31 March ", year_yy)
 
-## footnotes
+### footnotes ----
 line_no_note_toc <- eval_seasonal_diff({26},{30})
 note_toc_data <- eval_seasonal_diff(
   {"The provisional/partial "}, # spring version,
@@ -130,8 +130,12 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 1.1 notes ----
+### headers ----
+kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, " ", 
+                            year_xx, "includes men offered screening after",
+                            "66th birthday)")
 
-## footnotes
+### footnotes ----
 
 kpi_1.1_notep <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
                         "provisional: data will be finalised from the PHS data ",
@@ -179,20 +183,20 @@ kpi_1.1_note2 <- paste0("2. Additional management information: the data for the 
 
 rm(kpi_1.1_no_invite_before_66, kpi_1.1_invited_after_66, kpi_1.1_not_invited) # tidy
 
-### KPI 1.1 Additional (20XX-YY) Notes ----
+## KPI 1.1 Additional (20XX-YY) Notes ----
 
-## footnotes
+### footnotes ----
 kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage, ",
                             "the equivalent percentages of men offered screening ",
                             "before age 66 were {x}% (", year_vv, "/", 
                             substr(year_ww, 3,4), ") and {x}% (", year_ww, "/",
                             substr(year_xx, 3,4), ").")
 
-### KPI 1.1 SIMD Notes ----
+## KPI 1.1 SIMD Notes ----
 # none
 
-### KPI 1.2a Notes ----
-## table headers
+## KPI 1.2a Notes ----
+### table headers ----
 kpi_1.2a_head1 <- eval_seasonal_diff(
   {paste0("Tested before 1 March ", year_xx, '\n',  " (includes men ",
           "tested after age 66", '\n', " and 3 months)")}, # spring
@@ -201,7 +205,7 @@ kpi_1.2a_head1 <- eval_seasonal_diff(
 )
 
 # autumn only
-### KPI 1.2a Coverage by 1 Sept notes ----
+## KPI 1.2a Coverage by 1 Sept notes ----
 if (season == "autumn"){
     sept_cov_note1 <- paste("1. The cohorts are based on men eligible for screening at ",
                             "each of the reporting points; data for the year ending 31 March ",
@@ -212,50 +216,50 @@ if (season == "autumn"){
                             " were extracted on ", extract_date, " ", year_xx, ".")
   }
 
-### KPI 1.2a Additional (20XX-YY) Notes ----
-## footnotes
+## KPI 1.2a Additional (20XX-YY) Notes ----
+### footnotes ----
 kpi_1.2a_add_note2 <- paste0("2. Some men in this cohort have not reached age ",
                              "66 and 3 months yet. The oldest men in the cohort ",
                              "will reach this age on 1 July ", year_xx, 
                              " and the youngest men in the cohort will reach ",
                              "this age on 30 June ", year_yy, ".")
 
-### KPI 1.3a Additional (20XX-YY) Notes ----
-## footnotes
+## KPI 1.3a Additional (20XX-YY) Notes ----
+### footnotes ----
 
 kpi_1.3a_add_note1 <- paste0("1. For the previous eligible cohort at this stage, ",
                              "the equivalent percentage of men tested before age ",
                              "66 and 3 months was {x}% (", year_ww, "/", 
                              substr(year_xx, 3, 4), ").")
 
-### KPI 1.2b Notes ----
+## KPI 1.2b Notes ----
 # None
 
 
-### KPI 1.2b Additional (20YY-YY) Notes ----
-## footnotes
+## KPI 1.2b Additional (20YY-YY) Notes ----
+### footnotes ----
 kpi_1.2badd_foot <- paste0("1. The equivalent figure for the previous eligible ",
                            "cohort in Scotland at this stage was {x}% (", 
                            year_ww, "/", substr(year_xx, 3, 4), ").")
 
-### KPI 1.3a Notes ----
+## KPI 1.3a Notes ----
 # none
 
 
 # autumn only
-### KPI 1.3a Coverage by 1 Sept by SIMD Notes ----
+## KPI 1.3a Coverage by 1 Sept by SIMD Notes ----
 # none
 
 
-### KPI 1.3a HB SIMD Notes ----
+## KPI 1.3a HB SIMD Notes ----
 # none
 
-### KPI 1.3b Notes ----
+## KPI 1.3b Notes ----
 # none
 
 
-### KPI 1.4a Notes ----
-## table headers
+## KPI 1.4a Notes ----
+### table headers ----
 kpi_1.4a_head1 <- paste0("Due to attend annual surveillance in year ending 31",
                          '\n', "March ", year_vv)
 kpi_1.4a_head2 <- paste0("Due to attend annual surveillance in year ending 31",
@@ -264,7 +268,7 @@ kpi_1.4a_head3 <- paste0("Due to attend annual surveillance from 1 April ",
                          year_ww, " -", '\n', "31 January ", year_xx, '\n',
                          "(partial data for financial year)")
 
-## footnotes 
+### footnotes ----
 kpi_1.4a_note1 <- paste0("1. Due to attend surveillance 1 April ", year_ww, 
                          " to 31 January ", year_xx, ": provisional rates are ",
                          "presented for the 11-month period 1 March ", year_ww,
@@ -275,8 +279,8 @@ kpi_1.4a_note1 <- paste0("1. Due to attend surveillance 1 April ", year_ww,
                          "31 March ", year_xx, " will be produced from the PHS ",
                          "data extract at 1 September ", year_xx, ".")
 
-### KPI 1.4b Notes ----
-## table headers
+## KPI 1.4b Notes ----
+### table headers ----
 kpi_1.4b_head1 <- paste0("Due to attend quarterly surveillance in year ending 31",
                          '\n', "March ", year_vv)
 kpi_1.4b_head2 <- paste0("Due to attend quarterly surveillance in year ending 31",
@@ -285,8 +289,8 @@ kpi_1.4b_head3 <- paste0("Due to attend quarterly surveillance from 1 April ",
                          year_ww, " -", '\n', "31 January ", year_xx, '\n',
                          "(partial data for financial year)")
 
-### Table 6: Surveillance Notes ----
-## table headers
+## Table 6: Surveillance Notes ----
+### table headers ----
 table6_head1 <- paste0("Screened in year ending 31 March",  '\n',
                        year_vv)
 table6_head2 <- paste0("Screened in year ending 31 March",  '\n',
@@ -294,8 +298,8 @@ table6_head2 <- paste0("Screened in year ending 31 March",  '\n',
 table6_head3 <- paste0("Screened from 1 April ", year_ww, " - 28",
                        '\n', "February ", year_xx)
 
-### DNA Exclusions Notes ----
-## footnotes 
+## DNA Exclusions Notes ----
+### footnotes---- 
 dna_note1 <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
                     "provisional; data will be finalised from the PHS data ",
                     "extract at 1 September ", year_xx, ".")

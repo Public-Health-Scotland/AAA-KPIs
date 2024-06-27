@@ -325,6 +325,10 @@ writeData(wb, sheet = "KPI 1.1", turn66_year_ww,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 1.1", turn66_year_xx,
           startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 1.1", kpi_1.1_head_mgmt,
+          startRow = 5, startCol = 11)
+addStyle(wb, sheet = "KPI 1.1", style = blue_12, 
+         rows = 5, cols = 11)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.1", kpi_1.1_notep, startRow = 29)
   }
@@ -341,6 +345,10 @@ writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_performance_note,
           startRow = 4)
 addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_red_12, 
          rows = 4, cols = 1)
+writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", kpi_1.1_head_mgmt,
+          startRow = 5, startCol = 5)
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = blue_12, 
+         rows = 5, cols = 5)
 writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", turn66_year_yy, 
           startRow = 6, startCol = 2)
 writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_add_note1,
@@ -359,6 +367,10 @@ writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_ww, startRow = 4,
           startCol = 6)
 writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_xx, startRow = 4,
           startCol = 9)
+writeData(wb, sheet =  "KPI 1.1 SIMD", kpi_1.1_head_mgmt,
+          startRow = 5, startCol = 12)
+addStyle(wb, "KPI 1.1 SIMD", style = blue_12, 
+         rows = 5, cols = 12)
 writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note1, startRow = 120)
 writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note3, startRow = 122)
 showGridLines(wb, "KPI 1.1 SIMD", showGridLines = FALSE)
