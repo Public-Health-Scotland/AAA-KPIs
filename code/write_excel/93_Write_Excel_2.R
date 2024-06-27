@@ -319,14 +319,20 @@ showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 # options("openxlsx.dateFormat" = "dd/mm/yyyy")
 
 ### KPI 1.1 ----
-writeData(wb, sheet = "KPI 1.1", turn66_year_vv, startRow = 4,
-          startCol = 2)
-writeData(wb, sheet = "KPI 1.1", turn66_year_ww, startRow = 4,
-          startCol = 5)
-writeData(wb, sheet = "KPI 1.1", turn66_year_xx, startRow = 4,
-          startCol = 8)
-writeData(wb, sheet = "KPI 1.1", kpi_1.1_note1, startRow = 30)
-writeData(wb, sheet = "KPI 1.1", kpi_1.1_note3, startRow = 32)
+writeData(wb, sheet = "KPI 1.1", turn66_year_vv,
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 1.1", turn66_year_ww,
+          startRow = 4, startCol = 5)
+writeData(wb, sheet = "KPI 1.1", turn66_year_xx,
+          startRow = 4, startCol = 8)
+writeData(wb, sheet = "KPI 1.1", kpi_1.1_head_mgmt,
+          startRow = 5, startCol = 11)
+addStyle(wb, sheet = "KPI 1.1", style = blue_12, 
+         rows = 5, cols = 11)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 1.1", kpi_1.1_notep, startRow = 29)
+  }
+writeData(wb, sheet = "KPI 1.1", kpi_1.1_note2, startRow = 31)
 showGridLines(wb, "KPI 1.1", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, startRow = 7, colNames = FALSE)
 

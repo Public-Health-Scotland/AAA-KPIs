@@ -38,6 +38,9 @@ orange_11 <- createStyle(fontSize = 11, fontName = "Arial",
 bold_red_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
                            fontName = "Arial", textDecoration = c("bold"),
                            wrapText = TRUE)
+# bright blue font
+blue_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                       fontColour = "#0000FF", wrapText = TRUE)
 
 ## General notes ----
 # current reporting year - used for additional management info
@@ -127,54 +130,58 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 1.1 notes ----
-## footnotes - spring only
+## headings
+kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, 
+                            '\n', "includes men offered screening after", '\n',
+                            "66th birthday)")
 
-if (season == "spring") {
-  
-  kpi_1.1_note1 <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
+## footnotes
+
+kpi_1.1_notep <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
                         "provisional: data will be finalised from the PHS data ",
                         "extract at 1 September ", year_xx, ". Additionally, a ",
                         "few men in the eligible age range may move in or out ",
                         "of Scotland, which may result in small changes to the ",
                         "number of men in the cohort and invite rate.")
 
-  # note 3 calculations 
-  # calculate number of men not invited for screening before 66
-  cohort_n <- kpi_1.1 %>% 
-    filter(hbres=="Scotland") %>% 
-    select(contains(kpi_report_years[3]) & contains("cohort_n")) %>% 
-    pull()
+# note 3 calculations 
+# calculate number of men not invited for screening before 66
+cohort_n <- kpi_1.1 %>% 
+  filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[3]) & contains("cohort_n")) %>% 
+  pull()
 
-  invited_before_66 <- kpi_1.1 %>% 
-    filter(hbres=="Scotland") %>% 
-    select(contains(kpi_report_years[3]) & contains("KPI 1.1_offer_n")) %>% 
-    pull()
+invited_before_66 <- kpi_1.1 %>% 
+  filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[3]) & contains("KPI 1.1_offer_n")) %>% 
+  pull()
 
-  kpi_1.1_no_invite_before_66 <- cohort_n - invited_before_66
+kpi_1.1_no_invite_before_66 <- cohort_n - invited_before_66
 
-  # calculated number of men invited after age of 66
-  invited_any_age <- kpi_1.1 %>% 
-    filter(hbres=="Scotland") %>% 
-    select(contains(kpi_report_years[3]) & contains("Sept coverage_offer_n")) %>% 
-    pull()
+# calculated number of men invited after age of 66
+invited_any_age <- kpi_1.1 %>% 
+  filter(hbres=="Scotland") %>% 
+  select(contains(kpi_report_years[3]) & contains("Sept coverage_offer_n")) %>% 
+  pull()
 
-  kpi_1.1_invited_after_66 <- invited_any_age - invited_before_66
+kpi_1.1_invited_after_66 <- invited_any_age - invited_before_66
 
-  # calculated number of men not invited despite eligible
-  kpi_1.1_not_invited <- cohort_n - invited_any_age
+# calculated number of men not invited despite eligible
+kpi_1.1_not_invited <- cohort_n - invited_any_age
 
-  rm(cohort_n, invited_before_66, invited_any_age) # tidy environment
+rm(cohort_n, invited_before_66, invited_any_age) # tidy environment
 
-  kpi_1.1_note3 <- paste0("3. Additional management information: the data for the ",
-                          "year ending 31 March ", year_xx, " shows there were ",
-                          kpi_1.1_no_invite_before_66, " men in the latest cohort ",
-                          "who were not invited for screening before age 66. ",
-                          "Of these, ", kpi_1.1_invited_after_66, " were invited ",
-                          "after their 66th birthday and the remaining ", 
-                          kpi_1.1_not_invited, " had not been invited at ",
-                          extract_date, " ", year_xx, " (date of PHS data extract).")
-  rm(kpi_1.1_no_invite_before_66, kpi_1.1_invited_after_66, kpi_1.1_not_invited) # tidy
- }
+# final note:
+kpi_1.1_note2 <- paste0("2. Additional management information: the data for the ",
+                        "year ending 31 March ", year_xx, " shows there were ",
+                        kpi_1.1_no_invite_before_66, " men in the latest cohort ",
+                        "who were not invited for screening before age 66. ",
+                        "Of these, ", kpi_1.1_invited_after_66, " were invited ",
+                        "after their 66th birthday and the remaining ", 
+                        kpi_1.1_not_invited, " had not been invited at ",
+                        extract_date, " ", year_xx, " (date of PHS data extract).")
+
+rm(kpi_1.1_no_invite_before_66, kpi_1.1_invited_after_66, kpi_1.1_not_invited) # tidy
 
 ### KPI 1.1 Additional (20YY-YY) Notes ----
 
