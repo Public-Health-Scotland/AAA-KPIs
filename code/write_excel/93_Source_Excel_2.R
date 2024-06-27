@@ -183,7 +183,7 @@ kpi_1.1_note2 <- paste0("2. Additional management information: the data for the 
 
 rm(kpi_1.1_no_invite_before_66, kpi_1.1_invited_after_66, kpi_1.1_not_invited) # tidy
 
-### KPI 1.1 Additional (20YY-YY) Notes ----
+### KPI 1.1 Additional (20XX-YY) Notes ----
 
 ## footnotes
 kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage, ",

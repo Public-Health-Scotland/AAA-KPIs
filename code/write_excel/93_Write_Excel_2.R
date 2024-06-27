@@ -336,7 +336,7 @@ writeData(wb, sheet = "KPI 1.1", kpi_1.1_note2, startRow = 31)
 showGridLines(wb, "KPI 1.1", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, startRow = 7, colNames = FALSE)
 
-### KPI 1.1 Additional (20YY-YY) ----
+### KPI 1.1 Additional (20XX-YY) ----
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
 addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_black_14, 
