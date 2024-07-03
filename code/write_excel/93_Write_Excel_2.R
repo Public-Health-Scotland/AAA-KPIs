@@ -291,7 +291,7 @@ dna_exclude <- theme2_dna |>
 wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
 
-source(here::here(paste0("code/", season, "_write_excel/93_Source_Excel_2.R")))
+source(here::here(paste0("code/write_excel/93_Source_Excel_2.R")))
 
 ### Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, 
@@ -378,9 +378,9 @@ writeData(wb, sheet =  "KPI 1.1 SIMD", kpi_1.1_head_mgmt,
           startRow = 5, startCol = 12)
 addStyle(wb, "KPI 1.1 SIMD", style = blue_12, 
          rows = 5, cols = 12)
-writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note1, 
+writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_notep, 
           startRow = 120)
-writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note3, 
+writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note2, 
           startRow = 122)
 showGridLines(wb, "KPI 1.1 SIMD", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_simd, 
