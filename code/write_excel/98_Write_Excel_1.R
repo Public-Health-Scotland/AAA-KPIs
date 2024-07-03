@@ -20,7 +20,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
-library(phsaaa)
+library(phsaaa) # to install, run; devtools::install_github("aoifem01/phsaaa")
 
 rm(list=ls())
 gc()
@@ -41,19 +41,6 @@ year_yy <- year_xx + 1
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
-
-## Functions
-
-# this has been included in phsaaa - migrate over after this PR
-eval_seasonal_diff <- function(expr_spring, expr_autumn) {
-  if (season == "spring") {
-    eval(substitute(expr_spring), envir = .GlobalEnv)
-  } else if (season == "autumn") {
-    eval(substitute(expr_autumn), envir = .GlobalEnv)
-  } else {
-    stop("Go check your calendar!")
-  }
-}
 
 ### 2: Import and format data ----
 ## KPI 1
@@ -126,7 +113,7 @@ wb <- loadWorkbook(
 # Notes and headers
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
-data_header <- eval_seasonal_diff(
+data_header <- phsaaa::eval_seasonal_diff(
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
          "be published in April ", year_yy, " (final data will be ",
          "produced from data extracted for PHS in September ",
@@ -205,7 +192,7 @@ summary_note1 <- paste0("r  Data are revised since published on ",
 
 year_end_vv <- paste0("Year ending", '\n', "31 March ", year_vv)
 year_end_ww <- paste0("Year ending", '\n', "31 March ", year_ww)
-year_end_xx <- eval_seasonal_diff(
+year_end_xx <- phs::eval_seasonal_diff(
   {paste0("Year ending", '\n', "31 March ", year_xx, '\n',
           "(provisional/partial", '\n', "data)")}, # spring
   {paste0("Year ending", '\n', "31 March ", year_xx)} # autumn
