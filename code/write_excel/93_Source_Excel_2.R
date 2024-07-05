@@ -16,7 +16,8 @@
 ## Styles ----
 # bold black fonr used in some headers
 bold_black_14 <- createStyle(fontSize = 14, fontColour = "#000000",
-                             fontName = "Arial", textDecoration = "bold")
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
 # orange style for notes needing manual contribution
 orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
                            fontColour = "#ff9f00", wrapText = TRUE)
@@ -27,6 +28,26 @@ bold_red_12 <- createStyle(fontSize = 12, fontColour = "#FF0000",
 # bright blue font
 blue_12 <- createStyle(fontSize = 12, fontName = "Arial", 
                        fontColour = "#0000FF", wrapText = TRUE)
+# black 12
+black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                        fontName = "Arial")
+# black 11
+black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black border font
+black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                               fontColour = "#000000", border = "TopBottomLeftRight",
+                               wrapText = TRUE, halign = "left", valign = "center")
+# blue border font
+blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                               fontColour = "#0000FF", border = "TopBottomLeftRight",
+                               textDecoration = "underline", wrapText = TRUE, 
+                               halign = "left", valign = "center")
+# bold black 12
+bold_black_12 <- createStyle(fontSize = 14, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
+
 
 ## General notes ----
 # current reporting year - used for additional management info

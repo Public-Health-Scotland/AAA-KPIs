@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 999_Write_Excel_2.R
+# 93_Write_Excel_2.R
 # 
 # Karen Hotopp & Aoife McCarthy
 # Sept 2023
@@ -22,6 +22,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list=ls())
@@ -42,19 +43,6 @@ year_yy <- year_xx + 1
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
-
-## Functions
-
-# this has been included in phsaaa - migrate over after this PR
-eval_seasonal_diff <- function(expr_spring, expr_autumn) {
-  if (season == "spring") {
-    eval(substitute(expr_spring), envir = .GlobalEnv)
-  } else if (season == "autumn") {
-    eval(substitute(expr_autumn), envir = .GlobalEnv)
-  } else {
-    stop("Go check your calendar!")
-  }
-}
 
 ### 2: Import and format data ----
 theme2 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds")) |> 
@@ -84,7 +72,7 @@ kpi_1.1 <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.1 year2 ----
-kpi_1.1_y2 <- eval_seasonal_diff(
+kpi_1.1_y2 <- phsaaa::eval_seasonal_diff(
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.1"),
@@ -133,7 +121,7 @@ kpi_1.2a_sept <- kpi_1.2a_sept[ , c(1, 2, 5, 6, 3, 7, 8, 4, 9, 10)]
 kpi_1.2a <- kpi_1.2a[, -c(8:11)]
 
 ## KPI 1.2a year2 ----
-kpi_1.2a_y2 <- eval_seasonal_diff(
+kpi_1.2a_y2 <- phsaaa::eval_seasonal_diff(
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.2a"),
@@ -201,7 +189,7 @@ kpi_1.3a_hb <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.3a year2 ----
-kpi_1.3a_y2 <- eval_seasonal_diff(
+kpi_1.3a_y2 <- phsaaa::eval_seasonal_diff(
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.3a Scotland SIMD"),
@@ -296,10 +284,16 @@ source(here::here(paste0("code/write_excel/93_Source_Excel_2.R")))
 ### Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, 
           startRow = 3)
+addStyle(wb, "Table of Contents", black_12, 
+         rows = 3, cols = 1:2, gridExpand = TRUE)
 writeData(wb, sheet = "Table of Contents", qpmg_note, 
           startRow = 4)
+addStyle(wb, "Table of Contents", bold_black_12, 
+         rows = 4, cols = 1)
 writeData(wb, sheet = "Table of Contents", today, 
           startRow = 6)
+addStyle(wb, "Table of Contents", black_12, 
+         rows = 6, cols = 1)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add, 
           startRow = 12)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add_desc, 
@@ -312,6 +306,10 @@ writeData(wb, sheet = "Table of Contents", tab_1.2b_add,
           startRow = line_no_tab_1.2b_add)
 writeData(wb, sheet = "Table of Contents", tab_1.2b_add_desc, 
           startRow = line_no_tab_1.2b_add, startCol = 2)
+addStyle(wb, "Table of Contents", black_border_12, 
+         rows = 11:24, cols = 1, gridExpand = TRUE)
+addStyle(wb, "Table of Contents", blue_border_underline_12, 
+         rows = 11:24, cols = 2, gridExpand = TRUE)
 
 writeData(wb, sheet = "Table of Contents", note_toc,
           startRow = line_no_note_toc)
@@ -407,7 +405,7 @@ writeData(wb, sheet = "KPI 1.2a", kpi_1.2a,
 
 
 ### KPI 1.2a Coverage by 1 Sept ----
-eval_seasonal_diff(
+phsaaa::eval_seasonal_diff(
   {print("Carry on!")},
   {writeData(wb, sheet = "Coverage by 1 Sept", kpi_1.2a_sept, 
              startRow = 7, colNames = FALSE)}
@@ -508,7 +506,7 @@ showGridLines(wb, "KPI 1.3a", showGridLines = FALSE)
 # autumn only
 ### KPI 1.3a Coverage by 1 Sept by SIMD ----
 
-eval_seasonal_diff(
+phsaaa::eval_seasonal_diff(
   {print("Carry on!")},
   {writeData(wb, sheet = "Coverage by 1 Sept by SIMD", kpi_1.3a_sept, 
              startRow = 7, colNames = FALSE)}
