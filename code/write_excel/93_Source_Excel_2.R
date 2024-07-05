@@ -14,7 +14,6 @@
 # workbook for each (spring/autumn) QPMG.
 
 ## Styles ----
-
 # bold black fonr used in some headers
 bold_black_14 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold")

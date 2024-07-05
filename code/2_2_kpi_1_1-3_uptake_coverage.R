@@ -44,6 +44,7 @@ library(stringr)
 library(forcats)
 library(tidylog)
 library(svDialogs)
+library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
 
 rm(list = ls())
 gc()
@@ -56,64 +57,6 @@ rm (exclusions_path, extract_path, output_path, fy_tibble, qpmg_month,
 
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
-
-## Functions
-# Could this function be sourced? Similar function used in several scripts,
-# just need to be able to change details in the "autumn" section to match what
-# is happening in that script.
-history_building <- function(df, season) {
-  
-  df
-  
-  if({{season}} == "spring")
-  {
-    
-    print("Don't add to the history file. Move along to next script.")
-    
-  } else {
-    
-    if (season == "autumn") {
-      # save a backup of hist_db
-      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2_bckp.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2_bckp.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      df <- df |> 
-        filter(kpi != "KPI 1.1 Sept coverage",
-               fin_year != year2)
-      
-      print(table(df$kpi, df$fin_year)) 
-      
-      ## New historical database ----
-      new_hist_db <- bind_rows(hist_db, df) |>
-        mutate(kpi = fct_relevel(kpi, c("KPI 1.1", "KPI 1.1 Scotland SIMD", 
-                                        "KPI 1.1 Scotland SIMD Sept coverage",
-                                        "KPI 1.2a", "KPI 1.2a Sept coverage", 
-                                        "KPI 1.2b", "KPI 1.3a Scotland SIMD", 
-                                        "KPI 1.3a Sept coverage", "KPI 1.3a HB SIMD", 
-                                        "KPI 1.3b Scotland SIMD", "KPI 1.3b HB SIMD",
-                                        "KPI 1.4a", "KPI 1.4b")),
-               fin_year = fct_relevel(fin_year, c(fy_list)),
-               hbres = fct_relevel(hbres, c(hb_list))) |> 
-        arrange(kpi, fin_year, hbres)
-      
-      print(table(new_hist_db$kpi, new_hist_db$fin_year)) 
-      
-      write_rds(new_hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      print("You made history! Proceed to the next script.")
-      
-    } else { 
-      
-      stop("Do you know what season it is?! Go back and figure yourself out.")
-      
-    }
-  }
-}
 
 ### Step 2: Import data ----
 invite_uptake <- read_rds(paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
@@ -657,21 +600,7 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  history_building(kpi_summary, season)
-} else {
-  if (user_in == "no"){
-    print("No history updated, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
-
-
-
+phsaaa::build_history(hist_db, kpi_summary, "1.1-1.3")
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22
@@ -689,7 +618,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 
 ## Current report output ----
 ## Add new records onto full database
-report_db <- bind_rows(hist_db, kpi_summary)
+report_db <- phsaaa::add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
 table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
@@ -698,15 +627,7 @@ table(report_db$kpi, report_db$fin_year) # current year (year1) should match
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
+phsaaa::query_write_rds(report_db,
+                        paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
-if (user_in == "yes"){
-  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
 #write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
