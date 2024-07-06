@@ -18,41 +18,43 @@
 black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
-# orange size 11, wrapped
-orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
-                           fontColour = "#ff9f00", wrapText = TRUE)
-# bold red 
-red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
-                           fontName = "Arial", textDecoration = c("bold"),
-                           wrapText = TRUE)
-# bright blue font
-blue_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
-                       fontColour = "#0000FF", wrapText = TRUE,
-                       halign = "center")
-# black 12
-black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                        fontName = "Arial")
-black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                             fontName = "Arial", wrapText = TRUE)
-black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                              fontName = "Arial", wrapText = TRUE,
-                              halign = "centre", valign = "centre")
-# black 11
-black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
-                        fontName = "Arial", wrapText = TRUE)
-# black border font
-black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                               fontColour = "#000000", border = "TopBottomLeftRight",
-                               wrapText = TRUE, halign = "left", valign = "center")
-# blue border font
-blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                               fontColour = "#0000FF", border = "TopBottomLeftRight",
-                               textDecoration = "underline", wrapText = TRUE, 
-                               halign = "left", valign = "center")
-# bold black 12
+# bold black 12, wrapped
 black_bold_12 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
+# black 12, wrapped
+black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black centered 12, wrapped
+black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial", wrapText = TRUE,
+                               halign = "centre", valign = "centre")
+# black without wrapping 12
+black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial")
+# black complete border centred 12, wrappted
+black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                               fontColour = "#000000", border = "TopBottomLeftRight",
+                               wrapText = TRUE, halign = "left", valign = "center")
+# black 11, wrapped
+black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# orange size 11, wrapped
+orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
+                           fontColour = "#ff9f00", wrapText = TRUE)
+# bold red 12, wrapped 
+red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
+                           fontName = "Arial", textDecoration = c("bold"),
+                           wrapText = TRUE)
+# bright blue centered 12, wrapped
+blue_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                       fontColour = "#0000FF", wrapText = TRUE,
+                       halign = "center")
+# bright blue bordered centred underlined 12, wrapped
+blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                        fontColour = "#0000FF", border = "TopBottomLeftRight",
+                                        textDecoration = "underline", wrapText = TRUE, 
+                                        halign = "left", valign = "center")
 
 
 ## General notes ----
