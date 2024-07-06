@@ -14,8 +14,7 @@
 # 2_2_kpi_1_1-1_3_uptake_coverage.R script and transforms the data to print 
 # directly into the theme 2 Excel file for the QPMG.
 
-
-#### 1: Housekeeping ----
+# 1: Housekeeping ----
 library(dplyr)
 library(readr)
 library(tidyr)
@@ -44,7 +43,7 @@ year_yy <- year_xx + 1
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
-### 2: Import and format data ----
+# 2: Import and format data ----
 theme2 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds")) |> 
   mutate(simd = case_when(simd == "1" ~ "1 (most deprived)",
                           simd == "5" ~ "5 (least deprived)",
@@ -60,7 +59,7 @@ theme2_dna <- read_rds(paste0(temp_path, "/2_3_dna_exclusions_", yymm, ".rds"))
 table(theme2_dna$kpi, theme2_dna$fin_year) 
 
 
-### 3: Format data ----
+# 3: Format data ----
 ## KPI 1.1 year1 ----
 ## Data for three most recent complete years and extended coverage to 1 Sept
 kpi_1.1 <- theme2 |> 
@@ -270,29 +269,32 @@ dna_exclude <- theme2_dna |>
   # match Excel output
   pivot_wider(names_from = year, values_from = count)
 
-#####
+
+## Prisons ----
+
+
 ##!! KPI2 1.2a & 1.2b Prisons extract to go here
 
 
-### 4: Write to Excel (openxlsx) ----
-### Setup workbook ----
+# 4: Write to Excel (openxlsx) ----
+## Setup workbook ----
 wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
 
 source(here::here(paste0("code/write_excel/93_Source_Excel_2.R")))
 
-### Table of Contents ----
+## Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, 
           startRow = 3)
-addStyle(wb, "Table of Contents", black_12, 
+addStyle(wb, "Table of Contents", black_nowrap_12, 
          rows = 3, cols = 1:2, gridExpand = TRUE)
 writeData(wb, sheet = "Table of Contents", qpmg_note, 
           startRow = 4)
-addStyle(wb, "Table of Contents", bold_black_12, 
+addStyle(wb, "Table of Contents", black_bold_12, 
          rows = 4, cols = 1)
 writeData(wb, sheet = "Table of Contents", today, 
           startRow = 6)
-addStyle(wb, "Table of Contents", black_12, 
+addStyle(wb, "Table of Contents", black_nowrap_12, 
          rows = 6, cols = 1)
 writeData(wb, sheet = "Table of Contents", tab_1.1_add, 
           startRow = 12)
@@ -313,14 +315,14 @@ addStyle(wb, "Table of Contents", blue_border_underline_12,
 
 writeData(wb, sheet = "Table of Contents", note_toc,
           startRow = line_no_note_toc)
-addStyle(wb, "Table of Contents", style = bold_red_12, 
+addStyle(wb, "Table of Contents", style = red_bold_12, 
          rows = line_no_note_toc, cols = 1)
 
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 # options("openxlsx.dateFormat" = "dd/mm/yyyy")
 
-### KPI 1.1 ----
+## KPI 1.1 ----
 writeData(wb, sheet = "KPI 1.1", turn66_year_vv,
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 1.1", turn66_year_ww,
@@ -329,7 +331,7 @@ writeData(wb, sheet = "KPI 1.1", turn66_year_xx,
           startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1_head_mgmt,
           startRow = 5, startCol = 11)
-addStyle(wb, sheet = "KPI 1.1", style = blue_12, 
+addStyle(wb, sheet = "KPI 1.1", style = blue_centre_12, 
          rows = 5, cols = 11)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.1", kpi_1.1_notep, 
@@ -341,18 +343,18 @@ showGridLines(wb, "KPI 1.1", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1", kpi_1.1, 
           startRow = 7, colNames = FALSE)
 
-### KPI 1.1 Additional (20XX-YY) ----
+## KPI 1.1 Additional (20XX-YY) ----
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_black_14, 
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = black_bold_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = bold_red_12, 
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = red_bold_12, 
          rows = 4, cols = 1)
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", kpi_1.1_head_mgmt,
           startRow = 5, startCol = 5)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = blue_12, 
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", style = blue_centre_12, 
          rows = 5, cols = 5)
 writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", turn66_year_yy, 
           startRow = 6, startCol = 2)
@@ -365,7 +367,7 @@ writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_y2,
           startRow = 9, colNames = FALSE)
 names(wb)[[3]] <- paste0("KPI 1.1 Additional (", year2, ")")
 
-### KPI 1.1 SIMD ----
+## KPI 1.1 SIMD ----
 writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_vv, 
           startRow = 4, startCol = 3)
 writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_ww, 
@@ -374,7 +376,7 @@ writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_xx,
           startRow = 4, startCol = 9)
 writeData(wb, sheet =  "KPI 1.1 SIMD", kpi_1.1_head_mgmt,
           startRow = 5, startCol = 12)
-addStyle(wb, "KPI 1.1 SIMD", style = blue_12, 
+addStyle(wb, "KPI 1.1 SIMD", style = blue_centre_12, 
          rows = 5, cols = 12)
 writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_notep, 
           startRow = 120)
@@ -384,7 +386,7 @@ showGridLines(wb, "KPI 1.1 SIMD", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_simd, 
           startRow = 7, colNames = FALSE)
 
-### KPI 1.2a ----
+## KPI 1.2a ----
 writeData(wb, sheet = "KPI 1.2a", turn66_year_vv, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 1.2a", turn66_year_ww, 
@@ -393,7 +395,7 @@ writeData(wb, sheet = "KPI 1.2a", turn66_year_xx,
           startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 1.2a", kpi_1.2a_head_mgmt, 
           startRow = 5, startCol = 11)
-addStyle(wb, "KPI 1.2a", style = blue_12, 
+addStyle(wb, "KPI 1.2a", style = blue_centre_12, 
          rows = 5, cols = 11)
 if(season == "spring") {
   writeData(wb, sheet = "KPI 1.2a", prov_data_note, 
@@ -404,28 +406,28 @@ writeData(wb, sheet = "KPI 1.2a", kpi_1.2a,
           startRow = 7, colNames = FALSE)
 
 
-### KPI 1.2a Coverage by 1 Sept ----
+## KPI 1.2a Coverage by 1 Sept ----
 phsaaa::eval_seasonal_diff(
   {print("Carry on!")},
   {writeData(wb, sheet = "Coverage by 1 Sept", kpi_1.2a_sept, 
              startRow = 7, colNames = FALSE)}
 )
 
-### KPI 1.2a Additional (20XX-YY) ----
+## KPI 1.2a Additional (20XX-YY) ----
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = bold_black_14, 
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = black_bold_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = bold_red_12, 
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = red_bold_12, 
          rows = 4, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, 
           startRow = 6, startCol = 2)
 if(season == "autumn"){
   writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_head_mgmt, 
             startRow = 7, startCol = 5)
-  addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = blue_12, 
+  addStyle(wb, "KPI 1.2a Additional (20XX-YY)", style = blue_centre_12, 
            rows = 7, cols = 5)
 }
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_y2, 
@@ -433,7 +435,7 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_y2,
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_add_note2, 
           startRow = 27)
 
-### KPI 1.3a Additional (20XX-YY) ----
+## KPI 1.3a Additional (20XX-YY) ----
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, startRow = 32,
           startCol = 2)
 
@@ -446,7 +448,7 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_y2,
           startRow = 35, startCol = 2, colNames = FALSE)
 names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
 
-### KPI 1.2b ----
+## KPI 1.2b ----
 
 writeData(wb, sheet = "KPI 1.2b", turn66_year_vv, 
           startRow = 4, startCol = 2)
@@ -462,15 +464,15 @@ if(season == "spring") {
 }
 showGridLines(wb, "KPI 1.2b", showGridLines = FALSE)
 
-### KPI 1.2b Additional (20YY-YY) ----
+## KPI 1.2b Additional (20YY-YY) ----
 
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = bold_black_14, 
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = black_bold_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = bold_red_12, 
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", style = red_bold_12, 
          rows = 4, cols = 1)
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", turn66_year_yy, 
           startRow = 6,
@@ -484,7 +486,7 @@ writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", kpi_1.2b_y2,
           startRow = 9, colNames = FALSE)
 names(wb)[[8]] <- paste0("KPI 1.2b Additional (", year2, ")")
 
-### KPI 1.3a ----
+## KPI 1.3a ----
 
 writeData(wb, sheet = "KPI 1.3a", turn66_year_vv, 
           startRow = 4, startCol = 3)
@@ -494,7 +496,7 @@ writeData(wb, sheet = "KPI 1.3a", turn66_year_xx,
           startRow = 4,  startCol = 9)
 writeData(wb, sheet = "KPI 1.3a", kpi_1.2a_head_mgmt, 
           startRow = 5, startCol = 12)
-addStyle(wb, "KPI 1.3a", style = blue_12, 
+addStyle(wb, "KPI 1.3a", style = blue_centre_12, 
          rows = 5, cols = 12)
 writeData(wb, sheet = "KPI 1.3a", kpi_1.3a, 
           startRow = 7, colNames = FALSE)
@@ -504,7 +506,7 @@ showGridLines(wb, "KPI 1.3a", showGridLines = FALSE)
 
 
 # autumn only
-### KPI 1.3a Coverage by 1 Sept by SIMD ----
+## KPI 1.3a Coverage by 1 Sept by SIMD ----
 
 phsaaa::eval_seasonal_diff(
   {print("Carry on!")},
@@ -512,7 +514,7 @@ phsaaa::eval_seasonal_diff(
              startRow = 7, colNames = FALSE)}
 )
 
-### KPI 1.3a HB SIMD ----
+## KPI 1.3a HB SIMD ----
 writeData(wb, sheet = "KPI 1.3a HB SIMD", turn66_year_vv, 
           startRow = 5, startCol = 3)
 writeData(wb, sheet = "KPI 1.3a HB SIMD", turn66_year_ww, 
@@ -525,7 +527,7 @@ showGridLines(wb, "KPI 1.3a HB SIMD", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.3a HB SIMD", kpi_1.3a_hb, 
           startRow = 8, colNames = FALSE)
 
-### KPI 1.3b ----
+## KPI 1.3b ----
 writeData(wb, sheet = "KPI 1.3b", turn66_year_vv, 
           startRow = 4, startCol = 3)
 writeData(wb, sheet = "KPI 1.3b", turn66_year_ww, 
@@ -539,14 +541,14 @@ writeData(wb, sheet = "KPI 1.3b", kpi_1.3b,
           startRow = 7, colNames = FALSE)
 
 
-### KPI 1.3b HB SIMD ----
+## KPI 1.3b HB SIMD ----
 if (season == "autumn") {
   writeData(wb, sheet = "KPI 1.3b HB SIMD", kpi_1.3b_hb, 
             startRow = 8, colNames = FALSE)
 }
 
 
-### KPI 1.4a ----
+## KPI 1.4a ----
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head1, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 1.4a", kpi_1.4a_head2, 
@@ -564,7 +566,7 @@ if (season == "spring") {
 showGridLines(wb, "KPI 1.4a", showGridLines = FALSE)
 
 
-### KPI 1.4b ----
+## KPI 1.4b ----
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head1, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2, 
@@ -582,7 +584,7 @@ if (season == "spring") {
 showGridLines(wb, "KPI 1.4b", showGridLines = FALSE)
 
 
-### Table 6: Surveillance----
+## Table 6: Surveillance----
 writeData(wb, sheet = "6) Surveillance", table6_head1, 
           startRow = 6, startCol = 2)
 writeData(wb, sheet = "6) Surveillance", table6_head2, 
@@ -598,7 +600,7 @@ if (season == "spring") {
 showGridLines(wb, "6) Surveillance", showGridLines = FALSE)
 
 
-### DNA Exclusions ----
+## DNA Exclusions ----
 writeData(wb, sheet = "DNA Exclusions", dna_exclude,
           startRow = 6, colNames = FALSE)
 if (season == "spring") {
@@ -608,7 +610,7 @@ if (season == "spring") {
 
 showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
 
-# ## Prisons
+## Prisons ----
 if (season == "autumn") {
   writeData(wb, sheet = "KPI 1.2a 1.2b Prisons", kpi_1.2a_prisons,
             startRow = 7, colNames = FALSE)
@@ -617,7 +619,7 @@ if (season == "autumn") {
 }
 
  
-## Save ----
+# 5: Save output ----
 saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_", 
                         yymm, ".xlsx"), overwrite = TRUE)
 

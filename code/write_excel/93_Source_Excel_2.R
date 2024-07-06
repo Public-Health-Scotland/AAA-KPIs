@@ -14,23 +14,29 @@
 # workbook for each (spring/autumn) QPMG.
 
 ## Styles ----
-# bold black fonr used in some headers
-bold_black_14 <- createStyle(fontSize = 14, fontColour = "#000000",
+# bold black size 14, wrapped
+black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
-# orange style for notes needing manual contribution
+# orange size 11, wrapped
 orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
                            fontColour = "#ff9f00", wrapText = TRUE)
-# red performance font 
-bold_red_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
+# bold red 
+red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
                            fontName = "Arial", textDecoration = c("bold"),
                            wrapText = TRUE)
 # bright blue font
-blue_12 <- createStyle(fontSize = 12, fontName = "Arial", 
-                       fontColour = "#0000FF", wrapText = TRUE)
+blue_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                       fontColour = "#0000FF", wrapText = TRUE,
+                       halign = "center")
 # black 12
-black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                         fontName = "Arial")
+black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                             fontName = "Arial", wrapText = TRUE)
+black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                              fontName = "Arial", wrapText = TRUE,
+                              halign = "centre", valign = "centre")
 # black 11
 black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
@@ -44,7 +50,7 @@ blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
                                textDecoration = "underline", wrapText = TRUE, 
                                halign = "left", valign = "center")
 # bold black 12
-bold_black_12 <- createStyle(fontSize = 14, fontColour = "#000000",
+black_bold_12 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
 
