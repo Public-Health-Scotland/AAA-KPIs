@@ -307,9 +307,8 @@ kpi_1.4b_head1 <- paste0("Due to attend quarterly surveillance in year ending 31
                          '\n', "March ", year_vv)
 kpi_1.4b_head2 <- paste0("Due to attend quarterly surveillance in year ending 31",
                          '\n', "March ", year_ww)
-kpi_1.4b_head3 <- paste0("Due to attend quarterly surveillance from 1 April ",
-                         year_ww, " -", '\n', "31 January ", year_xx, '\n',
-                         "(partial data for financial year)")
+kpi_1.4b_head3 <- paste0("Due to attend quarterly surveillance in year ending 31",
+                         '\n', "March ", year_xx)
 
 ## Table 6: Surveillance Notes ----
 ### table headers ----
@@ -317,8 +316,8 @@ table6_head1 <- paste0("Screened in year ending 31 March",  '\n',
                        year_vv)
 table6_head2 <- paste0("Screened in year ending 31 March",  '\n',
                        year_ww)
-table6_head3 <- paste0("Screened from 1 April ", year_ww, " - 28",
-                       '\n', "February ", year_xx)
+table6_head3 <- paste0("Screened in year ending 31 March",  '\n',
+                       year_xx)
 
 ## DNA Exclusions Notes ----
 ### footnotes---- 
