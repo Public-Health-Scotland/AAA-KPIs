@@ -32,15 +32,20 @@ black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
 # black without wrapping 12
 black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                                fontName = "Arial")
-# black complete border 12, wrappted
+# black complete border 12, wrapped
 black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
                                fontColour = "#000000", border = "TopBottomLeftRight",
                                wrapText = TRUE, halign = "left", valign = "center")
-# black complete border centred 12, wrappted
+# black complete medium border centred 12, wrapped
 black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
                                       fontColour = "#000000", border = "TopBottomLeftRight",
                                       wrapText = TRUE, halign = "center", valign = "center",
                                       borderStyle = "medium")
+# black complete thin border centred 12, wrapped
+black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                           fontColour = "#000000", border = "TopBottomLeftRight",
+                                           wrapText = TRUE, halign = "center", valign = "center",
+                                           borderStyle = "thin")
 # black 11, wrapped
 black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
@@ -55,9 +60,9 @@ red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000",
                            fontName = "Arial", textDecoration = c("bold"),
                            wrapText = TRUE)
 # bright blue centered 12, wrapped
-blue_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
-                       fontColour = "#0000FF", wrapText = TRUE,
-                       halign = "center")
+blue_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                                     fontColour = "#0000FF", wrapText = TRUE,
+                                     halign = "center", border = "TopBottomLeftRight")
 # bright blue bordered centred underlined 12, wrapped
 blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
                                         fontColour = "#0000FF", border = "TopBottomLeftRight",
@@ -226,30 +231,28 @@ kpi_1.2a_head_mgmt <- paste0("Tested before ", extract_date, " ", year_xx,
 # autumn only
 ## KPI 1.2a Coverage by 1 Sept notes ----
 if (season == "autumn"){
-    sept_cov_note1 <- paste("1. The cohorts are based on men eligible for screening at ",
-                            "each of the reporting points; data for the year ending 31 March ",
-                            year_vv, " were extracted on {x} September ", year_vv, 
-                            ", data for the year ending 31 March ", year_ww, 
-                            " were extracted on {x} September ", year_ww, 
-                            " and data for the year ending 31 March ", year_xx, 
-                            " were extracted on ", extract_date, " ", year_xx, ".")
+  sept_cov_note1 <- paste("1. The cohorts are based on men eligible for screening at ",
+                          "each of the reporting points; data for the year ending 31 March ",
+                          year_vv, " were extracted on {x} September ", year_vv, 
+                          ", data for the year ending 31 March ", year_ww, 
+                          " were extracted on {x} September ", year_ww, 
+                          " and data for the year ending 31 March ", year_xx, 
+                          " were extracted on ", extract_date, " ", year_xx, ".")
   }
 
-## KPI 1.2a Additional (20XX-YY) Notes ----
+## KPI 1.2a/1.3a Additional (20XX-YY) Notes ----
 ### footnotes ----
+kpi_1.2a_add_note1 <- paste0("1. For the previous eligible cohort at this stage, ",
+                             "the equivalent percentage of men tested before age ",
+                             "66 and 3 months was {x}% (", year_ww, "/", 
+                             substr(year_xx, 3, 4), ").")
+
 kpi_1.2a_add_note2 <- paste0("2. Some individuals in this cohort have not reached age ",
                              "66 and 3 months yet. The oldest men in the cohort ",
                              "will reach this age on 1 July ", year_xx, 
                              " and the youngest men in the cohort will reach ",
                              "this age on 30 June ", year_yy, ".")
 
-## KPI 1.3a Additional (20XX-YY) Notes ----
-### footnotes ----
-
-kpi_1.3a_add_note1 <- paste0("1. For the previous eligible cohort at this stage, ",
-                             "the equivalent percentage of men tested before age ",
-                             "66 and 3 months was {x}% (", year_ww, "/", 
-                             substr(year_xx, 3, 4), ").")
 
 ## KPI 1.2b Notes ----
 # None
