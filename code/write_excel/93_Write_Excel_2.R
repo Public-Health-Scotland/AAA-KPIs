@@ -278,10 +278,7 @@ dna_exclude <- theme2_dna |>
 
 # 4: Write to Excel (openxlsx) ----
 ## Setup workbook ----
-# wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
-#                           season, ".xlsx"))
-
-wb <- loadWorkbook(paste0(template_path, "/new_templates/2_Invitation and Attendance_",
+wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
 
 source(here::here(paste0("code/write_excel/93_Source_Excel_2.R")))
@@ -770,7 +767,5 @@ showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
 
  
 # 5: Save output ----
-# saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_", 
-#                         yymm, ".xlsx"), overwrite = TRUE)
-
-saveWorkbook(wb, paste0(output_path, "/theme2_test.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_",
+                        yymm, ".xlsx"), overwrite = TRUE)
