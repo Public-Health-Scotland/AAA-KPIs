@@ -28,17 +28,25 @@ black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
 # black centered 12, wrapped
 black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                                fontName = "Arial", wrapText = TRUE,
-                               halign = "centre", valign = "centre")
+                               halign = "center", valign = "center")
 # black without wrapping 12
 black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                                fontName = "Arial")
-# black complete border centred 12, wrappted
+# black complete border 12, wrappted
 black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
                                fontColour = "#000000", border = "TopBottomLeftRight",
                                wrapText = TRUE, halign = "left", valign = "center")
+# black complete border centred 12, wrappted
+black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                      fontColour = "#000000", border = "TopBottomLeftRight",
+                                      wrapText = TRUE, halign = "center", valign = "center",
+                                      borderStyle = "medium")
 # black 11, wrapped
 black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
+# black without wrapping 11
+black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                               fontName = "Arial")
 # orange size 11, wrapped
 orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
                            fontColour = "#ff9f00", wrapText = TRUE)
@@ -147,12 +155,12 @@ rm(note_toc_data)
 ## KPI 1.1 notes ----
 ### headers ----
 kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, " ", 
-                            year_xx, "includes men offered screening after",
-                            "66th birthday)")
+                            year_xx, " includes men offered screening after",
+                            " 66th birthday)")
 
 ### footnotes ----
 
-kpi_1.1_notep <- paste0("1. Data for year ending 31 March ", year_xx, " are ",
+kpi_1.1_notep <- paste0("p Data for year ending 31 March ", year_xx, " are ",
                         "provisional: data will be finalised from the PHS data ",
                         "extract at 1 September ", year_xx, ". Additionally, a ",
                         "few men in the eligible age range may move in or out ",
