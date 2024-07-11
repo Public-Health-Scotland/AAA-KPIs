@@ -63,13 +63,17 @@ prov_data_note <- paste0("1. Data for year ending 31 March ", year_xx,
                          "uptake rate. Data will be finalised from the PHS data ",
                          "extract at 1 September ", year_xx, ".")
 
+
 ## Table of Contents notes ----
+
 ## sheet headings
 pub_year <- paste0("Data for year ending 31 March ", year_xx,
                    " scheduled to be published in April ",  year_yy,
                    " (final data will be produced from data extracted for PHS in ",
                    "September ", year_xx, ").")
+
 qpmg_note <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
+
 today <- paste0("Workbook created ", Sys.Date())
 
 ## TOC contents
@@ -148,6 +152,7 @@ if (season == "spring") {
  }
 
 ### KPI 1.1 Additional (20YY-YY) Notes ----
+
 ## footnotes
 kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage, ",
                             "the equivalent percentages of men offered screening ",

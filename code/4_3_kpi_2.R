@@ -22,7 +22,7 @@ library(forcats)
 library(stringr)
 library(tidylog)
 library(tidyr)
-library(svDialogs)
+library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list = ls())
@@ -866,90 +866,8 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$fin_year)
 
-# Could this be made into a function that gets sourced?
-
-user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  if (season == "spring") {
-    table(hist_db$kpi, hist_db$fin_year) 
-    
-    print("Don't add to the history file. Move along to next step")
-  } else {
-    
-    if (season == "autumn") {
-      # save a backup of hist_db
-      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      ## Combine data from current to historical
-      current_kpi <- kpi_2 |> 
-        filter(financial_year == kpi_report_years[3])
-      
-      print(table(current_kpi$kpi, current_kpi$fin_year)) 
-      
-      hist_db <- bind_rows(hist_db, current_kpi)
-      print(table(hist_db$kpi, hist_db$fin_year)) 
-      
-      ## Write out new historic file
-      write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      print("You made history! Proceed to the next step")
-    } else {
-      stop("Go check your calendar!")
-    }
-  }
-  } else {
-  if (user_in == "no"){
-    print("No history updated, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
-# 
-# if (season == "spring") {
-#   table(hist_db$kpi, hist_db$fin_year) 
-#   
-#   print("Don't add to the history file. Move along to next step")
-#   
-# } else {
-#   
-#   if (season == "autumn") {
-#     # save a backup of hist_db
-#     write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
-#     # change permissions to give the group read/write
-#     Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"),
-#               mode = "664", use_umask = FALSE)
-#     
-#     ## Combine data from current to historical
-#     current_kpi <- kpi_2 |> 
-#       filter(financial_year == kpi_report_years[3])
-#     
-#     print(table(current_kpi$kpi, current_kpi$fin_year)) 
-#     
-#     hist_db <- bind_rows(hist_db, current_kpi)
-#     print(table(hist_db$kpi, hist_db$fin_year)) 
-#     
-#     ## Write out new historic file
-#     write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
-#     # change permissions to give the group read/write
-#     Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"),
-#               mode = "664", use_umask = FALSE)
-#     
-#     print("You made history! Proceed to the next step")
-#     
-#   } else {
-#     
-#     stop("Go check your calendar!")
-#     
-#   }
-# }
+# add to historical database (only runs in autumn)
+phsaaa::build_history(hist_db, current_kpi, "2")
 
 rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
    qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
@@ -957,7 +875,7 @@ rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list,
 
 ### Current database ---
 ## Take current reporting years from new historic
-kpi_2_full <- bind_rows(hist_db, kpi_2) |> 
+kpi_2_full <- phsaaa::add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
   filter(fin_year %in% c(kpi_report_years))
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
@@ -987,14 +905,4 @@ table(kpi_2_full$kpi, kpi_2_full$fin_year)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative
 
 ## Save data block
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+phsaaa::query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))

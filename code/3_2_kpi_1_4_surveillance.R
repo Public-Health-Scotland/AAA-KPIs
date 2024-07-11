@@ -24,7 +24,8 @@ pacman::p_load(
   glue,
   readr,
   tidylog,
-  svDialogs
+  svDialogs,
+  phsaaa # to install: devtools::install_github("aoifem01/phsaaa")
 )
 
 rm(list = ls())
@@ -36,44 +37,6 @@ source(here::here("code/0_housekeeping.R"))
 rm (output_path, simd_path, fy_list, fy_tibble, qpmg_month, extract_date,
     cut_off_date, cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
-
-## Functions
-history_building <- function(df, season){
-  
-  df
-  
-  if (season == "spring") {
-    table(hist_db$kpi, hist_db$fin_year) 
-    
-    print("Don't add to the history file. Move along to next step")
-    
-  } else {
-    
-    if (season == "autumn") {
-      ## Combine data from this script (KPI 1.4 a & b)
-      df <- df |>
-        filter(fin_year == kpi_report_years[3])
-      
-      new_hist_db <- bind_rows(hist_db, df)
-      
-      print(table(new_hist_db$kpi, new_hist_db$fin_year)) 
-      
-      ## Write out new historic file
-      write_rds(new_hist_db, paste0(hist_path, "/aaa_kpi_historical_theme2.rds"))
-      # change permissions to give the group read/write
-      Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme2.rds"),
-                mode = "664", use_umask = FALSE)
-      
-      print("You made history! Proceed to the next script.")
-      
-    } else {
-      
-      stop("Go check your calendar!")
-      
-    }
-  }
-}
-
 
 ## Step 2: Read in, check, and format files ----
 
@@ -578,32 +541,13 @@ kpi_1_4 <- kpi_1_4 |>
 
 
 ## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
-user_in <- dlgInput("Does the kpi_1 dataframe already contain KPI 1.4 for the most recent complete financial year (check results of table(kpi_1$kpi, kpi_1$fin_year) above) ? Enter 'yes' or 'no' below.")$res
-
-if (user_in == "no"){
-  report_db <- bind_rows(kpi_1, kpi_1_4)
-} else {
-  if (user_in == "yes"){
-    stop("Either remove the KPI 1.4 rows from kpi_1 and run again, or check that these rows match those in kpi_1_4, reassign kpi_1 df to one called 'report_db' and continue.")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+report_db <- phsaaa::add_new_rows(kpi_1, kpi_1_4, fin_year, kpi)
 
 table(report_db$kpi, report_db$fin_year)
 
 ## Write out new invite_attend file
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+phsaaa::query_write_rds(report_db, 
+                        paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 # call in historical db to run next funtion
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
@@ -611,16 +555,4 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  history_building(kpi_1_4, season)
-} else {
-  if (user_in == "no"){
-    print("No history updated, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
-
+phsaaa::build_history(hist_db, kpi_1_4, "1.4")
