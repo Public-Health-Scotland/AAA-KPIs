@@ -17,7 +17,7 @@
 # Future work to be done to add spring printing out.
 
 
-#### 1: Housekeeping ----
+# 1: Housekeeping ----
 library(dplyr)
 library(lubridate)
 library(readr)
@@ -48,12 +48,27 @@ year_yy <- year_xx + 1
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
-### 2: Import data ----
+# 2: Import data ----
 # KPI 2.1a/b and 2.2 %>% 
 theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
 
-### 3: Format data ----
+# KPI 2.1b by SIMD (new for 202409)
+data_kpi_2_1b_simd <- read_rds(paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
+data_kpi_2_1b_simd <- data_kpi_2_1b_simd |> 
+  droplevels() |> 
+  mutate(fin_year = as.character(financial_year)) |> 
+  select(-financial_year)
+table(data_kpi_2_1b_simd$kpi, data_kpi_2_1b_simd$fin_year) 
+
+#KPI 2.1a, 2.1b, + 2.2 device comparison (new for 202409)
+kpi_2_dc <- read_rds(paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
+kpi_2_dc <- kpi_2_dc |> 
+  droplevels() |> 
+  mutate(fin_year = as.character(fin_year))
+table(kpi_2_dc$kpi, kpi_2_dc$fin_year)
+
+# 3: Format data ----
 ## KPI 2.1a ----
 kpi_2_1a <- theme_3 |> 
   filter(kpi == "KPI 2.1a") |> 
@@ -245,21 +260,61 @@ qa_recall <- qa_recall %>%
   replace(is.na(.), 0)
 
 
-## Excel notes for QA standard not met detail ----
-#qa_detail_2a <- ## I think this has to come from the main data... do by hand for now.
-#qa_detail_2b
-#qa_detail_2c
+## KPI 2.1b by SIMD (new for 202409) ----
+kpi_2_1b_simd <- data_kpi_2_1b_simd |> 
+  filter(kpi == "KPI 2.1b SIMD") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+  select(hb_screen, simd, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hb_screen, simd, `2023/24_KPI 2.1b SIMD_screen_n`, 
+         `2023/24_KPI 2.1b SIMD_non_vis_n`, `2023/24_KPI 2.1b SIMD_non_vis_p`)
 
-qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |> 
-  filter(hbres == "Scotland") |> 
-  select(hbres, ends_with("anatomy_n")) |> 
-  mutate(anatomy_sum = sum(c_across(where(is.numeric)))) |> 
-  select(anatomy_sum)
+## KPI 2.1a device comparison (new for 202409) ----
+kpi_2_1a_dc <- kpi_2_dc |> 
+  filter(kpi == "KPI 2.1a dc") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
+  select(hbres, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hbres, 
+         `2023/24_KPI 2.1a dc_screen_n_old`, `2023/24_KPI 2.1a dc_screen_n_new`,
+         `2023/24_KPI 2.1a dc_non_vis_n_old`, `2023/24_KPI 2.1a dc_non_vis_n_new`,
+         `2023/24_KPI 2.1a dc_non_vis_p_old`, `2023/24_KPI 2.1a dc_non_vis_p_new`)
 
+## KPI 2.1b device comparison (new for 202409) ----
+kpi_2_1b_dc <- kpi_2_dc |> 
+  filter(kpi == "KPI 2.1b dc") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
+  select(hbres, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hbres, 
+         `2023/24_KPI 2.1b dc_screen_n_old`, `2023/24_KPI 2.1b dc_screen_n_new`,
+         `2023/24_KPI 2.1b dc_non_vis_n_old`, `2023/24_KPI 2.1b dc_non_vis_n_new`,
+         `2023/24_KPI 2.1b dc_non_vis_p_old`, `2023/24_KPI 2.1b dc_non_vis_p_new`)
+
+## KPI 2.2 device comparison (new for 202409) ----
+kpi_2_2_dc <- kpi_2_dc |> 
+  filter(kpi == "KPI 2.2 dc") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
+  select(hbres, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hbres, 
+         `2023/24_KPI 2.2 dc_audit_n_old`, `2023/24_KPI 2.2 dc_audit_n_new`,
+         `2023/24_KPI 2.2 dc_recall_n_old`, `2023/24_KPI 2.2 dc_recall_n_new`,
+         `2023/24_KPI 2.2 dc_recall_p_old`, `2023/24_KPI 2.2 dc_recall_p_new`)
+
+## KPI 2.2 Additional A device comparison (new for 202409) ----
+# discuss whether this is required with KH
+
+## KPI 2.2 Additional B device comparison (new for 202409) ----
+# discuss whether this is required with KH
  
-### 4: Write to Excel ----
-### Setup workbook ---
-## Notes & Headers
+# 4: Write to Excel ----
+## Setup workbook ----
+### Notes & Headers ----
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
@@ -276,7 +331,7 @@ note_toc <- paste0("The data for the year ending 31 March ", year_xx,
                    "assurance, managerial or operational purposes.")
 result_type <- "Due for publication"
 
-# KPI 2 & QA
+### KPI 2 & QA ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx)
@@ -292,7 +347,7 @@ kpi_2_note1 <- paste0("1. Screened 1 April ", year_ww, " to 28 February ",
                         "September ", year_xx, ".")
 
 
-# Table 4
+### Table 4 ----
 eligible_year_vv <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
                            year_vv, {supsc('r')})
 eligible_year_ww <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
@@ -302,7 +357,7 @@ eligible_year_xx <- paste0("Eligible cohort: Turned 66 in year ending 31 March "
 self_ref_year_xx <- paste0("Self referrals: cumulative period from implementation ",
                            "to 31 March ", year_xx)
 
-# QA standard not met detail standard not met totals from previous tab (reason)
+### QA standard not met detail standard not met totals from previous tab (reason) ----
 
 std_not_met_y1 <- qa_reason_top %>% filter(hbres=="Scotland") %>% 
   select(contains(kpi_report_years[1]) & contains("Reason_standard_not_met_n")) %>% 
@@ -316,12 +371,24 @@ std_not_met_y3 <- qa_reason_bot %>% filter(hbres=="Scotland") %>%
   select(contains(kpi_report_years[3]) & contains("Reason_standard_not_met_n")) %>% 
   pull()
 
-# QA standard not met detail notes
+### QA standard not met detail notes ----
+
+#qa_detail_2a <- ## I think this has to come from the main data... do by hand for now.
+#qa_detail_2b
+#qa_detail_2c
+
 # qa_detail_note2 <- paste0("2. Over the 3 years presented, there were a total of ",
 #                           qa_detail_2a, " standard not met scans that did not have ",
 #                           "any detailed reason recorded: ", qa_detail_2b, 
 #                           " of these were image quality, ", qa_detail_2c, 
 #                           " calliper placement and ", qa_detail_2d, " angle.")
+
+
+qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |> 
+  filter(hbres == "Scotland") |> 
+  select(hbres, ends_with("anatomy_n")) |> 
+  mutate(anatomy_sum = sum(c_across(where(is.numeric)))) |> 
+  select(anatomy_sum)
 
 qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detail_3, 
                           " scans with anatomy as the reason the standard was not ", 
@@ -337,9 +404,9 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
 wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
                           season, ".xlsx"))
 
-## Table of Contents ---
+## Table of Contents ----
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
-writeData(wb, "Table of Contents", meg_review, startRow = 4)
+writeData(wb, "Table of Contents", qpmg_review, startRow = 4)
 writeData(wb, "Table of Contents", report_type, startRow = 5)
 writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 23)
@@ -347,7 +414,7 @@ writeData(wb, "Table of Contents", note_toc, startRow = 23)
 addStyle(wb, "Table of Contents", style = report_type_style, rows = 5, cols = 1)
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
-## KPI 2.1a ---
+## KPI 2.1a ----
 writeData(wb, sheet = "KPI 2.1a", kpi_2_1a, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.1a", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1a", screened_year_ww, startRow = 4, startCol = 5)
@@ -355,7 +422,7 @@ writeData(wb, sheet = "KPI 2.1a", screened_year_xx, startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 2.1a", kpi_2_note1, startRow = 30)
 showGridLines(wb, "KPI 2.1a", showGridLines = FALSE)
 
-## KPI 2.1b ---
+## KPI 2.1b ----
 writeData(wb, sheet = "KPI 2.1b", kpi_2_1b, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.1b", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1b", screened_year_ww, startRow = 4, startCol = 5)
@@ -363,7 +430,7 @@ writeData(wb, sheet = "KPI 2.1b", screened_year_xx, startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 2.1b", kpi_2_note1, startRow = 30)
 showGridLines(wb, "KPI 2.1b", showGridLines = FALSE)
 
-## KPI 2.2 ---
+## KPI 2.2 ----
 writeData(wb, sheet = "KPI 2.2", kpi_2_2, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.2", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.2", screened_year_ww, startRow = 4, startCol = 5)
@@ -371,7 +438,7 @@ writeData(wb, sheet = "KPI 2.2", screened_year_xx, startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 2.2", kpi_2_note1, startRow = 30)
 showGridLines(wb, "KPI 2.2", showGridLines = FALSE)
 
-## KPI 2.2 Additional A ---
+## KPI 2.2 Additional A ----
 writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_top, startRow = 8, 
           colNames = FALSE)
 writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_bot, startRow = 29, 
@@ -384,7 +451,7 @@ writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx, startRow = 25,
           startCol = 2)
 showGridLines(wb, "KPI 2.2 Additional (A)", showGridLines = FALSE)
 
-## KPI 2.2 Additional B ---
+## KPI 2.2 Additional B ----
 writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, startRow = 8, 
           colNames = FALSE)
 writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_bot, startRow = 29, 
@@ -397,7 +464,7 @@ writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx, startRow = 25,
           startCol = 2)
 showGridLines(wb, "KPI 2.2 Additional (B)", showGridLines = FALSE)
 
-## Table 4: Eligible, no final result ---
+## Table 4: Eligible, no final result ----
 writeData(wb, sheet = "4) Eligible no final result", table_4_top, startRow = 8, 
           colNames = FALSE)
 writeData(wb, sheet = "4) Eligible no final result", table_4_bot, startRow = 28, 
@@ -412,7 +479,7 @@ writeData(wb, sheet = "4) Eligible no final result", self_ref_year_xx, startRow 
           startCol = 9)
 showGridLines(wb, "4) Eligible no final result", showGridLines = FALSE)
 
-## QA standard not met reason ---
+## QA standard not met reason ----
 writeData(wb, sheet = "QA standard not met reason", qa_reason_top, startRow = 8, 
           colNames = FALSE)
 writeData(wb, sheet = "QA standard not met reason", qa_reason_bot, startRow = 29, 
@@ -425,7 +492,7 @@ writeData(wb, sheet = "QA standard not met reason", screened_year_xx, startRow =
           startCol = 2)
 showGridLines(wb, "QA standard not met reason", showGridLines = FALSE)
 
-## QA standard not met detail ---
+## QA standard not met detail ----
 
 writeData(wb, sheet = "QA standard not met detail", std_not_met_y1, startRow = 5,
           startCol = 2)
@@ -453,7 +520,7 @@ writeData(wb, sheet = "QA standard not met detail", screened_year_xx, startRow =
 writeData(wb, sheet = "QA standard not met detail", qa_detail_note3, startRow = 32)
 showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 
-## Batch QA standard not met ---
+## Batch QA standard not met ----
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, startRow = 7, 
           colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, startRow = 18, 
@@ -480,7 +547,7 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 
           startCol = 14)
 showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
-## Save ----
+# 5: Save output ----
 saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"), 
              overwrite = TRUE)
 
