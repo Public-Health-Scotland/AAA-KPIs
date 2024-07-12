@@ -4,7 +4,7 @@
 # Karen Hotopp & Aoife McCarthy
 # February 2024
 # 
-# DESCRIPTION
+# Write out to AAA Excel workbook 1: Scotland Summary
 # 
 # Written/run on Posit WB, R 4.1.2
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
