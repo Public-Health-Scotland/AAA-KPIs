@@ -27,7 +27,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tidylog)
-library(svDialogs)
+library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list = ls())
@@ -446,10 +446,17 @@ table(kpi_3$kpi)
 ## Historical file
 # Create backup of last year's file
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
-write_rds(hist_db, paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"))
-# Change permissions to give the group read/write
-Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4_bckp.rds"),
-          mode = "664", use_umask = FALSE)
+
+# temp: renaming "financial_year" to "fin_year" to make below function work
+# AMc note: discuss with KH as to whether this can be changed permanently??
+hist_db <- hist_db |> 
+  rename(fin_year = financial_year)
+
+kpi_3 <- kpi_3 |> 
+  rename(fin_year = financial_year)
+
+# create historical backup + new file with this year's data
+phsaaa::build_history(hist_db, kpi_3, "3")
 
 table(hist_db$financial_year, hist_db$kpi) 
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
@@ -465,36 +472,8 @@ table(hist_db$financial_year, hist_db$kpi)
 # 2021/22                45                45              24
 # 2022/23                45                45              24
 
-user_in <- dlgInput("Do you want to update historical file? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  # Write current year file
-  write_rds(kpi_3, paste0(hist_path, "/aaa_kpi_historical_theme4.rds"))
-  # Change permissions to give the group read/write
-  Sys.chmod(paste0(hist_path, "/aaa_kpi_historical_theme4.rds"),
-            mode = "664", use_umask = FALSE)
-} else {
-  if (user_in == "no"){
-    print("No history updated, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
 ## Save report file
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
-
+phsaaa::query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
