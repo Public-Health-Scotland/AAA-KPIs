@@ -979,6 +979,7 @@ rm(qa_batch_recall_hb, qa_batch_recall_scot)
 ## Check names of variables to see if they can be combined
 names(kpi_2_1a)
 names(kpi_2_1b)
+# names(kpi_2_1b_simd)
 names(kpi_2_2)
 names(kpi_2_2_add_a)
 names(table_4)

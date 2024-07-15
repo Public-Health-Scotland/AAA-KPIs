@@ -278,9 +278,12 @@ kpi_2_1a_dc <- kpi_2_dc |>
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
   select(hbres, 
-         `2023/24_KPI 2.1a dc_screen_n_old`, `2023/24_KPI 2.1a dc_screen_n_new`,
-         `2023/24_KPI 2.1a dc_non_vis_n_old`, `2023/24_KPI 2.1a dc_non_vis_n_new`,
-         `2023/24_KPI 2.1a dc_non_vis_p_old`, `2023/24_KPI 2.1a dc_non_vis_p_new`)
+         `2023/24_KPI 2.1a dc_screen_n_old`, 
+         `2023/24_KPI 2.1a dc_non_vis_n_old`,
+         `2023/24_KPI 2.1a dc_non_vis_p_old`,
+         `2023/24_KPI 2.1a dc_screen_n_new`,
+         `2023/24_KPI 2.1a dc_non_vis_n_new`,
+         `2023/24_KPI 2.1a dc_non_vis_p_new`)
 
 ## KPI 2.1b device comparison (new for 202409) ----
 kpi_2_1b_dc <- kpi_2_dc |> 
@@ -290,9 +293,12 @@ kpi_2_1b_dc <- kpi_2_dc |>
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
   select(hbres, 
-         `2023/24_KPI 2.1b dc_screen_n_old`, `2023/24_KPI 2.1b dc_screen_n_new`,
-         `2023/24_KPI 2.1b dc_non_vis_n_old`, `2023/24_KPI 2.1b dc_non_vis_n_new`,
-         `2023/24_KPI 2.1b dc_non_vis_p_old`, `2023/24_KPI 2.1b dc_non_vis_p_new`)
+         `2023/24_KPI 2.1b dc_screen_n_old`, 
+         `2023/24_KPI 2.1b dc_non_vis_n_old`,
+         `2023/24_KPI 2.1b dc_non_vis_p_old`, 
+         `2023/24_KPI 2.1b dc_screen_n_new`,
+         `2023/24_KPI 2.1b dc_non_vis_n_new`,
+         `2023/24_KPI 2.1b dc_non_vis_p_new`)
 
 ## KPI 2.2 device comparison (new for 202409) ----
 kpi_2_2_dc <- kpi_2_dc |> 
@@ -302,15 +308,72 @@ kpi_2_2_dc <- kpi_2_dc |>
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
   select(hbres, 
-         `2023/24_KPI 2.2 dc_audit_n_old`, `2023/24_KPI 2.2 dc_audit_n_new`,
-         `2023/24_KPI 2.2 dc_recall_n_old`, `2023/24_KPI 2.2 dc_recall_n_new`,
-         `2023/24_KPI 2.2 dc_recall_p_old`, `2023/24_KPI 2.2 dc_recall_p_new`)
+         `2023/24_KPI 2.2 dc_audit_n_old`, 
+         `2023/24_KPI 2.2 dc_recall_n_old`, 
+         `2023/24_KPI 2.2 dc_recall_p_old`,
+         `2023/24_KPI 2.2 dc_audit_n_new`,
+         `2023/24_KPI 2.2 dc_recall_n_new`,
+         `2023/24_KPI 2.2 dc_recall_p_new`)
 
 ## KPI 2.2 Additional A device comparison (new for 202409) ----
-# discuss whether this is required with KH
+kpi_2_2_add_a_dc <- kpi_2_dc |> 
+  filter(kpi == "KPI 2.2 Additional A dc") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
+  select(hbres, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hbres,
+         `2023/24_KPI 2.2 Additional A dc_audit_n_old`,
+         `2023/24_KPI 2.2 Additional A dc_no_audit_result_n_old`,
+         `2023/24_KPI 2.2 Additional A dc_no_audit_result_p_old`,
+         `2023/24_KPI 2.2 Additional A dc_audit_n2_old`,
+         `2023/24_KPI 2.2 Additional A dc_standard_met_n_old`,
+         `2023/24_KPI 2.2 Additional A dc_standard_met_p_old`,
+         `2023/24_KPI 2.2 Additional A dc_standard_not_met_n_old`,
+         `2023/24_KPI 2.2 Additional A dc_standard_not_met_p_old`,
+         `2023/24_KPI 2.2 Additional A dc_audit_n_new`,
+         `2023/24_KPI 2.2 Additional A dc_no_audit_result_n_new`,
+         `2023/24_KPI 2.2 Additional A dc_no_audit_result_p_new`,
+         `2023/24_KPI 2.2 Additional A dc_audit_n2_new`,
+         `2023/24_KPI 2.2 Additional A dc_standard_met_n_new`,
+         `2023/24_KPI 2.2 Additional A dc_standard_met_p_new`,
+         `2023/24_KPI 2.2 Additional A dc_standard_not_met_n_new`,
+         `2023/24_KPI 2.2 Additional A dc_standard_not_met_p_new`)
 
 ## KPI 2.2 Additional B device comparison (new for 202409) ----
-# discuss whether this is required with KH
+kpi_2_2_add_b_dc <- kpi_2_dc |> 
+  filter(kpi == "KPI 2.2 Additional B dc") |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
+  select(hbres, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(hbres,
+         `2023/24_KPI 2.2 Additional B dc_standard_not_met_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_imm_recall_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_imm_recall_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_recall_cc_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_recall_cc_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_audit_result_n_old`,
+         `2023/24_KPI 2.2 Additional B dc_no_audit_result_p_old`,
+         `2023/24_KPI 2.2 Additional B dc_standard_not_met_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_imm_recall_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_imm_recall_p_new`,
+         `2023/24_KPI 2.2 Additional B dc_recall_cc_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_recall_cc_p_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_p_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_p_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_p_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_audit_result_n_new`,
+         `2023/24_KPI 2.2 Additional B dc_no_audit_result_p_new`)
  
 # 4: Write to Excel ----
 ## Setup workbook ----
