@@ -26,6 +26,7 @@ library(stringr)
 library(forcats)
 library(openxlsx)
 library(reporter)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list=ls())
@@ -394,12 +395,73 @@ note_toc <- paste0("The data for the year ending 31 March ", year_xx,
                    "assurance, managerial or operational purposes.")
 result_type <- "Due for publication"
 
+
+### Styles ----
+# bold black size 14, wrapped
+black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
+# bold black 12, wrapped
+black_bold_12 <- createStyle(fontSize = 14, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
+# black 12, wrapped
+black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black centered 12, wrapped
+black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial", wrapText = TRUE,
+                               halign = "center", valign = "center")
+# black without wrapping 12
+black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial")
+# black complete border 12, wrapped
+black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                               fontColour = "#000000", border = "TopBottomLeftRight",
+                               wrapText = TRUE, halign = "left", valign = "center")
+# black complete medium border centred 12, wrapped
+black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                      fontColour = "#000000", border = "TopBottomLeftRight",
+                                      wrapText = TRUE, halign = "center", valign = "center",
+                                      borderStyle = "medium")
+# black complete thin border centred 12, wrapped
+black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                           fontColour = "#000000", border = "TopBottomLeftRight",
+                                           wrapText = TRUE, halign = "center", valign = "center",
+                                           borderStyle = "thin")
+# black 11, wrapped
+black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black without wrapping 11
+black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                               fontName = "Arial")
+# orange size 11, wrapped
+orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
+                         fontColour = "#ff9f00", wrapText = TRUE)
+# bold red 12, wrapped 
+red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
+                           fontName = "Arial", textDecoration = c("bold"),
+                           wrapText = TRUE)
+# bright blue centered 12, wrapped
+blue_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                                     fontColour = "#0000FF", wrapText = TRUE,
+                                     halign = "center", border = "TopBottomLeftRight")
+# bright blue bordered centred underlined 12, wrapped
+blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                        fontColour = "#0000FF", border = "TopBottomLeftRight",
+                                        textDecoration = "underline", wrapText = TRUE, 
+                                        halign = "left", valign = "center")
+
 ### KPI 2 & QA ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
-screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx)
+screened_year_xx <- phsaaa::eval_seasonal_diff(
+  {paste0("Screened 1 April ", year_ww, " - ", '\n', "28 February ", year_xx, 
+          " (partial data for financial year)")}, # spring
+  { paste0("Screened in year ending 31 March ", year_xx) } # autumn
+  )
 
-kpi_2_note1 <- paste0("1. Screened 1 April ", year_ww, " to 28 February ",
+kpi_2_note1 <- paste0("p Screened 1 April ", year_ww, " to 28 February ",
                         year_xx, ": provisional rates are presented for the ",
                         "11-month period 1 April ", year_ww, " to 28 February ",
                         year_xx, " as data are not yet available for the full ",
@@ -486,12 +548,34 @@ writeData(wb, sheet = "KPI 2.1a", kpi_2_note1, startRow = 30)
 showGridLines(wb, "KPI 2.1a", showGridLines = FALSE)
 
 ## KPI 2.1b ----
+# data
 writeData(wb, sheet = "KPI 2.1b", kpi_2_1b, startRow = 7, colNames = FALSE)
+# notes
 writeData(wb, sheet = "KPI 2.1b", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1b", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.1b", screened_year_xx, startRow = 4, startCol = 8)
 writeData(wb, sheet = "KPI 2.1b", kpi_2_note1, startRow = 30)
 showGridLines(wb, "KPI 2.1b", showGridLines = FALSE)
+
+## KPI 2.1b by SIMD ----
+# notes
+writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_vv, 
+          startRow = 4, startCol = 3)
+writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_ww, 
+          startRow = 4, startCol = 6)
+writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_xx, 
+          startRow = 4, startCol = 9)
+addStyle(wb, "KPI 2.1b by SIMD", black_border_centre_12,
+         rows = 4, cols = 3:11, gridExpand = TRUE)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_note1,
+            startRow = 119)
+  addStyle(wb, "KPI 2.1b by SIMD", black_11,
+           rows = 119, cols = 1)
+}
+# data
+writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_1b_simd,
+          startRow = 7, startCol = 3, colNames = F)
 
 ## KPI 2.2 ----
 writeData(wb, sheet = "KPI 2.2", kpi_2_2, startRow = 7, colNames = FALSE)
