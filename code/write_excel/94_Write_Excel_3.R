@@ -680,6 +680,13 @@ writeData(wb, sheet = "KPI 2.1a device", kpi_2_1a_dc,
           startRow = 7, colNames = F)
 showGridLines(wb, "KPI 2.1a device", showGridLines = FALSE)
 
+## KPI 2.1b device comparison ----
+# notes
+# data
+writeData(wb, sheet = "KPI 2.1b device", kpi_2_1b_dc,
+          startRow = 7, colNames = F)
+showGridLines(wb, "KPI 2.1b device", showGridLines = FALSE)
+
 # 5: Save output ----
 saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"),
              overwrite = TRUE)
