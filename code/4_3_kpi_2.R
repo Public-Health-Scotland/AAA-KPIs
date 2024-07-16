@@ -95,7 +95,8 @@ extract2 <- extract %>%
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66)),
          # flags screens performed with new devices
-         device = if_else(date_screen > ymd(device_swap_date), "new", "old")) 
+         device = if_else(date_screen > ymd(device_swap_date), "new", "old"),
+         financial_year = droplevels(financial_year)) 
 
 ### KPI 2.1a ----
 # Percentage of screening appointments, where the aorta could not be visualised
@@ -184,11 +185,11 @@ rm(kpi_2_1b_hb, kpi_2_1b_scotland)
 
 #### KPI 2.1b by Scotland SIMD ----
 
-
 kpi_2_1b_hb_simd <- extract2_dedup_hb %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>%
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |> 
   ungroup()
 
 kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
@@ -196,20 +197,24 @@ kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>% 
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
-  ungroup()
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
+  ungroup() |> 
+  mutate(simd2020v2_sc_quintile = as.character(simd2020v2_sc_quintile))
 
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
-         kpi = "KPI 2.1b SIMD",
-         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
+  mutate(non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+         kpi = "KPI 2.1b SIMD") |> 
   select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
-  pivot_longer(!hb_screen:simd, 
+  pivot_longer(!hb_screen: simd, 
                names_to = "group", values_to = "value") |> 
-  arrange(hb_screen, group, simd)
+  complete(hb_screen, kpi, financial_year, simd, group) |> # creates all combinations of hb_screen/simd/group
+  mutate(simd = replace_na(as.character(simd), "Unknown"),
+         hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         group = fct_relevel(group, c("screen_n", "non_vis_n", "non_vis_p")),
+         simd = fct_relevel(simd, simd_level$simd)) |> 
+  arrange(hb_screen, simd, group)
 
 rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
-
 
 
 #### KPI 2.1b device comparison (dc) ----

@@ -55,11 +55,8 @@ theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
 
 # KPI 2.1b by SIMD (new for 202409)
-data_kpi_2_1b_simd <- read_rds(paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
-data_kpi_2_1b_simd <- data_kpi_2_1b_simd |> 
-  droplevels() |> 
-  mutate(fin_year = as.character(financial_year)) |> 
-  select(-financial_year)
+data_kpi_2_1b_simd <- read_rds(paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds")) |> 
+  rename(fin_year = financial_year)
 table(data_kpi_2_1b_simd$kpi, data_kpi_2_1b_simd$fin_year) 
 
 #KPI 2.1a, 2.1b, + 2.2 device comparison (new for 202409)
@@ -268,8 +265,7 @@ kpi_2_1b_simd <- data_kpi_2_1b_simd |>
   select(hb_screen, simd, FY_kpi_group, value) |> 
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(hb_screen, simd, `2023/24_KPI 2.1b SIMD_screen_n`, 
-         `2023/24_KPI 2.1b SIMD_non_vis_n`, `2023/24_KPI 2.1b SIMD_non_vis_p`)
+  select(-c(hb_screen, simd))
 
 ## KPI 2.1a device comparison (new for 202409) ----
 kpi_2_1a_dc <- kpi_2_dc |> 
@@ -529,6 +525,10 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
 wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
                           season, ".xlsx"))
 
+# test path:
+# wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
+#                           season, "_new.xlsx"))
+
 ## Table of Contents ----
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
 writeData(wb, "Table of Contents", qpmg_review, startRow = 4)
@@ -695,7 +695,9 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 
 showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
 # 5: Save output ----
-saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"), 
+saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"),
              overwrite = TRUE)
 
-
+# test path:
+# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"), 
+#              overwrite = TRUE)
