@@ -677,26 +677,40 @@ showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 # notes
 # data
 writeData(wb, sheet = "KPI 2.1a device", kpi_2_1a_dc,
-          startRow = 7, colNames = F)
+          startRow = 8, colNames = F)
 showGridLines(wb, "KPI 2.1a device", showGridLines = FALSE)
 
 ## KPI 2.1b device comparison ----
 # notes
 # data
 writeData(wb, sheet = "KPI 2.1b device", kpi_2_1b_dc,
-          startRow = 7, colNames = F)
+          startRow = 8, colNames = F)
 showGridLines(wb, "KPI 2.1b device", showGridLines = FALSE)
 
 ## KPI 2.2 device comparison ----
 # notes
 # data
 writeData(wb, sheet = "KPI 2.2 device", kpi_2_2_dc,
-          startRow = 7, colNames = F)
+          startRow = 8, colNames = F)
 showGridLines(wb, "KPI 2.2 device", showGridLines = FALSE)
+
+## KPI 2.2 Additional (A) device comparison ----
+# notes
+# data
+writeData(wb, sheet = "KPI 2.2 Add (A) device", kpi_2_2_add_a_dc,
+          startRow = 9, colNames = F)
+showGridLines(wb, "KPI 2.2 Add (A) device", showGridLines = FALSE)
+
+## KPI 2.2 Additional (B) device comparison ----
+# notes
+# data
+writeData(wb, sheet = "KPI 2.2 Add (B) device", kpi_2_2_add_b_dc,
+          startRow = 9, colNames = F)
+showGridLines(wb, "KPI 2.2 Add (B) device", showGridLines = FALSE)
 
 # 5: Save output ----
 phsaaa::query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
 
 # test path:
-# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"), 
+# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
 #              overwrite = TRUE)
