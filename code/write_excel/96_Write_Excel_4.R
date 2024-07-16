@@ -24,6 +24,7 @@ library(readr)
 library(tidyr)
 library(reporter)
 library(openxlsx)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list=ls())
@@ -390,6 +391,6 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 ## Save ----
-saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
-                        yymm, ".xlsx"), overwrite = TRUE)
+phsaaa::query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
+                                      yymm, ".xlsx"))
 

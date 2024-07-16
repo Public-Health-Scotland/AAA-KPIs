@@ -22,6 +22,7 @@ library(tidyr)
 library(lubridate)
 library(reporter)
 library(openxlsx)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 
 rm(list=ls())
@@ -246,7 +247,6 @@ writeData(wb, "5) Self-referral results", screened_year_cum, startRow = 6,
 showGridLines(wb, "5) Self-referral results", showGridLines = FALSE)
 
 ## Save ----
-saveWorkbook(wb, paste0(output_path,
-                        "/5_Results for Eligible",
-                        "and Self-referrals_", yymm, ".xlsx"), 
-             overwrite = TRUE)
+phsaaa::query_saveWorkbook(wb, paste0(output_path,
+                                      "/5_Results for Eligible",
+                                      "and Self-referrals_", yymm, ".xlsx"))

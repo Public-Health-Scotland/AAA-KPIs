@@ -695,8 +695,7 @@ writeData(wb, sheet = "KPI 2.2 device", kpi_2_2_dc,
 showGridLines(wb, "KPI 2.2 device", showGridLines = FALSE)
 
 # 5: Save output ----
-saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"),
-             overwrite = TRUE)
+phsaaa::query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
 
 # test path:
 # saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"), 
