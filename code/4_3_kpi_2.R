@@ -44,6 +44,9 @@ coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
 
+# SIMD level
+simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
+
 # QA standard not met detailed reasons list
 qa_detail_list <- tibble(detail = c("Calliper - APL",
                                     "Calliper - APT",
@@ -95,8 +98,9 @@ extract2 <- extract %>%
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66)),
          # flags screens performed with new devices
-         device = if_else(date_screen > ymd(device_swap_date), "new", "old"),
-         financial_year = droplevels(financial_year)) 
+         device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"),
+                         levels = c("old", "new")),
+         financial_year = droplevels(financial_year))
 
 ### KPI 2.1a ----
 # Percentage of screening appointments, where the aorta could not be visualised
@@ -129,15 +133,11 @@ kpi_2_1a_dc <- extract2 %>%
   group_by(financial_year, device) |>
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
-  select(financial_year, hb_screen, device, non_vis_n, screen_n) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_1a_dc <- kpi_2_1a_dc %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1)) %>%
-  arrange(hb_screen) |> 
-  mutate(kpi = "KPI 2.1a dc") |> 
+         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1),
+         kpi = "KPI 2.1a dc") %>%
   select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
+  arrange(hb_screen, device) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
 
@@ -237,6 +237,7 @@ kpi_2_1b_dc <- bind_rows(kpi_2_1b_scotland_dc, kpi_2_1b_hb_dc) %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
          kpi = "KPI 2.1b dc") |> 
+  arrange(hb_screen, device) |> 
   select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
@@ -252,7 +253,8 @@ extract_audit <- extract %>%
          # keep records sampled for QA audit
          audit_flag == '01') %>%
   mutate(# flags screens performed with new devices
-         device = if_else(date_screen > ymd(device_swap_date), "new", "old"),
+         device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"), 
+                         levels = c("old", "new")),
          audit_n = if_else(audit_flag == '01', 1, 0),
          # failed audit and immediate recall
          recall_n = if_else(audit_result == '02' & 
@@ -306,14 +308,10 @@ kpi_2_2_dc <- extract_audit %>%
   group_by(financial_year, device) |> 
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
-  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1)) |> 
-  select(financial_year, hb_screen, device, audit_n, recall_n, recall_p) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_2_dc <- kpi_2_2_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 dc") |> 
+  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1),
+         hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         kpi = "KPI 2.2 dc") |> 
+  arrange(hb_screen, device) %>%
   select(hb_screen, kpi, financial_year, device, audit_n, recall_n, recall_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
@@ -346,28 +344,25 @@ kpi_2_2_add_a <- kpi_2_2_add_a %>%
 ### KPI 2.2 Additional A device comparison (dc)----
 # includes additional grouping by "new" or "old" device
 kpi_2_2_add_a_dc <- extract_audit %>%
-  group_by(financial_year, hb_screen, device) %>%
-  summarise(audit_n = sum(audit_n),
-            no_audit_result_n = sum(no_audit_result_n),
-            audit_n2 = sum(audit_n),
-            standard_met_n = sum(standard_met_n),
-            standard_not_met_n = sum(standard_not_met_n),
+  group_by(financial_year, hb_screen, device) %>% # summarising cols
+  summarise(
+    audit_n = sum(audit_n),
+    no_audit_result_n = sum(no_audit_result_n),
+    audit_n2 = sum(audit_n),
+    standard_met_n = sum(standard_met_n),
+    standard_not_met_n = sum(standard_not_met_n),
   ) %>%
   ungroup() |> 
-  group_by(financial_year, device) |> 
+  group_by(financial_year, device) |> # adding scotland totals
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
   mutate(
     no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
     standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) |> 
-  select(financial_year, hb_screen, device, audit_n:standard_not_met_p) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_2_add_a_dc <- kpi_2_2_add_a_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1),
+    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+    kpi = "KPI 2.2 Additional A dc") %>%
   arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 Additional A dc") |> 
   select(hb_screen, kpi, financial_year, device, audit_n:standard_not_met_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
@@ -464,16 +459,10 @@ kpi_2_2_add_b_dc <- extract_audit %>%
     no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
     no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
     no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
-    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1)
-  ) |> 
-  select(financial_year, hb_screen, device, audit_n:no_audit_result_p) |> 
-  arrange(financial_year, hb_screen, device)
-  
-
-kpi_2_2_add_b_dc <- kpi_2_2_add_b_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1),
+    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+    kpi = "KPI 2.2 Additional B dc") %>%
   arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 Additional B dc") |> 
   select(hb_screen, kpi, financial_year, device, standard_not_met_n, imm_recall_n, 
          imm_recall_p, recall_cc_n, recall_cc_p, recall_cc_n, recall_cc_p, 
          no_recall_sat_interim_n, no_recall_sat_interim_p, no_recall_refer_vasc_n, 
