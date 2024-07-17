@@ -468,6 +468,7 @@ kpi_1_4b <- quarterly_surveillance_w_excl %>%
   summarise(cohort_n = n(), met_kpi_1_4b_n = sum(met_kpi_1_4b)) %>% 
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() %>% 
+  complete(fy_due, hbres) |> # add in any combinations missing
   mutate(met_kpi_1_4b_p = round_half_up(met_kpi_1_4b_n * 100 / cohort_n, 1),
          kpi = "KPI 1.4b") |>
   pivot_longer(cols = cohort_n:met_kpi_1_4b_p,

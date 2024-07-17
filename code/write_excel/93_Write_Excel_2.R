@@ -21,6 +21,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
+library(forcats)
 library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 
@@ -30,7 +31,7 @@ gc()
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, extract_path, hist_path, simd_path, hb_list, fy_tibble, 
+rm (exclusions_path, extract_path, hist_path, simd_path, fy_tibble, 
     hb_tibble, cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1)
 
@@ -249,7 +250,9 @@ kpi_1.4b <- theme2 |>
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |>
   select(hbres, FY_kpi_group, value) |>
   # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  mutate(hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(hbres)
 
 ## Table 6: Surveillance ----
 ## Data for three most recent complete years
