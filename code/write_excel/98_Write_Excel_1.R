@@ -20,6 +20,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
+library(phsaaa) # to install, run; devtools::install_github("aoifem01/phsaaa")
 
 rm(list=ls())
 gc()
@@ -40,7 +41,6 @@ year_yy <- year_xx + 1
 
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
-
 
 ### 2: Import and format data ----
 ## KPI 1
@@ -83,14 +83,11 @@ kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |>
   # match Excel tables
   pivot_wider(names_from = financial_year, values_from = value)
 
-
-
-
 ## Save out files to use in publication
-write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
-write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
-write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
-write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 
 
 ### AMC additions below:
@@ -109,15 +106,23 @@ kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group)) %>%
 ### 3: Output to Excel ----
 
 # load workbook
-wb <- loadWorkbook(paste0(template_path, "/1_Scotland KPI Summary_", season, ".xlsx"))
+wb <- loadWorkbook(
+  paste0(template_path, "/1_Scotland KPI Summary_", season, ".xlsx")
+  )
 
 # Notes and headers
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
-data_header <- paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
-                      "be published in April ", year_yy, " (final data will be ",
-                      "produced from data extracted for PHS in September ",
-                      year_xx, ").")
+data_header <- phsaaa::eval_seasonal_diff(
+  season,
+  {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
+         "be published in April ", year_yy, " (final data will be ",
+         "produced from data extracted for PHS in September ",
+         year_xx, ").")}, #spring
+  {paste0("KPI data for year ending 31 March ", year_xx, 
+          " and some supplementary information are planned ",
+          "for publication in March ", year_yy, ".")} # autumn
+)
 
 # "data notes" sheet - additional notes
 extract_note1 <- paste0("Public Health Scotland (PHS) receives data extracts from ",
@@ -150,29 +155,26 @@ extract_note4 <- paste0(year_vv, "/", substr(year_ww, 3,4))
 extract_note5 <- paste0(year_ww, "/", substr(year_xx, 3,4))
 extract_note6 <- paste0(extract_date, " ", year_xx)
 
-cohort_date1.1 <- as.character(as.numeric(year_uu)-66)
-cohort_date1.2 <- as.character(as.numeric(year_uu)-65)
-cohort_note1.1 <- paste0("Born 1 April ", cohort_date1.1, " to 31 March ",
-                         cohort_date1.2)
+cohort_note1.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_uu)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_uu)-65))
 cohort_note1.2 <- paste0("Year ending 31 March ", year_uu)
 cohort_note1.3 <- paste0("Year ending 31 March ", year_vv)
 
-cohort_date2.1 <- as.character(as.numeric(year_vv)-66)
-cohort_date2.2 <- as.character(as.numeric(year_vv)-65)
-cohort_note2.1 <- paste0("Born 1 April ", cohort_date2.1, " to 31 March ",
-                         cohort_date2.2)
+cohort_note2.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_vv)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_vv)-65))
 cohort_note2.2 <- paste0("Year ending 31 March ", year_vv)
 cohort_note2.3 <- paste0("Year ending 31 March ", year_ww)
 
-cohort_date3.1 <- as.character(as.numeric(year_ww)-66)
-cohort_date3.2 <- as.character(as.numeric(year_ww)-65)
-cohort_note3.1 <- paste0("Born 1 April ", cohort_date3.1, " to 31 March ",
-                         cohort_date3.2)
+cohort_note3.1 <- paste0("Born 1 April ", 
+                         as.character(as.numeric(year_ww)-66),
+                         " to 31 March ",
+                         as.character(as.numeric(year_ww)-65))
 cohort_note3.2 <- paste0("Year ending 31 March ", year_ww)
 cohort_note3.3 <- paste0("Year ending 31 March ", year_xx)
-
-rm(cohort_date1.1, cohort_date1.2, cohort_date2.1, cohort_date2.2, cohort_date3.1,
-   cohort_date3.2)
 
 summary_note1 <- paste0("r  Data are revised since published on ",
                         "[publication date [20XX]] ", year_xx, ". For KPI 3.1, ",
@@ -191,8 +193,13 @@ summary_note1 <- paste0("r  Data are revised since published on ",
 
 year_end_vv <- paste0("Year ending", '\n', "31 March ", year_vv)
 year_end_ww <- paste0("Year ending", '\n', "31 March ", year_ww)
-year_end_xx <- paste0("Year ending", '\n', "31 March ", year_xx, '\n',
-                      "(provisional/partial", '\n', "data)")
+year_end_xx <- phsaaa::eval_seasonal_diff(
+  season,
+  {paste0("Year ending", '\n', "31 March ", year_xx, '\n',
+          "(provisional/partial", '\n', "data)")}, # spring
+  {paste0("Year ending", '\n', "31 March ", year_xx)} # autumn
+)
+
 
 # Styles
 # bold_red_font <- createStyle(fontSize = 12, fontName = "Arial",
