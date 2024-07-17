@@ -114,6 +114,7 @@ wb <- loadWorkbook(
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 data_header <- phsaaa::eval_seasonal_diff(
+  season,
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
          "be published in April ", year_yy, " (final data will be ",
          "produced from data extracted for PHS in September ",
@@ -192,7 +193,8 @@ summary_note1 <- paste0("r  Data are revised since published on ",
 
 year_end_vv <- paste0("Year ending", '\n', "31 March ", year_vv)
 year_end_ww <- paste0("Year ending", '\n', "31 March ", year_ww)
-year_end_xx <- phs::eval_seasonal_diff(
+year_end_xx <- phsaaa::eval_seasonal_diff(
+  season,
   {paste0("Year ending", '\n', "31 March ", year_xx, '\n',
           "(provisional/partial", '\n', "data)")}, # spring
   {paste0("Year ending", '\n', "31 March ", year_xx)} # autumn
