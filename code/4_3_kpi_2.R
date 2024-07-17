@@ -357,16 +357,16 @@ kpi_2_2_add_a_dc <- extract_audit %>%
     no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
     standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
     standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) |> 
-  select(hb_screen, kpi, financial_year, audit_n, no_audit_result_n,
-         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
-         standard_not_met_n, standard_not_met_p) |> 
+  select(financial_year, hb_screen, device, audit_n:standard_not_met_p) |> 
   arrange(financial_year, hb_screen, device)
 
 kpi_2_2_add_a_dc <- kpi_2_2_add_a_dc %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
   arrange(financial_year, hb_screen, device) %>%
   mutate(kpi = "KPI 2.2 Additional A dc") |> 
-  select(hb_screen, kpi, financial_year, device, audit_n:standard_not_met_p) |> 
+  select(hb_screen, kpi, financial_year, device, audit_n, no_audit_result_n,
+         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
+         standard_not_met_n, standard_not_met_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
 
