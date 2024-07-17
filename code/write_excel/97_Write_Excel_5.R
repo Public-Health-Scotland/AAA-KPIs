@@ -166,7 +166,9 @@ screened_year_cum <- paste0("Cumulative total from implementation to 31 March ",
                             year_xx)
 
 ## Load workbook
-wb <- loadWorkbook(paste0(template_path, "/5_Results.xlsx"))
+# wb <- loadWorkbook(paste0(template_path, "/5_Results.xlsx"))
+
+wb <- loadWorkbook(paste0(template_path, "/new_templates/5_Results_new.xlsx"))
 
 rm(theme_5, temp_path)
 

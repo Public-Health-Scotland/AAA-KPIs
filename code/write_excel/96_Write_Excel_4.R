@@ -280,8 +280,11 @@ unfit_deaths3 <- theme4_unfit_deaths |>
 ### Setup workbook ---
 today <- paste0("Workbook created ", Sys.Date())
 
-wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
-                          season, ".xlsx"))
+# wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
+#                           season, ".xlsx"))
+
+wb <- loadWorkbook(paste0(template_path, "/new_templates/4_Referral Treatment and Outcomes_",
+                          season, "_new.xlsx"))
 ## Source notes script
 source(here::here(paste0("code/", season, "_write_excel/95_Source_Excel_4.R")))
 

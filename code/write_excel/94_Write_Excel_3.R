@@ -501,12 +501,12 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
                           "for screening.")
 
 ### workbook ----
-wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
-                          season, ".xlsx"))
+# wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
+#                           season, ".xlsx"))
 
 # test path:
-# wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
-#                           season, "_new.xlsx"))
+wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
+                          season, "_new.xlsx"))
 
 ## Table of Contents ----
 writeData(wb, "Table of Contents", pub_year, startRow = 3)
