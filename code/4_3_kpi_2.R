@@ -1051,18 +1051,6 @@ table(kpi_2_full$kpi, kpi_2_full$fin_year)
 
 ## Save data block
 phsaaa::query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
-
-## Save data block
-user_in <- dlgInput("Do you want to save the KPI 2.1b SIMD and KPI 2 device comparison output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
-  write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
-  print("Outputs saved.")
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+# extra kpis - save
+phsaaa::query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
+phsaaa::query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
