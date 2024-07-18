@@ -24,7 +24,6 @@ library(lubridate)
 library(forcats)
 library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
-
 rm(list=ls())
 gc()
 
@@ -44,7 +43,9 @@ year_yy <- year_xx + 1
 ## File paths
 template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
-# 2: Import and format data ----
+
+### 2: Import and format data ----
+
 theme2 <- read_rds(paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds")) |> 
   mutate(simd = case_when(simd == "1" ~ "1 (most deprived)",
                           simd == "5" ~ "5 (least deprived)",
@@ -73,6 +74,7 @@ kpi_1.1 <- theme2 |>
 
 ## KPI 1.1 year2 ----
 kpi_1.1_y2 <- phsaaa::eval_seasonal_diff(
+  season,
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.1"),
@@ -121,7 +123,9 @@ kpi_1.2a_sept <- kpi_1.2a_sept[ , c(1, 2, 5, 6, 3, 7, 8, 4, 9, 10)]
 kpi_1.2a <- kpi_1.2a[, -c(8:11)]
 
 ## KPI 1.2a year2 ----
+
 kpi_1.2a_y2 <- phsaaa::eval_seasonal_diff(
+  season,
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.2a"),
@@ -190,6 +194,7 @@ kpi_1.3a_hb <- theme2 |>
 
 ## KPI 1.3a year2 ----
 kpi_1.3a_y2 <- phsaaa::eval_seasonal_diff(
+  season,
   {## Data for currently active year only
     theme2 |> 
       filter(kpi %in% c("KPI 1.3a Scotland SIMD"),

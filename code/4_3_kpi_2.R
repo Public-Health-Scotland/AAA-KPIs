@@ -337,7 +337,9 @@ kpi_2_2_add_a <- kpi_2_2_add_a %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
   arrange(financial_year, hb_screen) %>%
   mutate(kpi = "KPI 2.2 Additional A") |> 
-  select(hb_screen, kpi, financial_year, audit_n:standard_not_met_p) |> 
+  select(hb_screen, kpi, financial_year, audit_n, no_audit_result_n,
+         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
+         standard_not_met_n, standard_not_met_p) |> 
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
@@ -363,7 +365,9 @@ kpi_2_2_add_a_dc <- extract_audit %>%
     hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
     kpi = "KPI 2.2 Additional A dc") %>%
   arrange(financial_year, hb_screen, device) %>%
-  select(hb_screen, kpi, financial_year, device, audit_n:standard_not_met_p) |> 
+  select(hb_screen, kpi, financial_year, device, audit_n, no_audit_result_n,
+         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
+         standard_not_met_n, standard_not_met_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
 
