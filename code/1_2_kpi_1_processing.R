@@ -19,7 +19,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(tidylog)
-library(svDialogs)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 rm(list = ls())
 gc()
@@ -531,15 +531,4 @@ cohort1 <- cohort1 %>%
          inresult,
          inoffer)
 
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
-
+phsaaa::query_write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
