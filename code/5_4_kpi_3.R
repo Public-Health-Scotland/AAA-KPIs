@@ -441,7 +441,8 @@ rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot)
 ### Step 5: Write outputs ----
 # Combine KPI 3 subsets
 kpi_3 <- bind_rows(kpi_3_1_res, kpi_3_2_res, kpi_3_2_surg) |> 
-  rename(fin_year = financial_year)
+  rename(fin_year = financial_year,
+         hbres = health_board) # temp change to make build_history work
 table(kpi_3$kpi) 
 
 ## Historical file
@@ -472,6 +473,8 @@ table(hist_db$financial_year, hist_db$kpi)
 
 ## Save report file
 report_db <- kpi_3 |> 
-  filter(financial_year %in% c(kpi_report_years))
+  filter(fin_year %in% c(kpi_report_years)) |> 
+  rename(health_board = hbres,
+         financial_year = fin_year) # changing names back
 
 phsaaa::query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
