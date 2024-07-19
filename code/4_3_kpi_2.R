@@ -1004,6 +1004,10 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$fin_year)
 
+current_kpi <- kpi_2 |> 
+  filter(fin_year == kpi_report_years[3])
+table(current_kpi$kpi, current_kpi$fin_year)
+
 # add to historical database (only runs in autumn)
 phsaaa::build_history(hist_db, current_kpi, "2")
 
