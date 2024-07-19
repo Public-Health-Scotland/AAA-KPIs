@@ -431,6 +431,7 @@ blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- phsaaa::eval_seasonal_diff(
+  season,
   {paste0("Screened 1 April ", year_ww, " - ", '\n', "28 February ", year_xx, 
           " (partial data for financial year)")}, # spring
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
