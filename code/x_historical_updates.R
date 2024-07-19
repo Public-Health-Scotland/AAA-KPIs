@@ -51,7 +51,8 @@ table(prev_theme4_hist_bckp$kpi, prev_theme4_hist_bckp$financial_year) # financi
 
 new_theme4_hist <- prev_theme4_hist |> 
   filter(!financial_year == "2023/24") |> 
-  rename(fin_year = financial_year)
+  rename(fin_year = financial_year,
+         hbres == health_board)
 table(new_theme4_hist$kpi, new_theme4_hist$fin_year)
                     # 2012/13 2013/14 2014/15 2015/16 2016/17 2017/18 2018/19 2019/20 2020/21 2021/22 2022/23
 # KPI 3.1 Residence      45      45      45      45      45      45      45      45      45      45      45
