@@ -45,26 +45,27 @@ table(prev_theme4_hist_bckp$kpi, prev_theme4_hist_bckp$financial_year) # financi
 # KPI 3.2 Residence      45      45      45      45      45      45      45      45      45      45      45      45
 # KPI 3.2 Surgery         9      27      30      30      30      30      30      27      24      24      24      24
 
-# AMc note - bckp should not have 2023/24 data - remove
+# AMc note - bckp should only have up to 2021/22, hist should only have up to 2022/23
 
 ## building new data ----
 
 new_theme4_hist <- prev_theme4_hist |> 
-  rename(fin_year = financial_year)
-table(new_theme4_hist$kpi, new_theme4_hist$fin_year)
-                    # 2012/13 2013/14 2014/15 2015/16 2016/17 2017/18 2018/19 2019/20 2020/21 2021/22 2022/23 2023/24
-# KPI 3.1 Residence      45      45      45      45      45      45      45      45      45      45      45      45
-# KPI 3.2 Residence      45      45      45      45      45      45      45      45      45      45      45      45
-# KPI 3.2 Surgery         9      27      30      30      30      30      30      27      24      24      24      24
-
-new_theme4_hist_bckp <- prev_theme4_hist_bckp |> 
   filter(!financial_year == "2023/24") |> 
   rename(fin_year = financial_year)
-table(new_theme4_hist_bckp$kpi, new_theme4_hist_bckp$fin_year)
+table(new_theme4_hist$kpi, new_theme4_hist$fin_year)
                     # 2012/13 2013/14 2014/15 2015/16 2016/17 2017/18 2018/19 2019/20 2020/21 2021/22 2022/23
 # KPI 3.1 Residence      45      45      45      45      45      45      45      45      45      45      45
 # KPI 3.2 Residence      45      45      45      45      45      45      45      45      45      45      45
 # KPI 3.2 Surgery         9      27      30      30      30      30      30      27      24      24      24
+
+new_theme4_hist_bckp <- prev_theme4_hist_bckp |> 
+  filter(!financial_year %in% c("2022/23", "2023/24")) |> 
+  rename(fin_year = financial_year)
+table(new_theme4_hist_bckp$kpi, new_theme4_hist_bckp$fin_year)
+                    # 2012/13 2013/14 2014/15 2015/16 2016/17 2017/18 2018/19 2019/20 2020/21 2021/22
+# KPI 3.1 Residence      45      45      45      45      45      45      45      45      45      45
+# KPI 3.2 Residence      45      45      45      45      45      45      45      45      45      45
+# KPI 3.2 Surgery         9      27      30      30      30      30      30      27      24      24
 
 # AMc note: looks better
 
