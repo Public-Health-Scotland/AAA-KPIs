@@ -36,7 +36,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble, 
+rm (exclusions_path, output_path, simd_path, fy_tibble, 
     qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
     year1, year2, extract_date)
 
