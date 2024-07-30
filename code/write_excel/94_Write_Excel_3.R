@@ -389,7 +389,7 @@ screened_year_xx <- phsaaa::eval_seasonal_diff(
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
   )
 
-kpi_2_note1 <- paste0("p Screened 1 April ", year_ww, " to 28 February ",
+kpi_2_notep <- paste0("p Screened 1 April ", year_ww, " to 28 February ",
                         year_xx, ": provisional rates are presented for the ",
                         "11-month period 1 April ", year_ww, " to 28 February ",
                         year_xx, " as data are not yet available for the full ",
@@ -482,11 +482,24 @@ addStyle(wb, "Table of Contents", styles$red_bold_12,
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 2.1a ----
-writeData(wb, sheet = "KPI 2.1a", kpi_2_1a, startRow = 7, colNames = FALSE)
-writeData(wb, sheet = "KPI 2.1a", screened_year_vv, startRow = 4, startCol = 2)
-writeData(wb, sheet = "KPI 2.1a", screened_year_ww, startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 2.1a", screened_year_xx, startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 2.1a", kpi_2_note1, startRow = 30)
+# notes
+writeData(wb, sheet = "KPI 2.1a", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 2.1a", screened_year_ww, 
+          startRow = 4, startCol = 5)
+writeData(wb, sheet = "KPI 2.1a", screened_year_xx, 
+          startRow = 4, startCol = 8)
+addStyle(wb, "KPI 2.1a", styles$black_border_centre_12, 
+         rows = 4, cols = 2:10, gridExpand = TRUE)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 2.1a", kpi_2_notep, 
+            startRow = 30)
+  addStyle(wb, "KPI 2.1a", styles$black_11,
+           rows = 30, cols = 1)
+}
+# data
+writeData(wb, sheet = "KPI 2.1a", kpi_2_1a, 
+          startRow = 7, colNames = FALSE)
 showGridLines(wb, "KPI 2.1a", showGridLines = FALSE)
 
 ## KPI 2.1b ----
@@ -496,7 +509,7 @@ writeData(wb, sheet = "KPI 2.1b", kpi_2_1b, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.1b", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.1b", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.1b", screened_year_xx, startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 2.1b", kpi_2_note1, startRow = 30)
+writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, startRow = 30)
 showGridLines(wb, "KPI 2.1b", showGridLines = FALSE)
 
 ## KPI 2.1b by SIMD ----
@@ -510,7 +523,7 @@ writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_xx,
 addStyle(wb, "KPI 2.1b by SIMD", styles$black_border_centre_12,
          rows = 4, cols = 3:11, gridExpand = TRUE)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_note1,
+  writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_notep,
             startRow = 119)
   addStyle(wb, "KPI 2.1b by SIMD", styles$black_11,
            rows = 119, cols = 1)
@@ -524,7 +537,7 @@ writeData(wb, sheet = "KPI 2.2", kpi_2_2, startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "KPI 2.2", screened_year_vv, startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 2.2", screened_year_ww, startRow = 4, startCol = 5)
 writeData(wb, sheet = "KPI 2.2", screened_year_xx, startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 2.2", kpi_2_note1, startRow = 30)
+writeData(wb, sheet = "KPI 2.2", kpi_2_notep, startRow = 30)
 showGridLines(wb, "KPI 2.2", showGridLines = FALSE)
 
 ## KPI 2.2 Additional A ----
@@ -672,8 +685,8 @@ writeData(wb, sheet = "KPI 2.2 Add (B) device", kpi_2_2_add_b_dc,
 showGridLines(wb, "KPI 2.2 Add (B) device", showGridLines = FALSE)
 
 # 5: Save output ----
-phsaaa::query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
+# phsaaa::query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
 
 # test path:
-# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
-#              overwrite = TRUE)
+saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
+             overwrite = TRUE)
