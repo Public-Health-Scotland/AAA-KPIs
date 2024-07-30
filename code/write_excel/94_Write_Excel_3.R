@@ -503,13 +503,25 @@ writeData(wb, sheet = "KPI 2.1a", kpi_2_1a,
 showGridLines(wb, "KPI 2.1a", showGridLines = FALSE)
 
 ## KPI 2.1b ----
+# notes
+writeData(wb, sheet = "KPI 2.1b", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 2.1b", screened_year_ww, 
+          startRow = 4, startCol = 5)
+writeData(wb, sheet = "KPI 2.1b", screened_year_xx, 
+          startRow = 4, startCol = 8)
+addStyle(wb, "KPI 2.1b", styles$black_border_centre_12, 
+         rows = 4, cols = 2:10, gridExpand = TRUE)
+writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, 
+          startRow = 30)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, 
+            startRow = 30)
+  addStyle(wb, "KPI 2.1b", styles$black_11,
+           rows = 30, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 2.1b", kpi_2_1b, startRow = 7, colNames = FALSE)
-# notes
-writeData(wb, sheet = "KPI 2.1b", screened_year_vv, startRow = 4, startCol = 2)
-writeData(wb, sheet = "KPI 2.1b", screened_year_ww, startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 2.1b", screened_year_xx, startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, startRow = 30)
 showGridLines(wb, "KPI 2.1b", showGridLines = FALSE)
 
 ## KPI 2.1b by SIMD ----
