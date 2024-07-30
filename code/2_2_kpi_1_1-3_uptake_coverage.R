@@ -215,17 +215,7 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+phsaaa::query_write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 
 #invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
