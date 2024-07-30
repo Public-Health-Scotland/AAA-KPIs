@@ -1,0 +1,84 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 99_Source_Excel_Styles.R
+# 
+# Aoife McCarthy
+# July 2024
+# 
+# Create openxlsx styles to be used in Write_Excel scripts
+# 
+# Written/run on Posit WB, R 4.1.2
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+library(openxlsx)
+
+styles <- list()
+
+
+# bold black size 14, wrapped
+styles$black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
+# bold black 12, wrapped
+styles$black_bold_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                             fontName = "Arial", textDecoration = "bold",
+                             wrapText = TRUE)
+# black 12, wrapped
+styles$black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black centered 12, wrapped
+styles$black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial", wrapText = TRUE,
+                               halign = "center", valign = "center")
+# black without wrapping 12
+styles$black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                               fontName = "Arial")
+# black complete border 12, wrapped
+styles$black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                               fontColour = "#000000", border = "TopBottomLeftRight",
+                               wrapText = TRUE, halign = "left", valign = "center")
+# black complete medium border centred 12, wrapped
+styles$black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                      fontColour = "#000000", border = "TopBottomLeftRight",
+                                      wrapText = TRUE, halign = "center", valign = "center",
+                                      borderStyle = "medium")
+# black complete thin border centred 12, wrapped
+styles$black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                           fontColour = "#000000", border = "TopBottomLeftRight",
+                                           wrapText = TRUE, halign = "center", valign = "center",
+                                           borderStyle = "thin")
+# black 11, wrapped
+styles$black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                        fontName = "Arial", wrapText = TRUE)
+# black without wrapping 11
+styles$black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
+                               fontName = "Arial")
+# black complete border 11, no wrap
+styles$black_border_11 <- createStyle(fontSize = 11, fontName = "Arial",
+                                      fontColour = "#000000", border = "TopBottomLeftRight",
+                                      halign = "center", valign = "bottom")
+
+# orange size 11, wrapped
+styles$orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
+                                fontColour = "#ff9f00", wrapText = TRUE)
+# bold red 12, wrapped 
+styles$red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
+                                  fontName = "Arial", textDecoration = c("bold"),
+                                  wrapText = TRUE)
+# bright blue centered 12, wrapped
+styles$blue_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
+                                            fontColour = "#0000FF", wrapText = TRUE,
+                                            halign = "center", border = "TopBottomLeftRight")
+# bright blue bordered centred underlined 12, wrapped
+styles$blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
+                                               fontColour = "#0000FF", border = "TopBottomLeftRight",
+                                               textDecoration = "underline", wrapText = TRUE, 
+                                                halign = "left", valign = "center")
+    
+# summary header white font
+styles$white_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
+                               fontColour = "#ffffff", wrapText = TRUE,
+                               border = c("top", "bottom", "left", "right"),
+                               borderStyle = "medium", halign = "center", valign = "bottom",
+                               textDecoration = "bold")
+

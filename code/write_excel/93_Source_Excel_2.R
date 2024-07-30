@@ -14,61 +14,8 @@
 # workbook for each (spring/autumn) QPMG.
 
 ## Styles ----
-# bold black size 14, wrapped
-black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
-                             fontName = "Arial", textDecoration = "bold",
-                             wrapText = TRUE)
-# bold black 12, wrapped
-black_bold_12 <- createStyle(fontSize = 14, fontColour = "#000000",
-                             fontName = "Arial", textDecoration = "bold",
-                             wrapText = TRUE)
-# black 12, wrapped
-black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                        fontName = "Arial", wrapText = TRUE)
-# black centered 12, wrapped
-black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                               fontName = "Arial", wrapText = TRUE,
-                               halign = "center", valign = "center")
-# black without wrapping 12
-black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                               fontName = "Arial")
-# black complete border 12, wrapped
-black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                               fontColour = "#000000", border = "TopBottomLeftRight",
-                               wrapText = TRUE, halign = "left", valign = "center")
-# black complete medium border centred 12, wrapped
-black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                      fontColour = "#000000", border = "TopBottomLeftRight",
-                                      wrapText = TRUE, halign = "center", valign = "center",
-                                      borderStyle = "medium")
-# black complete thin border centred 12, wrapped
-black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                           fontColour = "#000000", border = "TopBottomLeftRight",
-                                           wrapText = TRUE, halign = "center", valign = "center",
-                                           borderStyle = "thin")
-# black 11, wrapped
-black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
-                        fontName = "Arial", wrapText = TRUE)
-# black without wrapping 11
-black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
-                               fontName = "Arial")
-# orange size 11, wrapped
-orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
-                           fontColour = "#ff9f00", wrapText = TRUE)
-# bold red 12, wrapped 
-red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
-                           fontName = "Arial", textDecoration = c("bold"),
-                           wrapText = TRUE)
-# bright blue centered 12, wrapped
-blue_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
-                                     fontColour = "#0000FF", wrapText = TRUE,
-                                     halign = "center", border = "TopBottomLeftRight")
-# bright blue bordered centred underlined 12, wrapped
-blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                        fontColour = "#0000FF", border = "TopBottomLeftRight",
-                                        textDecoration = "underline", wrapText = TRUE, 
-                                        halign = "left", valign = "center")
 
+source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 
 ## General notes ----
 # current reporting year - used for additional management info

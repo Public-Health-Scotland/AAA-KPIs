@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 9991_Write_Excel_3.R
+# 94_Write_Excel_3.R
 # 
 # Karen Hotopp & Aoife McCarthy
 # Nov 2023
@@ -12,7 +12,7 @@
 ## Notes:
 # This script calls in the RDS file create in the 4_3_KPI_2.R script 
 # and transforms the data to print directly into the theme 3 Excel file for 
-# the autumn QPMG.
+# the autumn and spring QPMG.
 # 
 # Future work to be done to add spring printing out.
 
@@ -46,7 +46,9 @@ year_vv <- year_xx - 2
 year_yy <- year_xx + 1
 
 ## File paths
-template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
+# template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
+# AMc temp new path for updated template
+template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates/new_templates")
 
 
 # 2: Import data ----
@@ -360,8 +362,6 @@ qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)
 report_type <- "Due for publication"
-report_type_style <- createStyle(fontSize = 12, fontName = "Arial",
-                                 textDecoration = "bold", fontColour = "#000000")
 note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
                    " are released for data quality assurance and management ",
                    "information purposes and should not be placed in the public ",
@@ -372,60 +372,8 @@ result_type <- "Due for publication"
 
 
 ### Styles ----
-# bold black size 14, wrapped
-black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
-                             fontName = "Arial", textDecoration = "bold",
-                             wrapText = TRUE)
-# bold black 12, wrapped
-black_bold_12 <- createStyle(fontSize = 14, fontColour = "#000000",
-                             fontName = "Arial", textDecoration = "bold",
-                             wrapText = TRUE)
-# black 12, wrapped
-black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                        fontName = "Arial", wrapText = TRUE)
-# black centered 12, wrapped
-black_centre_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                               fontName = "Arial", wrapText = TRUE,
-                               halign = "center", valign = "center")
-# black without wrapping 12
-black_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
-                               fontName = "Arial")
-# black complete border 12, wrapped
-black_border_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                               fontColour = "#000000", border = "TopBottomLeftRight",
-                               wrapText = TRUE, halign = "left", valign = "center")
-# black complete medium border centred 12, wrapped
-black_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                      fontColour = "#000000", border = "TopBottomLeftRight",
-                                      wrapText = TRUE, halign = "center", valign = "center",
-                                      borderStyle = "medium")
-# black complete thin border centred 12, wrapped
-black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                           fontColour = "#000000", border = "TopBottomLeftRight",
-                                           wrapText = TRUE, halign = "center", valign = "center",
-                                           borderStyle = "thin")
-# black 11, wrapped
-black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
-                        fontName = "Arial", wrapText = TRUE)
-# black without wrapping 11
-black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
-                               fontName = "Arial")
-# orange size 11, wrapped
-orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
-                         fontColour = "#ff9f00", wrapText = TRUE)
-# bold red 12, wrapped 
-red_bold_12 <- createStyle(fontSize = 12, fontColour = "#FF0000", 
-                           fontName = "Arial", textDecoration = c("bold"),
-                           wrapText = TRUE)
-# bright blue centered 12, wrapped
-blue_border_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", 
-                                     fontColour = "#0000FF", wrapText = TRUE,
-                                     halign = "center", border = "TopBottomLeftRight")
-# bright blue bordered centred underlined 12, wrapped
-blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                                        fontColour = "#0000FF", border = "TopBottomLeftRight",
-                                        textDecoration = "underline", wrapText = TRUE, 
-                                        halign = "left", valign = "center")
+
+source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 
 ### KPI 2 & QA ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
@@ -515,7 +463,7 @@ writeData(wb, "Table of Contents", report_type, startRow = 5)
 writeData(wb, "Table of Contents", today, startRow = 6)
 writeData(wb, "Table of Contents", note_toc, startRow = 29)
 
-addStyle(wb, "Table of Contents", style = report_type_style, rows = 5, cols = 1)
+addStyle(wb, "Table of Contents", styles$black_bold_12, rows = 5, cols = 1)
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 2.1a ----
@@ -544,12 +492,12 @@ writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_ww,
           startRow = 4, startCol = 6)
 writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_xx, 
           startRow = 4, startCol = 9)
-addStyle(wb, "KPI 2.1b by SIMD", black_border_centre_12,
+addStyle(wb, "KPI 2.1b by SIMD", styles$black_border_centre_12,
          rows = 4, cols = 3:11, gridExpand = TRUE)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_note1,
             startRow = 119)
-  addStyle(wb, "KPI 2.1b by SIMD", black_11,
+  addStyle(wb, "KPI 2.1b by SIMD", styles$black_11,
            rows = 119, cols = 1)
 }
 # data
