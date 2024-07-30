@@ -46,9 +46,7 @@ year_vv <- year_xx - 2
 year_yy <- year_xx + 1
 
 ## File paths
-# template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
-# AMc temp new path for updated template
-template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates/new_templates")
+template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 
 # 2: Import data ----
@@ -359,16 +357,22 @@ kpi_2_2_add_b_dc <- kpi_2_dc |>
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
-pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
-                   "supplementary information are planned for publication in April ", year_yy)
-report_type <- "Due for publication"
+pub_year <- phsaaa::eval_seasonal_diff(
+  season,
+  {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
+          "be published in April ", year_yy, " (final data will be ",
+          "produced from data extracted for PHS in September ",
+          year_xx, ").")}, #spring
+  {paste0("KPI data for year ending 31 March ", year_xx, 
+          " and some supplementary information are planned ",
+          "for publication in March ", year_yy, ".")} # autumn
+)
 note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
                    " are released for data quality assurance and management ",
                    "information purposes and should not be placed in the public ",
                    "domain. The information can be shared locally with those who ",
                    "have a legitimate need to review the data for quality ",
                    "assurance, managerial or operational purposes.")
-result_type <- "Due for publication"
 
 
 ### Styles ----
@@ -379,6 +383,7 @@ source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- phsaaa::eval_seasonal_diff(
+  season,
   {paste0("Screened 1 April ", year_ww, " - ", '\n', "28 February ", year_xx, 
           " (partial data for financial year)")}, # spring
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
@@ -449,21 +454,31 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
                           "for screening.")
 
 ### workbook ----
-wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
-                          season, ".xlsx"))
-
-# test path:
-# wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
-#                           season, "_new.xlsx"))
+# wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
+#                           season, ".xlsx"))
+# AMc test path:
+wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
+                          season, "_new.xlsx"))
 
 ## Table of Contents ----
-writeData(wb, "Table of Contents", pub_year, startRow = 3)
-writeData(wb, "Table of Contents", qpmg_review, startRow = 4)
-writeData(wb, "Table of Contents", report_type, startRow = 5)
-writeData(wb, "Table of Contents", today, startRow = 6)
-writeData(wb, "Table of Contents", note_toc, startRow = 29)
+# notes
+writeData(wb, "Table of Contents", pub_year, 
+          startRow = 3)
+addStyle(wb, "Table of Contents", styles$black_nowrap_12,
+         rows = 3, cols = 1)
+writeData(wb, "Table of Contents", qpmg_review, 
+          startRow = 4)
+addStyle(wb, "Table of Contents", styles$black_bold_12,
+         rows = 4, cols = 1)
+writeData(wb, "Table of Contents", today, 
+          startRow = 6)
+addStyle(wb, "Table of Contents", styles$black_nowrap_12, 
+         rows = 6, cols = 1)
+writeData(wb, "Table of Contents", note_toc, 
+          startRow = 29)
+addStyle(wb, "Table of Contents", styles$red_bold_12, 
+         rows = 29, cols = 1)
 
-addStyle(wb, "Table of Contents", styles$black_bold_12, rows = 5, cols = 1)
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 2.1a ----
