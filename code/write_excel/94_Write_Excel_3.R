@@ -543,13 +543,25 @@ if (season == "spring") {
 # data
 writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_1b_simd,
           startRow = 7, startCol = 3, colNames = F)
+showGridLines(wb, "KPI 2.1b by SIMD", showGridLines = FALSE)
 
 ## KPI 2.2 ----
-writeData(wb, sheet = "KPI 2.2", kpi_2_2, startRow = 7, colNames = FALSE)
-writeData(wb, sheet = "KPI 2.2", screened_year_vv, startRow = 4, startCol = 2)
-writeData(wb, sheet = "KPI 2.2", screened_year_ww, startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 2.2", screened_year_xx, startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 2.2", kpi_2_notep, startRow = 30)
+# notes
+writeData(wb, sheet = "KPI 2.2", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 2.2", screened_year_ww, 
+          startRow = 4, startCol = 5)
+writeData(wb, sheet = "KPI 2.2", screened_year_xx, 
+          startRow = 4, startCol = 8)
+addStyle(wb, "KPI 2.2", styles$black_border_centre_12,
+         rows = 4, cols = 2:10, gridExpand = T)
+writeData(wb, sheet = "KPI 2.2", kpi_2_notep, 
+          startRow = 30)
+addStyle(wb, "KPI 2.2", styles$black_11,
+         rows = 30, cols = 1)
+# data
+writeData(wb, sheet = "KPI 2.2", kpi_2_2, 
+          startRow = 7, colNames = FALSE)
 showGridLines(wb, "KPI 2.2", showGridLines = FALSE)
 
 ## KPI 2.2 Additional A ----
