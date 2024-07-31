@@ -384,8 +384,7 @@ screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- phsaaa::eval_seasonal_diff(
   season,
-  {paste0("Screened 1 April ", year_ww, " - ", '\n', "28 February ", year_xx, 
-          " (partial data for financial year)")}, # spring
+  {paste0("Screened in year ending 31 March ", year_xx, " (partial data)")}, # spring
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
   )
 
@@ -650,58 +649,73 @@ writeData(wb, sheet = "QA standard not met reason", qa_reason_bot,
 showGridLines(wb, "QA standard not met reason", showGridLines = FALSE)
 
 ## QA standard not met detail ----
-
-writeData(wb, sheet = "QA standard not met detail", std_not_met_y1, startRow = 5,
-          startCol = 2)
-writeData(wb, sheet = "QA standard not met detail", std_not_met_y2, startRow = 5,
-          startCol = 4)
-writeData(wb, sheet = "QA standard not met detail", std_not_met_y3, startRow = 5,
-          startCol = 6)
-writeData(wb, sheet = "QA standard not met detail", qa_detail, startRow = 9,
-          startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "QA standard not met detail", screened_year_vv, startRow = 4, 
-          startCol = 2)
-writeData(wb, sheet = "QA standard not met detail", screened_year_ww, startRow = 4, 
-          startCol = 4)
-writeData(wb, sheet = "QA standard not met detail", screened_year_xx, startRow = 4, 
-          startCol = 6)
-writeData(wb, sheet = "QA standard not met detail", screened_year_vv, startRow = 7, 
-          startCol = 2)
-writeData(wb, sheet = "QA standard not met detail", screened_year_ww, startRow = 7, 
-          startCol = 4)
-writeData(wb, sheet = "QA standard not met detail", screened_year_xx, startRow = 7, 
-          startCol = 6)
-
+# notes
+writeData(wb, sheet = "QA standard not met detail", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "QA standard not met detail", screened_year_ww, 
+          startRow = 4, startCol = 4)
+writeData(wb, sheet = "QA standard not met detail", screened_year_xx, 
+          startRow = 4, startCol = 6)
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y1, 
+          startRow = 5, startCol = 2)
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y2, 
+          startRow = 5, startCol = 4)
+writeData(wb, sheet = "QA standard not met detail", std_not_met_y3, 
+          startRow = 5, startCol = 6)
+writeData(wb, sheet = "QA standard not met detail", screened_year_vv, 
+          startRow = 7, startCol = 2)
+writeData(wb, sheet = "QA standard not met detail", screened_year_ww, 
+          startRow = 7, startCol = 4)
+writeData(wb, sheet = "QA standard not met detail", screened_year_xx, 
+          startRow = 7, startCol = 6)
+addStyle(wb, "QA standard not met detail", styles$black_border_centre_12,
+         rows = c(4, 7),  cols = 2:7, gridExpand = T, stack = T)
+addStyle(wb,"QA standard not met detail", createStyle(fgFill = "#F2DCDB"),
+         rows = 4, cols = 2:7, gridExpand = T, stack = T)
 #writeData(wb, sheet = "QA standard not met detail", qa_detail_note1, startRow = 30)
 #writeData(wb, sheet = "QA standard not met detail", qa_detail_note2, startRow = 31)
-writeData(wb, sheet = "QA standard not met detail", qa_detail_note3, startRow = 32)
+writeData(wb, sheet = "QA standard not met detail", qa_detail_note3, 
+          startRow = 32)
+addStyle(wb,"QA standard not met detail", styles$black_11,
+         rows = 32, cols = 1)
+#data
+writeData(wb, sheet = "QA standard not met detail", qa_detail, 
+          startRow = 9, startCol = 2, colNames = FALSE)
 showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 
 ## Batch QA standard not met ----
-writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, startRow = 7, 
-          colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, startRow = 18, 
-          colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_recall, startRow = 26, 
-          colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 5, 
-          startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 5, 
-          startCol = 3)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 5, 
-          startCol = 4)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 14, 
-          startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 14, 
-          startCol = 7)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 14, 
-          startCol = 12)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, startRow = 22, 
-          startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, startRow = 22, 
-          startCol = 8)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, startRow = 22, 
-          startCol = 14)
+# notes
+writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
+          startRow = 5, startCol = 2)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
+          startRow = 5, startCol = 3)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
+          startRow = 5, startCol = 4)
+addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
+         rows = 5, cols = 2:4)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
+          startRow = 14, startCol = 2)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
+          startRow = 14, startCol = 7)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
+          startRow = 14, startCol = 12)
+addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
+         rows = 14, cols = 2:16)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
+          startRow = 22, startCol = 2)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
+          startRow = 22, startCol = 8)
+writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
+          startRow = 22, startCol = 14)
+addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
+         rows = 22, cols = 2:19)
+# data
+writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, 
+          startRow = 7, colNames = FALSE)
+writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, 
+          startRow = 18, colNames = FALSE)
+writeData(wb, sheet = "Batch QA standard not met", qa_recall, 
+          startRow = 26, colNames = FALSE)
 showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
 ## KPI 2.1a device comparison ----
