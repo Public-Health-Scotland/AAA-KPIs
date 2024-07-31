@@ -405,10 +405,19 @@ eligible_year_vv <- paste0("Eligible cohort: Turned 66 in year ending 31 March "
                            year_vv, {supsc('r')})
 eligible_year_ww <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
                            year_ww, {supsc('r')})
-eligible_year_xx <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
-                           year_xx)
-self_ref_year_xx <- paste0("Self referrals: cumulative period from implementation ",
-                           "to 31 March ", year_xx)
+eligible_year_xx <- phsaaa::eval_seasonal_diff(
+  season,
+  {paste0("Eligible cohort: Turned 66 in year ending 31 March ", year_xx, 
+          " (provisional)")}, # spring
+  {paste0("Eligible cohort: Turned 66 in year ending 31 March ", year_xx)} # autumn
+)
+self_ref_year_xx <- eval_seasonal_diff(
+  season,
+  {paste0("Self referrals: cumulative period from implementation ",
+          "to 31 March ", year_xx, " (provisional)")}, # spring
+  {paste0("Self referrals: cumulative period from implementation ",
+          "to 31 March ", year_xx)} # autumn
+)
 
 ### QA standard not met detail standard not met totals from previous tab (reason) ----
 
@@ -565,17 +574,42 @@ writeData(wb, sheet = "KPI 2.2", kpi_2_2,
 showGridLines(wb, "KPI 2.2", showGridLines = FALSE)
 
 ## KPI 2.2 Additional A ----
-writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_top, startRow = 8, 
-          colNames = FALSE)
-writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_bot, startRow = 29, 
-          colNames = FALSE)
-writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_vv, startRow = 4, 
-          startCol = 2)
-writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_ww, startRow = 4, 
-          startCol = 10)
-writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx, startRow = 25, 
-          startCol = 2)
+# notes
+writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_ww, 
+          startRow = 4, startCol = 10)
+addStyle(wb, "KPI 2.2 Additional (A)", styles$black_border_centre_12,
+         rows = 4, cols = 2:17, gridExpand = T)
+writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx, 
+          startRow = 25, startCol = 2)
+addStyle(wb, "KPI 2.2 Additional (A)", styles$black_border_centre_12,
+         rows = 25, cols = 2:9, gridExpand = T)
+#data
+writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_top, 
+          startRow = 8, colNames = FALSE)
+writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_bot, 
+          startRow = 29, colNames = FALSE)
 showGridLines(wb, "KPI 2.2 Additional (A)", showGridLines = FALSE)
+
+## Table 4: Eligible, no final result ----
+# notes
+writeData(wb, sheet = "4) Eligible no final result", eligible_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "4) Eligible no final result", eligible_year_ww, 
+          startRow = 4, startCol = 9)
+writeData(wb, sheet = "4) Eligible no final result", eligible_year_xx, 
+          startRow = 24, startCol = 2)
+writeData(wb, sheet = "4) Eligible no final result", self_ref_year_xx, 
+          startRow = 24, startCol = 9)
+addStyle(wb, "4) Eligible no final result", styles$black_border_centre_12,
+         rows = c(4, 24), cols = 2:15, gridExpand = T)
+#data
+writeData(wb, sheet = "4) Eligible no final result", table_4_top, 
+          startRow = 8, colNames = FALSE)
+writeData(wb, sheet = "4) Eligible no final result", table_4_bot, 
+          startRow = 28, colNames = FALSE)
+showGridLines(wb, "4) Eligible no final result", showGridLines = FALSE)
 
 ## KPI 2.2 Additional B ----
 writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, startRow = 8, 
@@ -589,21 +623,6 @@ writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_ww, startRow = 4,
 writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx, startRow = 25, 
           startCol = 2)
 showGridLines(wb, "KPI 2.2 Additional (B)", showGridLines = FALSE)
-
-## Table 4: Eligible, no final result ----
-writeData(wb, sheet = "4) Eligible no final result", table_4_top, startRow = 8, 
-          colNames = FALSE)
-writeData(wb, sheet = "4) Eligible no final result", table_4_bot, startRow = 28, 
-          colNames = FALSE)
-writeData(wb, sheet = "4) Eligible no final result", eligible_year_vv, startRow = 4, 
-          startCol = 2)
-writeData(wb, sheet = "4) Eligible no final result", eligible_year_ww, startRow = 4, 
-          startCol = 9)
-writeData(wb, sheet = "4) Eligible no final result", eligible_year_xx, startRow = 24, 
-          startCol = 2)
-writeData(wb, sheet = "4) Eligible no final result", self_ref_year_xx, startRow = 24, 
-          startCol = 9)
-showGridLines(wb, "4) Eligible no final result", showGridLines = FALSE)
 
 ## QA standard not met reason ----
 writeData(wb, sheet = "QA standard not met reason", qa_reason_top, startRow = 8, 
