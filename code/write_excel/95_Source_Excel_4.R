@@ -15,7 +15,6 @@
 
 
 # 1: Housekeeping ----
-library(dplyr)
 library(lubridate)
 library(stringr)
 
@@ -53,31 +52,31 @@ rate_4_1yr <- rate_4_1yr |>
 
 # 4: Notes ----
 ## Table of Contents ----
-pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
-                   "supplementary information are planned for publication in April ", year_yy)
+today <- paste0("Workbook created ", Sys.Date())
+pub_year <- eval_seasonal_diff(
+  season,
+  {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
+          "be published in April ", year_yy, " (final data will be ",
+          "produced from data extracted for PHS in September ",
+          year_xx, ").")}, # spring
+  {paste0("KPI data for year ending 31 March ", year_xx, " and some ",
+          "supplementary information are planned for publication in April ", year_yy)} # autumn
+)
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 tab_vasc_desc <- paste0("Vascular KPIs background information: Vascular referral ", 
-                        "outcomes at ", extract_date, " ", year_ww)
-if(season == "spring"){
-  note_toc <- paste0("The data for the year ending 31 March ", year_xx, 
-                     " are released for data quality assurance and management ",
-                     "information purposes and should not be placed in the public ",
-                     "domain. The information can be shared locally with those who ",
-                     "have a legitimate need to review the data for quality assurance ",
-                     "or for managerial or operational purposes.")
-} else {
-  if(season == "autumn"){
-    note_toc <- paste0("The data for the year ending 30 September ", year_xx, 
-                       " are released for data quality assurance and management ",
-                       "information purposes and should not be placed in the public ",
-                       "domain. The information can be shared locally with those who ",
-                       "have a legitimate need to review the data for quality assurance ",
-                       "or for managerial or operational purposes.")
-  }
-  else{
-    stop("Check your seasons!! Should be autumn or spring")
-  }
-}
+                        "outcomes at ", extract_date, " ", year_ww) ## AMc: is this correct for spring and autumn?
+note_toc_data <- eval_seasonal_diff(
+  season,
+  {"The provisional/partial "}, # spring version,
+  {"The "} # autumn version
+)
+note_toc <- paste0(note_toc_data, "data for the year ending 31 March ", 
+                   year_xx, " are released for data quality assurance and ",
+                   "management information purposes and should not be placed in ",
+                   "the public domain. The information can be shared locally with ",
+                   "those who have a legitimate need to review the data for ",
+                   "quality assurance, managerial or operational purposes.")
+rm(note_toc_data)
 
 ## KPI 3.1 ----
 screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})

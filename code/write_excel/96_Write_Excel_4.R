@@ -278,14 +278,17 @@ unfit_deaths3 <- theme4_unfit_deaths |>
 
 # 4: Write to Excel (openxlsx) ----
 ## Setup workbook ----
-today <- paste0("Workbook created ", Sys.Date())
 
-wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
-                          season, ".xlsx"))
+# wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
+#                           season, ".xlsx"))
+# AMc test:
+wb <- loadWorkbook(paste0(template_path, "/new_templates/4_Referral Treatment and Outcomes_",
+                          season, "_new.xlsx"))
+
 ## Source notes script
 source(here::here(paste0("code/write_excel/95_Source_Excel_4.R")))
 
-rm(list=ls(pattern = "theme4_"))
+#rm(list=ls(pattern = "theme4_"))
 
 
 ## Table of Contents ----
@@ -294,12 +297,20 @@ writeData(wb, sheet = "Table of Contents", pub_year,
           startRow = 3, startCol = 1)
 writeData(wb, sheet = "Table of Contents", qpmg_review, 
           startRow = 4, startCol = 1)
-writeData(wb, sheet = "Table of Contents", tab_vasc_desc, 
-          startRow = 21, startCol = 2)
-writeData(wb, sheet = "Table of Contents", note_toc, 
-          startRow = 29, startCol = 1)
+addStyle(wb, sheet = "Table of Contents", styles$black_bold_12,
+         rows = 4, cols = 1)
 writeData(wb, sheet = "Table of Contents", today, 
           startRow = 6)
+addStyle(wb, sheet = "Table of Contents", styles$black_nowrap_12,
+         rows = c(3, 6), cols = 1, gridExpand = T)
+writeData(wb, sheet = "Table of Contents", tab_vasc_desc, 
+          startRow = 21, startCol = 2)
+addStyle(wb, sheet = "Table of Contents", styles$blue_border_underline_12,
+         rows = 21, cols = 2)
+writeData(wb, sheet = "Table of Contents", note_toc, 
+          startRow = 29, startCol = 1)
+addStyle(wb, sheet = "Table of Contents", styles$red_bold_12,
+         rows = 29, cols = 1)
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 3.1 ----
@@ -561,6 +572,10 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 # 5: Save output ----
+# query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
+#                                       yymm, ".xlsx"))
+
+# AMc test
 query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
-                                      yymm, ".xlsx"))
+                              yymm, "XXX.xlsx"))
 
