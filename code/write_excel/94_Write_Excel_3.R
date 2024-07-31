@@ -612,29 +612,41 @@ writeData(wb, sheet = "4) Eligible no final result", table_4_bot,
 showGridLines(wb, "4) Eligible no final result", showGridLines = FALSE)
 
 ## KPI 2.2 Additional B ----
-writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, startRow = 8, 
-          colNames = FALSE)
-writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_bot, startRow = 29, 
-          colNames = FALSE)
-writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_vv, startRow = 4, 
-          startCol = 2)
-writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_ww, startRow = 4, 
-          startCol = 15)
-writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx, startRow = 25, 
-          startCol = 2)
+# notes
+writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_ww, 
+          startRow = 4, startCol = 15)
+addStyle(wb, "KPI 2.2 Additional (B)", styles$black_border_centre_12,
+         rows = 4, cols = 2:27, gridExpand = T)
+writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx, 
+          startRow = 25, startCol = 2)
+addStyle(wb, "KPI 2.2 Additional (B)", styles$black_border_centre_12,
+         rows = 25, cols = 2:14, gridExpand = T)
+# data
+writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, 
+          startRow = 8, colNames = FALSE)
+writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_bot, 
+          startRow = 29, colNames = FALSE)
 showGridLines(wb, "KPI 2.2 Additional (B)", showGridLines = FALSE)
 
 ## QA standard not met reason ----
-writeData(wb, sheet = "QA standard not met reason", qa_reason_top, startRow = 8, 
-          colNames = FALSE)
-writeData(wb, sheet = "QA standard not met reason", qa_reason_bot, startRow = 29, 
-          colNames = FALSE)
-writeData(wb, sheet = "QA standard not met reason", screened_year_vv, startRow = 4, 
-          startCol = 2)
-writeData(wb, sheet = "QA standard not met reason", screened_year_ww, startRow = 4, 
-          startCol = 11)
-writeData(wb, sheet = "QA standard not met reason", screened_year_xx, startRow = 25, 
-          startCol = 2)
+# notes
+writeData(wb, sheet = "QA standard not met reason", screened_year_vv, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "QA standard not met reason", screened_year_ww, 
+          startRow = 4, startCol = 11)
+addStyle(wb, "QA standard not met reason", styles$black_border_centre_12,
+         rows = 4, cols = 2:19, gridExpand = T)
+writeData(wb, sheet = "QA standard not met reason", screened_year_xx, 
+          startRow = 25, startCol = 2)
+addStyle(wb, "QA standard not met reason", styles$black_border_centre_12,
+         rows = 25, cols = 2:10, gridExpand = T)
+# data
+writeData(wb, sheet = "QA standard not met reason", qa_reason_top, 
+          startRow = 8, colNames = FALSE)
+writeData(wb, sheet = "QA standard not met reason", qa_reason_bot, 
+          startRow = 29, colNames = FALSE)
 showGridLines(wb, "QA standard not met reason", showGridLines = FALSE)
 
 ## QA standard not met detail ----
