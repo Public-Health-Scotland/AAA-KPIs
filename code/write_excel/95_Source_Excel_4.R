@@ -14,7 +14,7 @@
 # workbook for each (spring/autumn) QPMG. (Spring to be added in spring 2024!)
 
 
-#### 1: Housekeeping ----
+# 1: Housekeeping ----
 library(dplyr)
 library(lubridate)
 library(stringr)
@@ -27,10 +27,10 @@ year_yy <- year_xx + 1
 year_uu <- year_xx - 3
 year_ss <- year_xx - 5
 
-# styles
+# 2: Styles ----
 source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 
-
+# 3: Previous stats ----
 ## KPI 4.1 previous stats
 rate_41 <- theme4_4 |> 
   filter(kpi == "KPI 4.1",
@@ -51,8 +51,8 @@ rate_4_1yr <- tail(kpi_4_1yr, n = 3)
 rate_4_1yr <- rate_4_1yr |>
   select(financial_year, Open_deaths_p, EVAR_deaths_p)
 
-
-### Table of Contents ----
+# 4: Notes ----
+## Table of Contents ----
 pub_year <- paste0("KPI data for year ending 31 March ", year_xx, " and some ",
                    "supplementary information are planned for publication in April ", year_yy)
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
@@ -79,7 +79,7 @@ if(season == "spring"){
   }
 }
 
-### KPI 3.1 ----
+## KPI 3.1 ----
 screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})
 screened_year_wwr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
 screened_year_xxp <- paste0("Screened in year ending 31 March ", year_xx, {supsc('p')},
@@ -104,7 +104,7 @@ kpi_3.1_revised <- paste0("r  Revised since published on {publication date [20XX
                        "the Scottish AAA Call Recall System at ", extract_date,
                        " ", year_xx, " (date of data extraction).")
 
-### KPI 3.2 HB Residence ----
+## KPI 3.2 HB Residence ----
 kpi_3.2_hb_note1 <- paste0("r  Revised since published on {publication date year_xx} ",
                            year_xx, " due to updates of the data recorded on the ",
                            "Scottish AAA Call Recall System (Scotland figure was ",
@@ -130,9 +130,9 @@ kpi_3.2_hb_note2 <- paste0("p  Provisional. Data are for men screened from 1 Apr
                           "outcome of 'Appropriate for surgery: final outcome pending' ",
                           "with no surgery date recorded.")
 
-### KPI 3.2 HB Surgery ----
+## KPI 3.2 HB Surgery ----
 
-### KPI 4.1 ----
+## KPI 4.1 ----
 note_41 <- paste0("1. Due to small numbers, data are reported for five-year ", 
                   "rolling periods and are presented at Scotland level. The 30-day ",
                   "mortality rates for the two previous five-year rolling periods ",
@@ -147,18 +147,18 @@ kpi_4_note_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year
                        "of all vascular referrals in the 11-month period had no ",
                        "vascular outcome data recorded.")
 
-### KPI 4.2 ----
+## KPI 4.2 ----
 note_42 <- paste0("1. Due to small numbers, data are reported for five-year ", 
                   "rolling periods and are presented at Scotland level. The 30-day ",
                   "mortality rates for the two previous five-year rolling periods ",
                   "were ", rate_42[1,5], "% (", rate_42[1,3], ") and ", 
                   rate_42[2,5], "% (", rate_42[2,3], ").")
 
-### KPI 4.1 additional ----
+## KPI 4.1 additional ----
 
-### KPI 4.2 additional ----
+## KPI 4.2 additional ----
 
-### Table 7) Vascular referrals ----
+## Table 7) Vascular referrals ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx, {supsc('p')})
@@ -169,7 +169,7 @@ table_7_prov <- paste0("p  Provisional. Data for year ending 31 March ", year_xx
                     " are for the 11-month period 1 April ", year_ww, " to 28 ",
                     "February ", year_xx, ".")
 
-### Vascular KPIs background ----
+## Vascular KPIs background ----
 vasc_outcome_title <- paste0("Vascular KPIs background information: Vascular ",
                              "referral outcomes at 1 March ", year_xx, {supsc('1, 2')})
 vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year ",
@@ -180,7 +180,7 @@ vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year
                          "with around a third of referrals having no outcome data ",
                          "recorded.")
 
-### 1,3,5-year mortality rates ----
+## 1,3,5-year mortality rates ----
 mort_year_cum1 <- paste0("Cumulative total for operations from implementation ", 
                          "to 31 March ", year_ww, {supsc('p')})
 mort_year_cum3 <- paste0("Cumulative total for operations from implementation ", 
@@ -198,7 +198,7 @@ note_prov <- paste0("p Provisional. The number and percentage of deaths ",
                     year_xx, "; death registrations data for 1 January to 31 March ",
                     year_xx, " are provisional.")
 
-### 1-year mortality rates ----
+## 1-year mortality rates ----
 operations_title <- paste0("Operations in five-year period ", 
                            kpi_4_1yr_tail$financial_year, {supsc('p')})
 
@@ -218,12 +218,12 @@ note_mort2 <- paste0("p Provisional. The number and percentage of deaths within 
                      "; death registrations data for 1 January to 31 March ",
                      year_xx, " are provisional.")
 
-### AAA Repairs ----
+## AAA Repairs ----
 ending_year_vv <- paste0("Year ending 31 March ", year_vv)
 ending_year_ww <- paste0("Year ending 31 March ", year_ww)
 ending_year_xx <- paste0("Year ending 31 March ", year_xx, {supsc('p')})
 
-### Unfit for surgery ----
+## Unfit for surgery ----
 refer_year_vv <- paste0("Referrals who were screened in year ending 31 March ", year_vv)
 refer_year_ww <- paste0("Referrals who were screened in year ending 31 March ", year_ww)
 refer_year_xx <- paste0("Referrals who were screened in year ending 31 March ", year_xx, {supsc('p')})
@@ -236,7 +236,7 @@ unfit_p <- paste0("p  Provisional. Data for the year ending 31 March ", year_xx,
                   "a non-final outcome or no outcome recorded at this stage; ",
                   "therefore, the figures will change when the data becomes more complete.")													
 
-### Unfit for surgery follow-up ----
+## Unfit for surgery follow-up ----
 unfit_year_cum1 <- paste0("Cumulative total for operations from implementation ", 
                          "to 31 March ", year_ww, {supsc('p')})
 unfit_year_cum3 <- paste0("Cumulative total for operations from implementation ", 
@@ -244,7 +244,7 @@ unfit_year_cum3 <- paste0("Cumulative total for operations from implementation "
 unfit_year_cum5 <- paste0("Cumulative total for operations from implementation ", 
                          "to 31 March ", year_ss, {supsc('p')})
 
-## Unfit follow-up deaths by cause ---
+## Unfit follow-up deaths by cause ----
 cause_year_cum <- paste0("Cumulative total referrals who were screened from ",  
                          "implementation to 31 March ", year_xx)
 
