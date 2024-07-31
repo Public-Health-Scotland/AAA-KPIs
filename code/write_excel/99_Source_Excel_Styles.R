@@ -81,4 +81,12 @@ styles$white_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", fgFill 
                                border = c("top", "bottom", "left", "right"),
                                borderStyle = "medium", halign = "center", valign = "bottom",
                                textDecoration = "bold")
+# write excel 5 - report type style
+styles$report_type_style <- eval_seasonal_diff(
+  season,
+  {createStyle(fontSize = 12, fontName = "Arial",
+               textDecoration = "bold", fontColour = "#FF0000")}, # spring
+  {createStyle(fontSize = 12, fontName = "Arial",
+               textDecoration = "bold", fontColour = "#000000")} # autumn
+)
 

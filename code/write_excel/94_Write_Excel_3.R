@@ -462,11 +462,8 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
                           "for screening.")
 
 ### workbook ----
-# wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
-#                           season, ".xlsx"))
-# AMc test path:
-wb <- loadWorkbook(paste0(template_path, "/new_templates/3_Quality Assurance_",
-                          season, "_new.xlsx"))
+wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
+                          season, ".xlsx"))
 
 ## Table of Contents ----
 # notes
@@ -755,7 +752,3 @@ showGridLines(wb, "KPI 2.2 Add (B) device", showGridLines = FALSE)
 
 # 5: Save output ----
 query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
-
-# test path:
-# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
-#              overwrite = TRUE)
