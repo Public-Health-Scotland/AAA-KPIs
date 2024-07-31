@@ -114,7 +114,7 @@ vascular_referral_count <- vascular_referral_count %>%
 
 
 ### 4: Save Output ----
-phsaaa::query_write_rds(vascular_referral_count,
+query_write_rds(vascular_referral_count,
                         paste0(temp_path, "/4_5_vasc_referrals_", yymm, ".rds"))
 
 rm(vascular_referral_count, aaa_extract)
@@ -296,7 +296,7 @@ annual_less <- resout_list |>
 ## Combine annual totals ----
 annual <- rbind(annual_great, annual_less)
 
-phsaaa::query_write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
+query_write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
 
 rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
@@ -438,10 +438,10 @@ repairs_cum <- repairs_all %>%
   ungroup() %>% 
   mutate(fy_surgery = "Cumulative", .after = hbres)
 
-repairs_current <- phsaaa::add_new_rows(
+repairs_current <- add_new_rows(
   repairs_current, repairs_cum, fy_surgery, surg_method)
 
 repairs_current <- hb_tibble |> 
   left_join(repairs_current, by = "hbres") 
 
-phsaaa::query_write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))
+query_write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))

@@ -59,7 +59,7 @@ prov_data_note <- paste0("p Data for year ending 31 March ", year_xx,
 ## Table of Contents notes ----
 
 ### sheet headings ----
-pub_year <- phsaaa::eval_seasonal_diff(
+pub_year <- eval_seasonal_diff(
   season,
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
           "be published in April ", year_yy, " (final data will be ",
@@ -78,13 +78,13 @@ tab_1.1_add_desc <- paste0("Percentage of eligible population who are sent an ",
                            "initial offer to screening before age 66: work-in-progress ",
                            "position for men reaching age 66 in year ending 31 March ", 
                            year_yy)
-line_no_tab_1.2a_add <- phsaaa::eval_seasonal_diff({15}, {16})
+line_no_tab_1.2a_add <- eval_seasonal_diff({15}, {16})
 tab_1.2a_add <- paste0("1.2a Additional (", year2, ")")
 tab_1.2_add_desc <- paste0("Percentage of eligible population who are tested ",
                            "before age 66 and 3 months: work-in-progress ",
                            "position for men reaching age 66 in year ending ",
                            "31 March ", year_yy)
-line_no_tab_1.2b_add <- phsaaa::eval_seasonal_diff(season, {17}, {18})
+line_no_tab_1.2b_add <- eval_seasonal_diff(season, {17}, {18})
 tab_1.2b_add <- paste0("1.2b (uptake) Additional (", year2, ")")
 tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 ",
                             "who are tested before age 66 and 3 months: ",
@@ -92,8 +92,8 @@ tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 "
                             "in year ending 31 March ", year_yy)
 
 ### footnotes ----
-line_no_note_toc <- phsaaa::eval_seasonal_diff(season, {26},{30})
-note_toc_data <- phsaaa::eval_seasonal_diff(
+line_no_note_toc <- eval_seasonal_diff(season, {26},{30})
+note_toc_data <- eval_seasonal_diff(
   season,
   {"The provisional/partial "}, # spring version,
   {"The "} # autumn version

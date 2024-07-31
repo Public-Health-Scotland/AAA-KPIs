@@ -456,7 +456,7 @@ kpi_3 <- kpi_3 |>
   rename(fin_year = financial_year)
 
 # create historical backup + new file with this year's data
-phsaaa::build_history(hist_db, kpi_3, "3")
+build_history(hist_db, kpi_3, "3")
 
 table(hist_db$financial_year, hist_db$kpi) 
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
@@ -476,4 +476,4 @@ table(hist_db$financial_year, hist_db$kpi)
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years))
 
-phsaaa::query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))

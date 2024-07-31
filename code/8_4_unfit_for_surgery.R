@@ -148,7 +148,7 @@ unfit_current <- rbind(unfit_current, unfit_cum)
 unfit_current <- hb_tibble |> 
   left_join(unfit_current, by = "hbres")
 
-phsaaa::query_write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
+query_write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
 
 rm(unfit_cum, unfit_fy, unfit_hist, unfit_surgery)
 
@@ -272,7 +272,7 @@ mortality_hb <- hb_tibble |>
   left_join(mortality_hb, by = "hbres") |> 
   mutate_all(~ifelse(is.nan(.), NA, .))
 
-phsaaa::query_write_rds(mortality_hb, paste0(temp_path, "/4_9_unfit_follow-up_", yymm, ".rds"))
+query_write_rds(mortality_hb, paste0(temp_path, "/4_9_unfit_follow-up_", yymm, ".rds"))
 
 #------------------------Unfit Follow-up Deaths by Cause-----------------------#
 
@@ -392,5 +392,5 @@ total_unfit <- unfit_current |>
 ### 6: Combine and save ----
 all_deaths <- bind_rows(total_unfit, total_deaths, non_aaa_deaths, aaa_deaths)
 
-phsaaa::query_write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
+query_write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
 

@@ -73,7 +73,7 @@ kpi_1.1 <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.1 year2 ----
-kpi_1.1_y2 <- phsaaa::eval_seasonal_diff(
+kpi_1.1_y2 <- eval_seasonal_diff(
   season,
   {## Data for currently active year only
     theme2 |> 
@@ -124,7 +124,7 @@ kpi_1.2a <- kpi_1.2a[, -c(8:11)]
 
 ## KPI 1.2a year2 ----
 
-kpi_1.2a_y2 <- phsaaa::eval_seasonal_diff(
+kpi_1.2a_y2 <- eval_seasonal_diff(
   season,
   {## Data for currently active year only
     theme2 |> 
@@ -193,7 +193,7 @@ kpi_1.3a_hb <- theme2 |>
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
 ## KPI 1.3a year2 ----
-kpi_1.3a_y2 <- phsaaa::eval_seasonal_diff(
+kpi_1.3a_y2 <- eval_seasonal_diff(
   season,
   {## Data for currently active year only
     theme2 |> 
@@ -483,7 +483,7 @@ addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$red_bold_12,
          rows = 4, cols = 1)
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy, 
           startRow = 6, startCol = 2)
-phsaaa::eval_seasonal_diff(
+eval_seasonal_diff(
   season,
   {addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$black_border_thin_centre_12, 
             rows = 6, cols = 2:4, gridExpand = TRUE)}, # spring 
@@ -513,7 +513,7 @@ writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_y2,
 # notes
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", turn66_year_yy,
           startRow = 32, startCol = 2)
-phsaaa::eval_seasonal_diff(
+eval_seasonal_diff(
   season,
   {addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$black_border_thin_centre_12,
             rows = 32, cols = 2:4, gridExpand = TRUE)}, # spring
@@ -777,6 +777,6 @@ showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
 
  
 # 5: Save output ----
-phsaaa::query_saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_",
+query_saveWorkbook(wb, paste0(output_path, "/2_Invitation and Attendance_",
                                       yymm, ".xlsx"))
 

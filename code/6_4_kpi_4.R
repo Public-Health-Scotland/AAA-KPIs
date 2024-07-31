@@ -461,7 +461,7 @@ table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
 # saving outputs
 
-phsaaa::query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
+query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
+query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
 

@@ -1009,7 +1009,7 @@ table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$fin_year)
 
 # add to historical database (only runs in autumn)
-phsaaa::build_history(hist_db, current_kpi, "2")
+build_history(hist_db, current_kpi, "2")
 
 rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
    qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
@@ -1018,7 +1018,7 @@ rm(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc)
 
 ### Current database ---
 ## Take current reporting years from new historic
-kpi_2_full <- phsaaa::add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
+kpi_2_full <- add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
   filter(fin_year %in% c(kpi_report_years))
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
@@ -1050,7 +1050,7 @@ table(kpi_2_full$kpi, kpi_2_full$fin_year)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative
 
 ## Save data block
-phsaaa::query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
+query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 # extra kpis - save
-phsaaa::query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
+query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
+query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))

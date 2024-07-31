@@ -542,12 +542,12 @@ kpi_1_4 <- kpi_1_4 |>
 
 
 ## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
-report_db <- phsaaa::add_new_rows(kpi_1, kpi_1_4, fin_year, kpi)
+report_db <- add_new_rows(kpi_1, kpi_1_4, fin_year, kpi)
 
 table(report_db$kpi, report_db$fin_year)
 
 ## Write out new invite_attend file
-phsaaa::query_write_rds(report_db, 
+query_write_rds(report_db, 
                         paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 # call in historical db to run next funtion
@@ -556,4 +556,4 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-phsaaa::build_history(hist_db, kpi_1_4, "1.4")
+build_history(hist_db, kpi_1_4, "1.4")

@@ -357,7 +357,7 @@ kpi_2_2_add_b_dc <- kpi_2_dc |>
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
 
-pub_year <- phsaaa::eval_seasonal_diff(
+pub_year <- eval_seasonal_diff(
   season,
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
           "be published in April ", year_yy, " (final data will be ",
@@ -382,7 +382,7 @@ source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 ### KPI 2 & QA ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
-screened_year_xx <- phsaaa::eval_seasonal_diff(
+screened_year_xx <- eval_seasonal_diff(
   season,
   {paste0("Screened in year ending 31 March ", year_xx, " (partial data)")}, # spring
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
@@ -404,7 +404,7 @@ eligible_year_vv <- paste0("Eligible cohort: Turned 66 in year ending 31 March "
                            year_vv, {supsc('r')})
 eligible_year_ww <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
                            year_ww, {supsc('r')})
-eligible_year_xx <- phsaaa::eval_seasonal_diff(
+eligible_year_xx <- eval_seasonal_diff(
   season,
   {paste0("Eligible cohort: Turned 66 in year ending 31 March ", year_xx, 
           " (provisional)")}, # spring
@@ -754,8 +754,8 @@ writeData(wb, sheet = "KPI 2.2 Add (B) device", kpi_2_2_add_b_dc,
 showGridLines(wb, "KPI 2.2 Add (B) device", showGridLines = FALSE)
 
 # 5: Save output ----
-# phsaaa::query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
+query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))
 
 # test path:
-saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
-             overwrite = TRUE)
+# saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "XXX.xlsx"),
+#              overwrite = TRUE)
