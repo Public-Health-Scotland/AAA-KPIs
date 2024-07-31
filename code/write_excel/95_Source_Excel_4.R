@@ -27,9 +27,9 @@ year_yy <- year_xx + 1
 year_3 <- year_xx - 3
 year_5 <- year_xx - 5
 
-# orange font for notes needing manual input
-orange_font <- createStyle(fontSize = 11, fontName = "Arial", 
-                           fontColour = "#ff9f00", wrapText = TRUE)
+# styles
+source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
+
 
 ## KPI 4.1 previous stats
 rate_41 <- theme4_4 |> 
@@ -115,9 +115,9 @@ writeData(wb, "KPI 3.1", screened_year_vvr, startRow = 4, startCol = 2)
 writeData(wb, "KPI 3.1", screened_year_wwr, startRow = 4, startCol = 5)
 writeData(wb, "KPI 3.1", screened_year_xxp, startRow = 4, startCol = 8)
 writeData(wb, "KPI 3.1", kpi_3.1_prov, startRow = 32)
-addStyle(wb, "KPI 3.1", style = orange_font, rows = 32, cols = 1)
+addStyle(wb, "KPI 3.1", style = styles$orange_11, rows = 32, cols = 1)
 writeData(wb, "KPI 3.1", kpi_3.1_revised, startRow = 34)
-addStyle(wb, "KPI 3.1", style = orange_font, rows = 34, cols = 1)
+addStyle(wb, "KPI 3.1", style = styles$orange_11, rows = 34, cols = 1)
 
 ### KPI 3.2 HB Residence ----
 kpi_3.2_hb_note1 <- paste0("r  Revised since published on {publication date year_xx} ",
@@ -149,7 +149,7 @@ writeData(wb, "KPI 3.2 HB Residence", screened_year_vvr, startRow = 4, startCol 
 writeData(wb, "KPI 3.2 HB Residence", screened_year_wwr, startRow = 4, startCol = 5)
 writeData(wb, "KPI 3.2 HB Residence", screened_year_xxp, startRow = 4, startCol = 8)
 writeData(wb, "KPI 3.2 HB Residence", kpi_3.2_hb_note1, startRow = 32)
-addStyle(wb, "KPI 3.2 HB Residence", style = orange_font, rows = 32, cols = 1)
+addStyle(wb, "KPI 3.2 HB Residence", style = styles$orange_11, rows = 32, cols = 1)
 writeData(wb, "KPI 3.2 HB Residence", kpi_3.2_hb_note2, startRow = 34)
 
 
@@ -158,7 +158,7 @@ writeData(wb, "KPI 3.2 HB Surgery", screened_year_vvr, startRow = 4, startCol = 
 writeData(wb, "KPI 3.2 HB Surgery", screened_year_wwr, startRow = 4, startCol = 5)
 writeData(wb, "KPI 3.2 HB Surgery", screened_year_xxp, startRow = 4, startCol = 8)
 writeData(wb, "KPI 3.2 HB Surgery", kpi_3.2_hb_note1, startRow = 25)
-addStyle(wb, "KPI 3.2 HB Surgery", style = orange_font, rows = 25, cols = 1)
+addStyle(wb, "KPI 3.2 HB Surgery", style = styles$orange_11, rows = 25, cols = 1)
 writeData(wb, "KPI 3.2 HB Surgery", kpi_3.2_hb_note2, startRow = 27)
 
 ### KPI 4.1 ----
@@ -178,7 +178,7 @@ kpi_4_note_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year
 
 writeData(wb, "KPI 4.1", note_41, startRow = 16, startCol = 1)
 writeData(wb, "KPI 4.1", kpi_4_note_prov, startRow = 18, startCol = 1)
-addStyle(wb, "KPI 4.1", style = orange_font, rows = 18, cols = 1)
+addStyle(wb, "KPI 4.1", style = styles$orange_11, rows = 18, cols = 1)
 
 ### KPI 4.2 ----
 note_42 <- paste0("1. Due to small numbers, data are reported for five-year ", 
@@ -189,17 +189,17 @@ note_42 <- paste0("1. Due to small numbers, data are reported for five-year ",
 
 writeData(wb, "KPI 4.2", note_42, startRow = 16, startCol = 1)
 writeData(wb, "KPI 4.2", kpi_4_note_prov, startRow = 18, startCol = 1)
-addStyle(wb, "KPI 4.2", style = orange_font, rows = 18, cols = 1)
+addStyle(wb, "KPI 4.2", style = styles$orange_11, rows = 18, cols = 1)
 
 ### KPI 4.1 additional ----
 
 writeData(wb, "KPI 4.1 Additional", kpi_4_note_prov, startRow = 62, startCol = 1)
-addStyle(wb, "KPI 4.1 Additional", style = orange_font, rows = 62, cols = 1)
+addStyle(wb, "KPI 4.1 Additional", style = styles$orange_11, rows = 62, cols = 1)
 
 ### KPI 4.2 additional ----
 
 writeData(wb, "KPI 4.2 Additional", kpi_4_note_prov, startRow = 62, startCol = 1)
-addStyle(wb, "KPI 4.2 Additional", style = orange_font, rows = 62, cols = 1)
+addStyle(wb, "KPI 4.2 Additional", style = styles$orange_11, rows = 62, cols = 1)
 
 ### Table 7) Vascular referrals ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
@@ -234,7 +234,7 @@ vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year
 writeData(wb, "Vascular KPIs background", vasc_outcome_title, startRow = 2, 
           startCol = 1)
 writeData(wb, "Vascular KPIs background", vasc_outcome_prov, startRow = 43)
-addStyle(wb, "Vascular KPIs background", style = orange_font, rows = 43, cols = 1)
+addStyle(wb, "Vascular KPIs background", style = styles$orange_11, rows = 43, cols = 1)
 
 ### 1-year mortality rates ----
 operations_title <- paste0("Operations in five-year period ", 
