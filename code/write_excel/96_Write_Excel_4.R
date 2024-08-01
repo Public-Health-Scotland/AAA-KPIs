@@ -279,16 +279,13 @@ unfit_deaths3 <- theme4_unfit_deaths |>
 # 4: Write to Excel (openxlsx) ----
 ## Setup workbook ----
 
-# wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
-#                           season, ".xlsx"))
-# AMc test:
-wb <- loadWorkbook(paste0(template_path, "/new_templates/4_Referral Treatment and Outcomes_",
-                          season, "_new.xlsx"))
+wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
+                          season, ".xlsx"))
 
 ## Source notes script
 source(here::here(paste0("code/write_excel/95_Source_Excel_4.R")))
 
-#rm(list=ls(pattern = "theme4_"))
+rm(list=ls(pattern = "theme4_"))
 
 
 ## Table of Contents ----
@@ -649,10 +646,6 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 # 5: Save output ----
-# query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
-#                                       yymm, ".xlsx"))
-
-# AMc test
-query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_", 
-                              yymm, "XXX.xlsx"))
+query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
+                                      yymm, ".xlsx"))
 
