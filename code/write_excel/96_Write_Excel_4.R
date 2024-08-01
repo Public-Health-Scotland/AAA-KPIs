@@ -412,9 +412,9 @@ showGridLines(wb, "KPI 4.1", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 4.2", kpi_4_2_note, 
           startRow = 16, startCol = 1)
 addStyle(wb, sheet = "KPI 4.2", styles$black_11, 
-         rows = 16, cols 1)
+         rows = 16, cols = 1)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.2", kpi_4_note_prov, 
+  writeData(wb, sheet = "KPI 4.2", kpi_4_prov, 
             startRow = 18, startCol = 1)
   addStyle(wb, sheet = "KPI 4.2", styles$orange_11, 
            rows = 18, cols = 1)
@@ -430,7 +430,7 @@ showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 ## UPDATE/CHECK LINES EACH RUN ##
 # notes
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_note_prov, 
+  writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_prov, 
             startRow = 62, startCol = 1)
   addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$orange_11, 
            rows = 62, cols = 1)
@@ -448,7 +448,7 @@ showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
 ## UPDATE/CHECK LINES EACH RUN ##
 # notes
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_note_prov, 
+  writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_prov, 
             startRow = 62, startCol = 1)
   addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$orange_11, 
            rows = 62, cols = 1)
@@ -472,8 +472,14 @@ writeData(wb, sheet = "7) Vascular referrals", screened_year_xx,
           startRow = 5, startCol = 6)
 writeData(wb, sheet = "7) Vascular referrals", screened_cum, 
           startRow = 5, startCol = 8)
-writeData(wb, sheet = "7) Vascular referrals", table_7_prov, 
-          startRow = 15)
+addStyle(wb, sheet = "7) Vascular referrals", styles$black_border_thin_centre_12,
+          rows = 5, cols = 2:9, gridExpand = T)
+if (season == "spring") {
+  writeData(wb, sheet = "7) Vascular referrals", table_7_prov, 
+            startRow = 15)
+  addStyle(wb, sheet = "7) Vascular referrals", styles$black_nowrap_11,
+           rows = 15, cols = 1)
+}
 # data
 writeData(wb, sheet = "7) Vascular referrals", vasc_refs, 
           startRow = 7, startCol = 2, colNames = FALSE)
@@ -483,10 +489,14 @@ showGridLines(wb, "7) Vascular referrals", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_title, 
           startRow = 2, startCol = 1)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_prov, 
-          startRow = 43)
-addStyle(wb, sheet = "Vascular KPIs background", style = styles$orange_11, 
-         rows = 43, cols = 1)
+addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_18, 
+         rows = 2, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_prov, 
+            startRow = 43)
+  addStyle(wb, sheet = "Vascular KPIs background", styles$orange_11, 
+           rows = 43, cols = 1)
+}
 # data
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes1, 
           startRow = 5,  startCol = 2, colNames = FALSE)
@@ -512,10 +522,14 @@ writeData(wb, sheet = "1, 3, 5-year mortality", mort_year_cum3,
           startRow = 5, startCol = 5)
 writeData(wb, sheet = "1, 3, 5-year mortality", mort_year_cum5, 
           startRow = 5, startCol = 8)
-writeData(wb, sheet = "1, 3, 5-year mortality", note_cum, 
+addStyle(wb, sheet = "1, 3, 5-year mortality", styles$black_border_centre_12,
+         rows = 5, cols = 2:10, gridExpand = T)
+writeData(wb, sheet = "1, 3, 5-year mortality", mort_135_note, 
           startRow = 12, startCol = 1)
-writeData(wb, sheet = "1, 3, 5-year mortality", note_prov, 
+writeData(wb, sheet = "1, 3, 5-year mortality", mort_135_prov, 
           startRow = 14, startCol = 1)
+addStyle(wb, sheet = "1, 3, 5-year mortality", styles$black_11,
+         rows = 12:14, cols = 1, gridExpand = T)
 # data
 writeData(wb, sheet = "1, 3, 5-year mortality", kpi_4_cum_mort, 
           startRow = 8, colNames = FALSE)
@@ -525,10 +539,16 @@ showGridLines(wb, "1, 3, 5-year mortality", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "1-year mortality rates", operations_title, 
           startRow = 3,  startCol = 1)
-writeData(wb, sheet = "1-year mortality rates", note_mort, 
+addStyle(wb, sheet = "1-year mortality rates", styles$black_bold_14,
+         rows = 3, cols = 1)
+writeData(wb, sheet = "1-year mortality rates", mort_1_note, 
           startRow = 11, startCol = 1)
-writeData(wb, sheet = "1-year mortality rates", note_mort2, 
-          startRow = 15, startCol = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "1-year mortality rates", mort_1_prov,
+            startRow = 15, startCol = 1)
+}
+addStyle(wb, sheet = "1-year mortality rates", styles$black_11,
+         rows = c(11, 15), cols = 1)
 # data
 writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, 
           startRow = 8, colNames = FALSE)
@@ -544,7 +564,7 @@ writeData(wb, sheet = "AAA Repairs", ending_year_xx,
           startRow = 5, startCol = 8)
 writeData(wb, sheet = "AAA Repairs", screened_cum, 
           startRow = 5, startCol = 11)
-writeData(wb, sheet = "AAA Repairs", kpi_4_note_prov, 
+writeData(wb, sheet = "AAA Repairs", kpi_4_prov, 
           startRow = 26, startCol = 1)
 # data
 writeData(wb, sheet = "AAA Repairs", aaa_repairs, 
@@ -576,9 +596,9 @@ writeData(wb, sheet = "Unfit for surgery follow-up", unfit_year_cum3,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "Unfit for surgery follow-up", unfit_year_cum5, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "Unfit for surgery follow-up", note_cum, 
+writeData(wb, sheet = "Unfit for surgery follow-up", mort_135_note, 
           startRow = 24, startCol = 1)
-writeData(wb, sheet = "Unfit for surgery follow-up", note_prov, 
+writeData(wb, sheet = "Unfit for surgery follow-up", mort_135_prov, 
           startRow = 26, startCol = 1)
 # data
 writeData(wb, sheet = "Unfit for surgery follow-up", unfit_followup, 

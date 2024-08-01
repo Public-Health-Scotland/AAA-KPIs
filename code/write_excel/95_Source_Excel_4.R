@@ -175,16 +175,21 @@ table_7_prov <- paste0("p  Provisional. Data for year ending 31 March ", year_xx
                        "February ", year_xx, ".")
 
 ## Vascular KPIs background ----
-vasc_outcome_title <- paste0("Vascular KPIs background information: Vascular ",
-                             "referral outcomes at 1 March ", year_xx, {supsc('1, 2')})
+vasc_outcome_title <- eval_seasonal_diff(
+  season,
+  {paste0("Vascular KPIs background information: Vascular ",
+          "referral outcomes at 1 March ", year_xx, {supsc('1 2')})}, # spring
+  {paste0("Vascular KPIs background information: Vascular ",
+          "referral outcomes at 1 March ", year_xx, {supsc('1')})} # autumn
+)
 
 vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year ",
-                         "ending 31 March ", year_xx, " are for the 11-month ",
-                         "period 1 April ", year_ww, " to 28 February ", year_xx,
-                         ". As shown in the table, the vascular referral data ",
-                         "recorded for this period are incomplete at this stage, ",
-                         "with around a third of referrals having no outcome data ",
-                         "recorded.")
+                            "ending 31 March ", year_xx, " are for the 11-month ",
+                            "period 1 April ", year_ww, " to 28 February ", year_xx,
+                            ". As shown in the table, the vascular referral data ",
+                            "recorded for this period are incomplete at this stage, ",
+                            "with around a third of referrals having no outcome data ",
+                            "recorded.")
 
 ## 1,3,5-year mortality rates ----
 mort_year_cum1 <- paste0("Cumulative total for operations from implementation ", 
@@ -193,36 +198,40 @@ mort_year_cum3 <- paste0("Cumulative total for operations from implementation ",
                          "to 31 March ", year_uu, {supsc('p')})
 mort_year_cum5 <- paste0("Cumulative total for operations from implementation ", 
                          "to 31 March ", year_ss, {supsc('p')})
-note_cum <- paste0("To allow enough time for patient outcomes to be followed ", 
-                   "up, the latest years of surgery that can be included at ",
-                   "this stage are ", year_ww, " (1-year follow-up), ",
-                   year_uu, " (3-year follow-up), and ", year_ss, 
-                   " (5-year follow-up), respectively.")
-note_prov <- paste0("p Provisional. The number and percentage of deaths ",
-                    "following AAA surgery are provisional: the 1, 3 and 5-year ",
-                    "follow-up periods include death registrations to 31 March ",
-                    year_xx, "; death registrations data for 1 January to 31 March ",
-                    year_xx, " are provisional.")
-
+mort_135_note <- paste0("1. To allow enough time for patient outcomes to be followed ", 
+                        "up, the latest years of surgery that can be included at ",
+                        "this stage are ", year_ww, " (1-year follow-up), ",
+                        year_uu, " (3-year follow-up), and ", year_ss, 
+                        " (5-year follow-up), respectively.")
+mort_135_prov <- paste0("p Provisional. The number and percentage of deaths ",
+                        "following AAA surgery are provisional: the 1, 3 and 5-year ",
+                        "follow-up periods include death registrations to 31 March ",
+                        year_xx, "; death registrations data for 1 January to 31 March ",
+                        year_xx, " are provisional.")
+  
 ## 1-year mortality rates ----
-operations_title <- paste0("Operations in five-year period ", 
-                           kpi_4_1yr_tail$financial_year, {supsc('p')})
+operations_title <- eval_seasonal_diff(
+  season,
+  {paste0("Operations in five-year period ", 
+          kpi_4_1yr_tail$financial_year, {supsc('p')})}, # spring
+  {paste0("Operations in five-year period ", kpi_4_1yr_tail$financial_year)} # autumn
+)
 
-note_mort <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
-                    "for five-year rolling periods and are presented at Scotland ",
-                    "level. The 1-year mortality rates for the two previous ",
-                    "five-year rolling periods were: Open surgery ", rate_4_1yr[1,2], 
-                    "% (", rate_4_1yr[1,1], ") and ", rate_4_1yr[2,2], "% (",
-                    rate_4_1yr[2,1], "); EVAR ", rate_4_1yr[1,3], "% (", 
-                    rate_4_1yr[1,1], ") and ", rate_4_1yr[2,3], "% (", 
-                    rate_4_1yr[2,1], ").")
+mort_1_note <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
+                      "for five-year rolling periods and are presented at Scotland ",
+                      "level. The 1-year mortality rates for the two previous ",
+                      "five-year rolling periods were: Open surgery ", rate_4_1yr[1,2], 
+                      "% (", rate_4_1yr[1,1], ") and ", rate_4_1yr[2,2], "% (",
+                      rate_4_1yr[2,1], "); EVAR ", rate_4_1yr[1,3], "% (", 
+                      rate_4_1yr[1,1], ") and ", rate_4_1yr[2,3], "% (", 
+                      rate_4_1yr[2,1], ").")
 
-note_mort2 <- paste0("p Provisional. The number and percentage of deaths within ",
-                     "1 year following AAA surgery are provisional for ", 
-                     kpi_4_1yr_tail$financial_year, ": the 1-year follow-up period ",
-                     "includes death registrations to 31 March ", year_xx, 
-                     "; death registrations data for 1 January to 31 March ",
-                     year_xx, " are provisional.")
+mort_1_prov <- paste0("p Provisional. The number and percentage of deaths within ",
+                      "1 year following AAA surgery are provisional for ", 
+                      kpi_4_1yr_tail$financial_year, ": the 1-year follow-up period ",
+                      "includes death registrations to 31 March ", year_xx, 
+                      "; death registrations data for 1 January to 31 March ",
+                      year_xx, " are provisional.")
 
 ## AAA Repairs ----
 ending_year_vv <- paste0("Year ending 31 March ", year_vv)
