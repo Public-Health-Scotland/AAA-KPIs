@@ -209,6 +209,7 @@ mort_135_prov <- paste0("p Provisional. The number and percentage of deaths ",
                         year_xx, "; death registrations data for 1 January to 31 March ",
                         year_xx, " are provisional.")
   
+
 ## 1-year mortality rates ----
 operations_title <- eval_seasonal_diff(
   season,
@@ -236,16 +237,29 @@ mort_1_prov <- paste0("p Provisional. The number and percentage of deaths within
 ## AAA Repairs ----
 ending_year_vv <- paste0("Year ending 31 March ", year_vv)
 ending_year_ww <- paste0("Year ending 31 March ", year_ww)
-ending_year_xx <- paste0("Year ending 31 March ", year_xx, {supsc('p')})
+ending_year_xx <- eval_seasonal_diff(
+  season,
+  {paste0("Year ending 31 March ", year_xx, {supsc('p')})}, # spring
+  {paste0("Year ending 31 March ", year_xx)} # autumn
+)
 
 ## Unfit for surgery ----
 refer_year_vv <- paste0("Referrals who were screened in year ending 31 March ", year_vv)
 refer_year_ww <- paste0("Referrals who were screened in year ending 31 March ", year_ww)
-refer_year_xx <- paste0("Referrals who were screened in year ending 31 March ", year_xx, {supsc('p')})
-refer_year_cum <- paste0("Cumulative total referrals who were screened from ",
-                         "implementation to 31 March ", year_xx, {supsc('p')})
+refer_year_xx <- eval_seasonal_diff(
+  season,
+  {paste0("Referrals who were screened in year ending 31 March ", year_xx, {supsc('p')})}, # spring
+  {paste0("Referrals who were screened in year ending 31 March ", year_xx)} # autumn
+)
+refer_year_cum <- eval_seasonal_diff(
+  season,
+  {paste0("Cumulative total referrals who were screened from ",
+          "implementation to 31 March ", year_xx, {supsc('p')})}, # spring
+  {paste0("Cumulative total referrals who were screened from ",
+          "implementation to 31 March ", year_xx)} # autumn
+)
 
-unfit_p <- paste0("p  Provisional. Data for the year ending 31 March ", year_xx, 
+unfit_prov <- paste0("p  Provisional. Data for the year ending 31 March ", year_xx, 
                   " are for the 11-month period 1 April ", year_ww, " to 28 February ",
                   year_xx, ". A number of vascual referrals for this period have ",
                   "a non-final outcome or no outcome recorded at this stage; ",

@@ -552,6 +552,8 @@ addStyle(wb, sheet = "1-year mortality rates", styles$black_11,
 # data
 writeData(wb, sheet = "1-year mortality rates", kpi_4_1yr_tail, 
           startRow = 8, colNames = FALSE)
+addStyle(wb, sheet = "1-year mortality rates", createStyle(fontColour = "#000000"),
+         rows = 8, cols = 1, stack = T)
 showGridLines(wb, "1-year mortality rates", showGridLines = FALSE)
 
 ## AAA Repairs ----
@@ -564,8 +566,14 @@ writeData(wb, sheet = "AAA Repairs", ending_year_xx,
           startRow = 5, startCol = 8)
 writeData(wb, sheet = "AAA Repairs", screened_cum, 
           startRow = 5, startCol = 11)
-writeData(wb, sheet = "AAA Repairs", kpi_4_prov, 
-          startRow = 26, startCol = 1)
+addStyle(wb, sheet = "AAA Repairs", styles$black_border_centre_12,
+         rows = 5, cols = 2:13, gridExpand = T)
+if (season == "spring") {
+  writeData(wb, sheet = "AAA Repairs", kpi_4_prov, 
+            startRow = 26, startCol = 1)
+  addStyle(wb, sheet = "AAA Repairs", styles$orange_11,
+           rows = 26, cols = 1)
+}
 # data
 writeData(wb, sheet = "AAA Repairs", aaa_repairs, 
           startRow = 7, colNames = FALSE)
@@ -581,8 +589,14 @@ writeData(wb, sheet = "Unfit for surgery", refer_year_xx,
           startRow = 4, startCol = 8)
 writeData(wb, sheet = "Unfit for surgery", refer_year_cum, 
           startRow = 4, startCol = 11)
-writeData(wb, sheet = "Unfit for surgery", unfit_p, 
-          startRow = 27, startCol = 1)
+addStyle(wb, sheet = "Unfit for surgery", styles$black_border_centre_12,
+         rows = 4, cols = 2:13, gridExpand = T)
+if (season == "spring") {
+  writeData(wb, sheet = "Unfit for surgery", unfit_prov, 
+            startRow = 27, startCol = 1)
+  addStyle(wb, sheet = "Unfit for surgery", styles$orange_11,
+           rows = 27, cols = 1)
+}
 # data
 writeData(wb, sheet = "Unfit for surgery", unfit_surgery, 
           startRow = 7,  colNames = FALSE)
@@ -596,10 +610,14 @@ writeData(wb, sheet = "Unfit for surgery follow-up", unfit_year_cum3,
           startRow = 4, startCol = 5)
 writeData(wb, sheet = "Unfit for surgery follow-up", unfit_year_cum5, 
           startRow = 4, startCol = 8)
+addStyle(wb, sheet = "Unfit for surgery follow-up", styles$black_border_centre_12,
+         rows = 4, cols = 2:10, gridExpand = T)
 writeData(wb, sheet = "Unfit for surgery follow-up", mort_135_note, 
           startRow = 24, startCol = 1)
 writeData(wb, sheet = "Unfit for surgery follow-up", mort_135_prov, 
           startRow = 26, startCol = 1)
+addStyle(wb, sheet = "Unfit for surgery follow-up", styles$black_11,
+         rows = 24:26, cols = 1, gridExpand = T)
 # data
 writeData(wb, sheet = "Unfit for surgery follow-up", unfit_followup, 
           startRow = 7, colNames = FALSE)
@@ -607,14 +625,20 @@ showGridLines(wb, "Unfit for surgery follow-up", showGridLines = FALSE)
 
 ## Unfit Follow-up Deaths ----
 # notes
-writeData(wb, sheet = "Unfit follow-up deaths by cause", cause_year_cum, 
+writeData(wb, sheet = "Unfit follow-up deaths by cause", refer_year_cum, 
           startRow = 4, startCol = 2)
-writeData(wb, sheet = "Unfit follow-up deaths by cause", cause_year_cum, 
+writeData(wb, sheet = "Unfit follow-up deaths by cause", refer_year_cum, 
           startRow = 9, startCol = 2)
-writeData(wb, sheet = "Unfit follow-up deaths by cause", cause_year_cum, 
+writeData(wb, sheet = "Unfit follow-up deaths by cause", refer_year_cum, 
           startRow = 22, startCol = 2)
-writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths_prov, 
-          startRow = 33, startCol = 1)
+addStyle(wb, sheet = "Unfit follow-up deaths by cause", styles$black_border_thin_centre_12,
+         rows = c(4, 9, 22), cols = 2)
+if (season == "spring") {
+  writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths_prov, 
+            startRow = 33, startCol = 1)
+  addStyle(wb, sheet = "Unfit follow-up deaths by cause", styles$black_11,
+           rows = 33, cols = 1)
+}
 # data
 writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths1, 
           startRow = 5, colNames = FALSE)
