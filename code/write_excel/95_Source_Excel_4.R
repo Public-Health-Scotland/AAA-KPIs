@@ -79,10 +79,14 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 3.1 ----
-screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})
+screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_wwr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
-screened_year_xxp <- paste0("Screened in year ending 31 March ", year_xx, {supsc('p')},
-                            '\n', "(Data not complete)")
+screened_year_xx <- eval_seasonal_diff(
+  season,
+  {paste0("Screened in year ending 31 March ", year_xx, {supsc('p')},
+          '\n', "(Data not complete)")}, # spring
+  {paste0("Screened in year ending 31 March ", year_xx)} # autumn
+)
 
 kpi_3.1_prov <- paste0("p  Provisonal. Data are for the 11-month period 1 April ",
                        year_ww, " to ", extract_date, " ", year_xx,
@@ -94,7 +98,7 @@ kpi_3.1_prov <- paste0("p  Provisonal. Data are for the 11-month period 1 April 
                        "date recorded.")
 
 
-kpi_3.1_revised <- paste0("r  Revised since published on {publication date [20XX]} ",
+kpi_3.1_revised <- paste0("r  Revised since published on {publication date} ",
                        year_xx, ", due to updates in the data recorded on the ",
                        "Scottish AAA Call Recall System. The Scotland rate for ",
                        "the year ending 31 March ", year_ww, " was previously ",
@@ -104,7 +108,7 @@ kpi_3.1_revised <- paste0("r  Revised since published on {publication date [20XX
                        " ", year_xx, " (date of data extraction).")
 
 ## KPI 3.2 HB Residence ----
-kpi_3.2_hb_note1 <- paste0("r  Revised since published on {publication date year_xx} ",
+kpi_3.2_revised <- paste0("r  Revised since published on {publication date year_xx} ",
                            year_xx, " due to updates of the data recorded on the ",
                            "Scottish AAA Call Recall System (Scotland figure was ",
                            "{Scotland % ", year_ww, " taken from previous autumn ",
@@ -119,15 +123,15 @@ kpi_3.2_hb_note1 <- paste0("r  Revised since published on {publication date year
                            "AAA Call Recall System at ", extract_date, " ", year_xx,
                            " (date of data extraction).")
 
-kpi_3.2_hb_note2 <- paste0("p  Provisional. Data are for men screened from 1 April ",
-                          year_ww, " to 31 December ", year_ww, " only to allow ",
-                          "for the 8 week target timescale plus a data recording ",
-                          "lag. A number of men screened in this period have a ",
-                          "non-final outcome or no outcome recorded; therefore, ",
-                          "the figures will change when the data becomes more ",
-                          "complete. The denominator includes men with a non-final ",
-                          "outcome of 'Appropriate for surgery: final outcome pending' ",
-                          "with no surgery date recorded.")
+kpi_3.2_prov <- paste0("p  Provisional. Data are for men screened from 1 April ",
+                       year_ww, " to 31 December ", year_ww, " only to allow ",
+                       "for the 8 week target timescale plus a data recording ",
+                       "lag. A number of men screened in this period have a ",
+                       "non-final outcome or no outcome recorded; therefore, ",
+                       "the figures will change when the data becomes more ",
+                       "complete. The denominator includes men with a non-final ",
+                       "outcome of 'Appropriate for surgery: final outcome pending' ",
+                       "with no surgery date recorded.")
 
 ## KPI 3.2 HB Surgery ----
 
@@ -138,13 +142,13 @@ note_41 <- paste0("1. Due to small numbers, data are reported for five-year ",
                   "were ", rate_41[1,5], "% (", rate_41[1,3], ") and ", 
                   rate_41[2,5], "% (", rate_41[2,3], ").")
 
-kpi_4_note_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year_xx, 3, 4),
-                       " are for the 11-month period 1 April ", year_ww, " to 28 ",
-                       "February ", year_xx, ". The vascular referral data recorded ",
-                       "for this period are incomplete at this stage. At ", extract_date,
-                       " ", year_xx, " (date of data extraction), around a third ",
-                       "of all vascular referrals in the 11-month period had no ",
-                       "vascular outcome data recorded.")
+kpi_4_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year_xx, 3, 4),
+                     " are for the 11-month period 1 April ", year_ww, " to 28 ",
+                     "February ", year_xx, ". The vascular referral data recorded ",
+                     "for this period are incomplete at this stage. At ", extract_date,
+                     " ", year_xx, " (date of data extraction), around a third ",
+                     "of all vascular referrals in the 11-month period had no ",
+                     "vascular outcome data recorded.")
 
 ## KPI 4.2 ----
 note_42 <- paste0("1. Due to small numbers, data are reported for five-year ", 

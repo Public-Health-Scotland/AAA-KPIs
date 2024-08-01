@@ -315,19 +315,24 @@ showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 3.1 ----
 # notes
-writeData(wb, sheet = "KPI 3.1", screened_year_vvr, 
+writeData(wb, sheet = "KPI 3.1", screened_year_vv, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.1", screened_year_wwr, 
           startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 3.1", screened_year_xxp, 
+writeData(wb, sheet = "KPI 3.1", screened_year_xx, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 3.1", kpi_3.1_prov, 
+addStyle(wb, sheet = "KPI 3.1", styles$black_border_centre_12,
+          rows = 4, cols = 2:10, gridExpand = T)
+writeData(wb, sheet = "KPI 3.1", kpi_3.1_revised, 
           startRow = 32)
 addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
          rows = 32, cols = 1)
-writeData(wb, sheet = "KPI 3.1", kpi_3.1_revised, startRow = 34)
-addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
-         rows = 34, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.1", kpi_3.1_prov, 
+            startRow = 34)
+  addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
+           rows = 34, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 3.1", kpi_3_1, 
           startRow = 7, colNames = FALSE)
@@ -335,18 +340,24 @@ showGridLines(wb, "KPI 3.1", showGridLines = FALSE)
 
 ## KPI 3.2 HB Residence ----
 # notes
-writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_vvr, 
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_vv, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_wwr, 
           startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_xxp, 
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_xx, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_hb_note1, 
-          startRow = 32)
-addStyle(wb, sheet = "KPI 3.2 HB Residence", style = styles$orange_11, 
-         rows = 32, cols = 1)
-writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_hb_note2, 
-          startRow = 34)
+addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$black_border_centre_12,
+          rows = 4, cols = 2:10, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_revised, 
+          startRow = 33)
+addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$orange_11, 
+         rows = 33, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_prov, 
+            startRow = 35)
+  addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$orange_11, 
+           rows = 35, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3_2_res, 
           startRow = 7, colNames = FALSE)
@@ -354,18 +365,24 @@ showGridLines(wb, "KPI 3.2 HB Residence", showGridLines = FALSE)
 
 ## KPI 3.2 HB Surgery ----
 # notes
-writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_vvr, 
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_vv, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_wwr, 
           startRow = 4, startCol = 5)
-writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_xxp, 
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_xx, 
           startRow = 4, startCol = 8)
-writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_hb_note1, 
-          startRow = 25)
+addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$black_border_centre_12,
+         rows = 4, cols = 2:10, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_revised, 
+          startRow = 26)
 addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
-         rows = 25, cols = 1)
-writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_hb_note2, 
-          startRow = 27)
+         rows = 26, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_prov, 
+            startRow = 28)
+  addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
+           rows = 28, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3_2_surg, 
           startRow = 7, colNames = FALSE)
