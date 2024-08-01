@@ -136,11 +136,11 @@ kpi_3.2_prov <- paste0("p  Provisional. Data are for men screened from 1 April "
 ## KPI 3.2 HB Surgery ----
 
 ## KPI 4.1 ----
-note_41 <- paste0("1. Due to small numbers, data are reported for five-year ", 
-                  "rolling periods and are presented at Scotland level. The 30-day ",
-                  "mortality rates for the two previous five-year rolling periods ",
-                  "were ", rate_41[1,5], "% (", rate_41[1,3], ") and ", 
-                  rate_41[2,5], "% (", rate_41[2,3], ").")
+kpi_4_1_note <- paste0("1. Due to small numbers, data are reported for five-year ", 
+                      "rolling periods and are presented at Scotland level. The 30-day ",
+                      "mortality rates for the two previous five-year rolling periods ",
+                      "were ", rate_41[1,5], "% (", rate_41[1,3], ") and ", 
+                      rate_41[2,5], "% (", rate_41[2,3], ").")
 
 kpi_4_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year_xx, 3, 4),
                      " are for the 11-month period 1 April ", year_ww, " to 28 ",
@@ -151,11 +151,11 @@ kpi_4_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year_xx, 
                      "vascular outcome data recorded.")
 
 ## KPI 4.2 ----
-note_42 <- paste0("1. Due to small numbers, data are reported for five-year ", 
-                  "rolling periods and are presented at Scotland level. The 30-day ",
-                  "mortality rates for the two previous five-year rolling periods ",
-                  "were ", rate_42[1,5], "% (", rate_42[1,3], ") and ", 
-                  rate_42[2,5], "% (", rate_42[2,3], ").")
+kpi_4_2_note <- paste0("1. Due to small numbers, data are reported for five-year ", 
+                       "rolling periods and are presented at Scotland level. The 30-day ",
+                       "mortality rates for the two previous five-year rolling periods ",
+                       "were ", rate_42[1,5], "% (", rate_42[1,3], ") and ", 
+                       rate_42[2,5], "% (", rate_42[2,3], ").")
 
 ## KPI 4.1 additional ----
 

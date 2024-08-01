@@ -390,37 +390,50 @@ showGridLines(wb,  "KPI 3.2 HB Surgery", showGridLines = FALSE)
 
 ## KPI 4.1 ----
 # notes
-writeData(wb, sheet = "KPI 4.1", note_41, 
+writeData(wb, sheet = "KPI 4.1", kpi_4_1_note, 
           startRow = 16, startCol = 1)
-writeData(wb, sheet = "KPI 4.1", kpi_4_note_prov, 
-          startRow = 18, startCol = 1)
-addStyle(wb, sheet = "KPI 4.1", style = styles$orange_11, 
-         rows = 18, cols = 1)
+addStyle(wb, sheet = "KPI 4.1", styles$black_11, 
+          rows = 16, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 4.1", kpi_4_note_prov, 
+            startRow = 18, startCol = 1)
+  addStyle(wb, sheet = "KPI 4.1", style = styles$orange_11, 
+           rows = 18, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 4.1", kpi_4_1, 
           startRow = 7, colNames = FALSE)
+addStyle(wb, sheet = "KPI 4.1", styles$black_border_centre_12,
+         rows = 7, cols = 1)
 showGridLines(wb, "KPI 4.1", showGridLines = FALSE)
 
 ## KPI 4.2 ----
 # notes
-writeData(wb, sheet = "KPI 4.2", note_42, 
+writeData(wb, sheet = "KPI 4.2", kpi_4_2_note, 
           startRow = 16, startCol = 1)
-writeData(wb, sheet = "KPI 4.2", kpi_4_note_prov, 
-          startRow = 18, startCol = 1)
-addStyle(wb, sheet = "KPI 4.2", style = styles$orange_11, 
-         rows = 18, cols = 1)
+addStyle(wb, sheet = "KPI 4.2", styles$black_11)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 4.2", kpi_4_note_prov, 
+            startRow = 18, startCol = 1)
+  addStyle(wb, sheet = "KPI 4.2", styles$orange_11, 
+           rows = 18, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 4.2", kpi_4_2, 
           startRow = 7, colNames = FALSE)
+addStyle(wb, sheet = "KPI 4.2", styles$black_border_centre_12,
+         rows = 7, cols = 1)
 showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 
 ## KPI 4.1 Additional ----
 ## UPDATE/CHECK LINES EACH RUN ##
 # notes
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_note_prov, 
-          startRow = 62, startCol = 1)
-addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$orange_11, 
-         rows = 62, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_note_prov, 
+            startRow = 62, startCol = 1)
+  addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$orange_11, 
+           rows = 62, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_A, 
           startRow = 7, startCol = 2, colNames = FALSE)
@@ -433,10 +446,12 @@ showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
 ## KPI 4.2 Additional ----
 ## UPDATE/CHECK LINES EACH RUN ##
 # notes
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_note_prov, 
-          startRow = 62, startCol = 1)
-addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$orange_11, 
-         rows = 62, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_note_prov, 
+            startRow = 62, startCol = 1)
+  addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$orange_11, 
+           rows = 62, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_A, 
           startRow = 7, startCol = 2, colNames = FALSE)
