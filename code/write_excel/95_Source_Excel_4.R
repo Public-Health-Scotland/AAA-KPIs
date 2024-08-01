@@ -162,19 +162,22 @@ kpi_4_2_note <- paste0("1. Due to small numbers, data are reported for five-year
 ## KPI 4.2 additional ----
 
 ## Table 7) Vascular referrals ----
-screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
-screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx, {supsc('p')})
 
-ending_year_cum <- paste0("Cumulative total from implementation to 31 March ", year_xx, {supsc('p')})
+screened_cum <- eval_seasonal_diff(
+  season,
+  {paste0("Cumulative total from implementation to 31 March ", year_xx, {supsc('p')})}, # spring
+  {paste0("Cumulative total from implementation to 31 March ", year_xx)} # autumn
+)
 
 table_7_prov <- paste0("p  Provisional. Data for year ending 31 March ", year_xx,
-                    " are for the 11-month period 1 April ", year_ww, " to 28 ",
-                    "February ", year_xx, ".")
+                       " are for the 11-month period 1 April ", year_ww, " to 28 ",
+                       "February ", year_xx, ".")
 
 ## Vascular KPIs background ----
 vasc_outcome_title <- paste0("Vascular KPIs background information: Vascular ",
                              "referral outcomes at 1 March ", year_xx, {supsc('1, 2')})
+
 vasc_outcome_prov <- paste0("2. The vascular referral data recorded for the year ",
                          "ending 31 March ", year_xx, " are for the 11-month ",
                          "period 1 April ", year_ww, " to 28 February ", year_xx,

@@ -395,7 +395,7 @@ writeData(wb, sheet = "KPI 4.1", kpi_4_1_note,
 addStyle(wb, sheet = "KPI 4.1", styles$black_11, 
           rows = 16, cols = 1)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.1", kpi_4_note_prov, 
+  writeData(wb, sheet = "KPI 4.1", kpi_4_prov, 
             startRow = 18, startCol = 1)
   addStyle(wb, sheet = "KPI 4.1", style = styles$orange_11, 
            rows = 18, cols = 1)
@@ -411,7 +411,8 @@ showGridLines(wb, "KPI 4.1", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "KPI 4.2", kpi_4_2_note, 
           startRow = 16, startCol = 1)
-addStyle(wb, sheet = "KPI 4.2", styles$black_11)
+addStyle(wb, sheet = "KPI 4.2", styles$black_11, 
+         rows = 16, cols 1)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 4.2", kpi_4_note_prov, 
             startRow = 18, startCol = 1)
@@ -469,7 +470,7 @@ writeData(wb, sheet = "7) Vascular referrals", screened_year_ww,
           startRow = 5, startCol = 4)
 writeData(wb, sheet = "7) Vascular referrals", screened_year_xx, 
           startRow = 5, startCol = 6)
-writeData(wb, sheet = "7) Vascular referrals", ending_year_cum, 
+writeData(wb, sheet = "7) Vascular referrals", screened_cum, 
           startRow = 5, startCol = 8)
 writeData(wb, sheet = "7) Vascular referrals", table_7_prov, 
           startRow = 15)
@@ -541,7 +542,7 @@ writeData(wb, sheet = "AAA Repairs", ending_year_ww,
           startRow = 5, startCol = 5)
 writeData(wb, sheet = "AAA Repairs", ending_year_xx, 
           startRow = 5, startCol = 8)
-writeData(wb, sheet = "AAA Repairs", ending_year_cum, 
+writeData(wb, sheet = "AAA Repairs", screened_cum, 
           startRow = 5, startCol = 11)
 writeData(wb, sheet = "AAA Repairs", kpi_4_note_prov, 
           startRow = 26, startCol = 1)
