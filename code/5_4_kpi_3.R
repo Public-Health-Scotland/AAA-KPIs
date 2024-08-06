@@ -435,7 +435,7 @@ rm(check, check_2)
 
 
 # Tidy environment
-rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot, hb_list)
+rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot)
 
 
 ### Step 5: Write outputs ----
@@ -446,17 +446,20 @@ table(kpi_3$kpi)
 ## Historical file
 # Create backup of last year's file
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
+table(hist_db$kpi, hist_db$financial_year)
+
 
 # temp: renaming "financial_year" to "fin_year" to make below function work
 # AMc note: discuss with KH as to whether this can be changed permanently??
 hist_db <- hist_db |> 
   rename(fin_year = financial_year)
 
-kpi_3 <- kpi_3 |> 
+report_db <- kpi_3 |> 
+  filter(financial_year %in% c(kpi_report_years)) |> 
   rename(fin_year = financial_year)
 
 # create historical backup + new file with this year's data
-build_history(hist_db, kpi_3, "3")
+build_history(hist_db, report_db, "3")
 
 table(hist_db$financial_year, hist_db$kpi) 
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
@@ -473,7 +476,4 @@ table(hist_db$financial_year, hist_db$kpi)
 # 2022/23                45                45              24
 
 ## Save report file
-report_db <- kpi_3 |> 
-  filter(financial_year %in% c(kpi_report_years))
-
 query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))

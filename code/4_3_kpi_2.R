@@ -1001,6 +1001,11 @@ kpi_2_dc <- bind_rows(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kp
   rename(fin_year = financial_year,
          hbres = hb_screen)
 
+# create current kpi table - only most recent year of data
+current_kpi <- kpi_2 |> 
+  filter(fin_year == kpi_report_years[3])
+table(current_kpi$kpi, current_kpi$fin_year)
+
 ### Historical database ---
 ## Full records (currently only from 2019/20; need to add full historical)
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
