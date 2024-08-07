@@ -88,8 +88,6 @@ if (season == "spring"){
   pending <- provisional %>% count(pending_appt)
   print(pending)
   
-  rm(pending, provisional)
-  
 }
 # for the provisional footnote, the total = sum of pending_appt %in% c(0, 1), 
 # then separated out into "seen" and "not seen" by these flags
@@ -100,7 +98,8 @@ if (season == "spring"){
 # to zero
 kpi_3_1 <- kpi_3_1 %>% 
   filter(result_outcome %in% c("01", "03", "04", "05") | 
-           !is.na(date_seen_outpatient) & screen_to_screen >= 0)
+           !is.na(date_seen_outpatient) & screen_to_screen >= 0) |> 
+  mutate(financial_year = droplevels(financial_year))
 
 
 ### Health Board of Residence ----
@@ -109,7 +108,9 @@ kpi_3_1_hb <- kpi_3_1 %>%
   group_by(hbres, financial_year) %>% 
   summarise(cohort_n = n(), 
             seen_n = sum(seen)) |> 
-  ungroup()
+  ungroup() |> 
+  complete(hbres, financial_year) |> # completing table
+  mutate_at(vars(cohort_n:seen_n), ~ifelse(is.na(.), 0, .))
   
 # Scotland
 kpi_3_1_scot <- kpi_3_1 %>% 
@@ -129,6 +130,7 @@ kpi_3_1_res <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>%
   mutate(kpi = "KPI 3.1 Residence", .after = hbres) |>
   ungroup()
 
+
 #### This next chunk of code adds in FY where missing (produces NAs), but is 
 ## it better to store without the extra (NA) data produced, as the missing FYs 
 ## are automatically created when the data is pivoted to match Excel output?
@@ -142,7 +144,6 @@ kpi_3_1_res <- kpi_3_1_res |>
 
 kpi_3_1_res <- hb_tibble |> left_join(kpi_3_1_res, by = "hbres") 
 
-
 kpi_3_1_res <- kpi_3_1_res |> 
   pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
   mutate(financial_year = group, .after = kpi) |> 
@@ -153,6 +154,9 @@ kpi_3_1_res <- kpi_3_1_res |>
                            stringr::str_detect(group, "seen") ~ "seen_n",
                            stringr::str_detect(group, "cover") ~ "cover_p")) |> 
   rename(health_board = hbres)
+
+# change NaNs to NAs
+kpi_3_1_res$value[is.nan(kpi_3_1_res$value)] <- NA
 
 table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
 # Current run IS saved with this transformation, but to decide how to best store
@@ -169,7 +173,7 @@ table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
 
 kpi_3_1_res <- kpi_3_1_res |> 
   # remove NAs for numerical counts and replace w 0
-  # not sure if this needs to be done?
+  # not sure if this needs to be done? AMc: believe this should be fine now but keeping in instead
   mutate(value = case_when((group == "cohort_n" | group == "seen_n") & 
                              is.na(value) ~ 0, TRUE ~ value))
 
@@ -208,7 +212,8 @@ kpi_3_2 <- aaa_extract %>%
                      screen_to_surgery >= 57 & screen_to_surgery <= 112 ~ 3, # 16 weeks
                      screen_to_surgery >= 113 & screen_to_surgery <= 224 ~ 4, # 32 weeks
                      screen_to_surgery >= 225 & screen_to_surgery <= 365 ~ 5, # 1 year
-                     screen_to_surgery >= 366 ~ 6)) # >1 year
+                     screen_to_surgery >= 366 ~ 6), # >1 year
+         financial_year = droplevels(financial_year)) 
 
 # Check variables
 # Do these add value? Do we need them?
@@ -244,7 +249,8 @@ kpi_3_2_hb <- kpi_3_2 %>%
   group_by(hbres, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |>
-  ungroup()
+  ungroup() |> 
+  complete(hbres, financial_year)
 
 # Scotland
 kpi_3_2_scot <- kpi_3_2 %>% 
@@ -256,7 +262,7 @@ kpi_3_2_scot <- kpi_3_2 %>%
 
 # Combine
 kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% # AMc note: this is a good way to get rid of NAs!!
   group_by(hbres) %>% 
   mutate(#cum_approp = sum(cohort), 
          #cum_surgery = sum(surgery),
@@ -308,7 +314,8 @@ kpi_3_2_res <- kpi_3_2_res |>
   # leaves _p var as NA, which helps when creating Excel wbs
   mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
                              is.na(value) ~ 0, TRUE ~ value))
-
+# change NaNs to NAs
+kpi_3_2_res$value[is.nan(kpi_3_2_res$value)] <- NA
 
 ### Health Board of Surgery ----
 # First, remove records where HB of surgery is NA & note any non-Scot HBs
@@ -352,7 +359,8 @@ kpi_3_2_hb <- kpi_3_2_surg %>%
   group_by(hb_surgery, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |> 
-  ungroup()
+  ungroup() |> 
+  complete(hb_surgery, financial_year)
 
 # Scotland
 kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records??

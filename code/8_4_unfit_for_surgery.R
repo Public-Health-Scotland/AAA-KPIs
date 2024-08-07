@@ -107,7 +107,8 @@ unfit_surgery <- extract %>%
          outcome_type == "final outcome") %>% 
   # flag anyone unfit for surgery (08)
   mutate(unfit = if_else(result_outcome == "08", 1, 0),
-         cohort = 1)
+         cohort = 1,
+         financial_year = droplevels(financial_year))
 
 table(unfit_surgery$unfit)
 # 128 patients unfit  Sep 2022
@@ -123,7 +124,10 @@ unfit_fy <- unfit_surgery %>%
   # cumulative totals for FYs  
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) |> 
   ungroup() |> 
-  mutate(unfit_p = round_half_up(unfit_n * 100/cohort_n, 1)) 
+  complete(financial_year, hbres) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
+  mutate(unfit_p = round_half_up(unfit_n * 100/cohort_n, 1)) |> 
+  mutate(unfit_p = ifelse(is.nan(unfit_p), NA, unfit_p))
 
 ## Should this be written out? And rewritten each year as a new historical file?
 unfit_hist <- hb_tibble |> 
@@ -144,9 +148,6 @@ unfit_current <- unfit_fy %>%
   filter(financial_year %in% c(kpi_report_years, "Cumulative"))
 
 unfit_current <- rbind(unfit_current, unfit_cum)
-
-unfit_current <- hb_tibble |> 
-  left_join(unfit_current, by = "hbres")
 
 query_write_rds(unfit_current, paste0(temp_path, "/4_8_unfit_for_surgery_", yymm, ".rds"))
 
@@ -270,7 +271,8 @@ mortality_hb <- mortality %>%
 
 mortality_hb <- hb_tibble |> 
   left_join(mortality_hb, by = "hbres") |> 
-  mutate_all(~ifelse(is.nan(.), NA, .))
+  mutate_all(~ifelse(is.nan(.), NA, .)) |> 
+  mutate(across(contains(c("unfit", "mort")), ~ ifelse(is.na(.), 0, .)))
 
 query_write_rds(mortality_hb, paste0(temp_path, "/4_9_unfit_follow-up_", yymm, ".rds"))
 

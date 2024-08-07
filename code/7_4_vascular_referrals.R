@@ -41,6 +41,7 @@ rm (exclusions_path, hist_path, output_path, simd_path, hb_list, season,
 resout_list <- tibble(result_outcome = c('99','98','01','03','04','05','06','07',
                                          '08','11','12','13','15','16','20','97',
                                          '09','10','14','17','18','19', '96'))
+# AMc note: there is no code 2 here - and the order doesn't match the output - definitely needs lookig at
 
 # adding in result outcome detail
 resout_list <- resout_list %>% 
@@ -90,6 +91,8 @@ aaa_extract <- aaa_extract %>%
 ### 3: Create Vascular Referral Output ----
 vascular_referral_count <- aaa_extract %>% 
   count(source_ref_to_vasc, year_screen) %>% 
+  complete(source_ref_to_vasc, year_screen) |> 
+  mutate(n = replace_na(n, 0)) |> 
   group_by(source_ref_to_vasc) %>% 
   # create a "Cumulative" level in year_screen (program totals)
   group_modify(~ adorn_totals(.x, name = "Cumulative")) %>% 
@@ -168,6 +171,8 @@ vasc <- vasc |>
                                   TRUE ~ "not categorized")) %>% 
   glimpse()
 
+
+
 ## Investigate result_outcome
 table(vasc$outcome_type, useNA = "ifany")
 table(vasc$result_outcome, useNA = "ifany")
@@ -185,7 +190,7 @@ greater <- vasc %>%
   ungroup() %>% 
   pivot_wider(names_from = financial_year, values_from = cases) %>% 
   arrange(result_outcome) %>% 
-  glimpse()
+  glimpse() 
 
 ## Subtotals: final & non-final outcome
 greater_subtotal <- vasc %>% 
@@ -231,6 +236,7 @@ annual_great <- resout_list |>
   left_join(annual_great, by = "result_outcome") |> 
   rename(outcome_type = outcome_type.x) %>% 
   mutate(result_size = "large") %>% 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 ## Size < 5.5cm ----
@@ -290,6 +296,7 @@ annual_less <- resout_list |>
   left_join(annual_less, by = "result_outcome") |> 
   rename(outcome_type = outcome_type.x) %>% 
   mutate(result_size = "small") %>% 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
 
@@ -378,7 +385,8 @@ rm(check)
 method <- extract %>% 
   group_by(hbres, fy_surgery, surg_method) %>% 
   count(surg_method) %>% 
-  ungroup()
+  ungroup() |> 
+  complete(hbres, fy_surgery, surg_method)
 
 # Surgery method -- Scotland
 method_scot <- extract %>% 
@@ -396,6 +404,7 @@ repair <- extract %>%
   group_by(hbres, fy_surgery) %>% 
   count(hbres) %>% 
   ungroup() %>% 
+  complete(hbres, fy_surgery) |> 
   mutate(surg_method = "99", .after = fy_surgery)
 
 # Total repairs -- Scotland
@@ -434,14 +443,11 @@ repairs_current <- repairs_all %>%
 # Cumulative totals
 repairs_cum <- repairs_all %>% 
   group_by(hbres, surg_method) %>% 
-  summarize(n = sum(n)) %>% 
+  summarize(n = sum(n, na.rm = T)) %>% 
   ungroup() %>% 
   mutate(fy_surgery = "Cumulative", .after = hbres)
 
 repairs_current <- add_new_rows(
   repairs_current, repairs_cum, fy_surgery, surg_method)
-
-repairs_current <- hb_tibble |> 
-  left_join(repairs_current, by = "hbres") 
 
 query_write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))

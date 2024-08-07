@@ -509,7 +509,10 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
                                 c("quarterly", "annual"))) |> 
   arrange(fin_year, surveillance_interval)
 
-sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres") 
+sup_tab_6 <- hb_tibble |> 
+  left_join(sup_tab_6, by = "hbres") |> 
+  complete(hbres, fin_year, surveillance_interval, kpi, group) |> 
+  mutate(value = replace_na(value, 0))
 
 ## DNA exclusions
 # summarise by pat_inelig and financial_year
@@ -517,16 +520,19 @@ sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres")
 dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
-  mutate(pat_inelig = case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
-                                pat_inelig == "08" ~ "Non Responder Surveillance"),
+  mutate(pat_inelig = as.factor(case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
+                                pat_inelig == "08" ~ "Non Responder Surveillance")),
          kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
-  select(kpi, fin_year = financial_year, pat_inelig, count)
+  select(kpi, fin_year = financial_year, pat_inelig, count) |> 
+  ungroup() |> 
+  complete(kpi, fin_year, pat_inelig) |> 
+  mutate(count = replace_na(count, 0))
 
 
 ## Write to temp
-saveRDS(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
-saveRDS(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
+query_write_rds(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
+query_write_rds(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
                                    yymm, ".rds"))
 
 # Read in file created in previous script (2_2_kpi_1_1-3_uptake_coverage.R)

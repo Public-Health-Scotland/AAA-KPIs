@@ -272,6 +272,8 @@ table_2 <- calculate_totals(table_two_data, hbres, aaa_size_group) %>%
   filter(year_screen != "older") |> 
   pivot_wider(names_from = aaa_size_group,
               values_from = n) %>% 
+  complete(hbres, year_screen) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   mutate(across(c(large, medium, small), ~ round_half_up(. * 100 / cohort_n, 1), 
                 .names = "{col}_p"))  |> 
   select(hbres, year_screen, cohort_n, 
@@ -280,7 +282,8 @@ table_2 <- calculate_totals(table_two_data, hbres, aaa_size_group) %>%
          large_n = large, large_p) |> 
   pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
   mutate(table = "Table 2", .after = hbres) |> 
-  mutate(simd2020v2_sc_quintile = NA, .after = table)
+  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
+  mutate(value = ifelse(is.nan(value), NA, value))
 
   
 ### 7 Table Three: Positive Results by SIMD ----
@@ -348,7 +351,10 @@ table_5 <- bind_rows(individual_years, all_years) |>
   pivot_longer(!hbres:year_screen, names_to = "group", values_to = "value") |> 
   filter(year_screen != "Other") |> 
   mutate(table = "Table 5", .after = hbres) |> 
-  mutate(simd2020v2_sc_quintile = NA, .after = table)
+  mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
+  complete(hbres, table, simd2020v2_sc_quintile, year_screen, group) |> 
+  mutate(value = case_when(group %in% c("tested", "positive") & is.na(value) ~ 0,
+                           TRUE ~ value))
 
 
 ### 9 Combine and Save ----
