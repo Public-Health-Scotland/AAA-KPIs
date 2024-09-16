@@ -142,7 +142,7 @@ open_hb_screen <- fy_tibble |> left_join(open_hb_screen,
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Add B: Screen", .before = financial_year) |> 
   mutate(surg_method = "Open", .before = financial_year) |> 
-  mutate_at(vars(`Forth Valley`: Scotland), ~ifelse(is.na(.), 0, .))
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), 0, .)))
 
 ## Open surgery deaths by financial year and health board of SURGERY ---
 open_hb_surgery <- kpi_4_1 %>%
@@ -165,7 +165,7 @@ open_hb_surgery <- fy_tibble |> left_join(open_hb_surgery,
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Add C: Surgery", .before = financial_year) |> 
   mutate(surg_method = "Open", .before = financial_year) |> 
-  mutate_at(vars(`Forth Valley`: Scotland), ~ifelse(is.na(.), 0, .))
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), 0, .)))
 
 
 ### 4: KPI 4.2 EVAR Surgery ----

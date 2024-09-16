@@ -636,7 +636,7 @@ addStyle(wb, "KPI 1.3a HB SIMD", styles$black_border_centre_12,
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.3a HB SIMD", prov_data_note, 
             startRow = 114, colNames = FALSE)
-  addStyle(wb, "KPI 1.3a HB SIMD", black_11, 
+  addStyle(wb, "KPI 1.3a HB SIMD", styles$black_11, 
            rows = 114, cols = 1)
 }
 # data

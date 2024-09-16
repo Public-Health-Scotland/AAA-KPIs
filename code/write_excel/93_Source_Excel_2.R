@@ -78,7 +78,7 @@ tab_1.1_add_desc <- paste0("Percentage of eligible population who are sent an ",
                            "initial offer to screening before age 66: work-in-progress ",
                            "position for men reaching age 66 in year ending 31 March ", 
                            year_yy)
-line_no_tab_1.2a_add <- eval_seasonal_diff({15}, {16})
+line_no_tab_1.2a_add <- eval_seasonal_diff(season, {15}, {16})
 tab_1.2a_add <- paste0("1.2a Additional (", year2, ")")
 tab_1.2_add_desc <- paste0("Percentage of eligible population who are tested ",
                            "before age 66 and 3 months: work-in-progress ",

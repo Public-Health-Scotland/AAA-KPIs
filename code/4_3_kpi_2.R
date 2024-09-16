@@ -323,7 +323,7 @@ kpi_2_2_add_a <- extract_audit %>%
             no_audit_result_n = sum(no_audit_result_n),
             audit_n2 = sum(audit_n),
             standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
-            standard_not_met_n = sum(standard_not_met_n),
+            standard_not_met_n = sum(standard_not_met_n)
             ) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
@@ -831,7 +831,6 @@ qa_detail <- bind_rows(summary_text, summary_detail, summary) %>%
          year3_p)
 
 # Insert any missing detail categories and arrange
-# AMc note - this would be better further up probably
 qa_detail <- qa_detail_list |> left_join(qa_detail, by = "detail")
 
 # Reformat
@@ -1002,10 +1001,11 @@ names(qa_batch_recall)
 # Note: Table 4 and QA standard not met (reason and detail) not added until 
 # after new historical file has been created, as data is recalculated for each 
 # report and not retained in historical file
-kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b,  
-                   qa_batch_scot, qa_batch_hb, qa_batch_recall) %>% 
+kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a, 
+                   kpi_2_2_add_b, qa_batch_scot, qa_batch_hb, qa_batch_recall) %>% 
   rename(fin_year = financial_year,
-         hbres = hb_screen) # done to make formatting easier in Write Excel
+         hbres = hb_screen) |>  # done to make formatting easier in Write Excel
+  select(hbres, kpi, fin_year, simd, group, value)
   
 # AMc note: trying to get output correct - this might work in some cases but not here
 # mutate(value = ifelse((is.na(value) & substr(group, nchar(group), nchar(group)) == "n"),
@@ -1016,8 +1016,8 @@ kpi_2_dc <- bind_rows(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kp
          hbres = hb_screen)
 
 # tidy env
-rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
-   qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
+rm(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, 
+   qa_batch_list, qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
 
 rm(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc)
 
@@ -1072,5 +1072,4 @@ table(kpi_2_full$kpi, kpi_2_full$fin_year)
 ## Save data block
 query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 # extra kpis - save
-query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds"))
 query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
