@@ -4,7 +4,7 @@
 # Karen Hotopp & Aoife McCarthy
 # February 2024
 # 
-# DESCRIPTION
+# Write out to AAA Excel workbook 1: Scotland Summary
 # 
 # Written/run on Posit WB, R 4.1.2
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,10 +84,10 @@ kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |>
   pivot_wider(names_from = financial_year, values_from = value)
 
 ## Save out files to use in publication
-phsaaa::query_write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
+query_write_rds(kpi_1, paste0(temp_path, "/6_kpi_1_", yymm, ".rds"))
+query_write_rds(kpi_2, paste0(temp_path, "/6_kpi_2_", yymm, ".rds"))
+query_write_rds(kpi_3, paste0(temp_path, "/6_kpi_3_", yymm, ".rds"))
+query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 
 
 ### AMC additions below:
@@ -113,7 +113,7 @@ wb <- loadWorkbook(
 # Notes and headers
 today <- paste0("Workbook created ", Sys.Date())
 qpmg_review <- paste0("For review at QPMG in ", qpmg_month, " ", year_xx)
-data_header <- phsaaa::eval_seasonal_diff(
+data_header <- eval_seasonal_diff(
   season,
   {paste0("Data for year ending 31 March ", year_xx, " scheduled to ",
          "be published in April ", year_yy, " (final data will be ",
@@ -193,7 +193,7 @@ summary_note1 <- paste0("r  Data are revised since published on ",
 
 year_end_vv <- paste0("Year ending", '\n', "31 March ", year_vv)
 year_end_ww <- paste0("Year ending", '\n', "31 March ", year_ww)
-year_end_xx <- phsaaa::eval_seasonal_diff(
+year_end_xx <- eval_seasonal_diff(
   season,
   {paste0("Year ending", '\n', "31 March ", year_xx, '\n',
           "(provisional/partial", '\n', "data)")}, # spring
@@ -202,49 +202,30 @@ year_end_xx <- phsaaa::eval_seasonal_diff(
 
 
 # Styles
-# bold_red_font <- createStyle(fontSize = 12, fontName = "Arial",
-#                             textDecoration = "bold", fontColour = "#FF0000")
-bold_black_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                             textDecoration = "bold", fontColour = "#000000")
-black_12 <- createStyle(fontSize = 12, fontName = "Arial",
-                        fontColour = "#000000")
-black_11 <- createStyle(fontSize = 11, fontName = "Arial",
-                        fontColour = "#000000")
-black_border_11 <- createStyle(fontSize = 11, fontName = "Arial",
-                               fontColour = "#000000", border = "TopBottomLeftRight",
-                               halign = "center", valign = "bottom")
-# orange font used for provisional notes that need manually updating in final book
-orange_11 <- createStyle(fontSize = 11, fontName = "Arial",
-                         fontColour = "#ff9f00", wrapText = TRUE)
-# summary header white font
-white_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
-                               fontColour = "#ffffff", wrapText = TRUE,
-                               border = c("top", "bottom", "left", "right"),
-                               borderStyle = "medium", halign = "center", valign = "bottom",
-                               textDecoration = "bold")
+source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 
 
 # Data Notes
 writeData(wb, "Data Notes", data_header, startRow = 2)
-addStyle(wb, "Data Notes", black_12, rows = 2, cols = 1)
+addStyle(wb, "Data Notes", styles$black_12, rows = 2, cols = 1)
 writeData(wb, "Data Notes", qpmg_review, startRow = 3)
-addStyle(wb, "Data Notes", bold_black_12, rows = 3, cols = 1)
+addStyle(wb, "Data Notes", styles$black_bold_12, rows = 3, cols = 1)
 writeData(wb, "Data Notes", today, startRow = 5)
-addStyle(wb, "Data Notes", black_12, rows = 5, cols = 1)
+addStyle(wb, "Data Notes", styles$black_12, rows = 5, cols = 1)
 
 writeData(wb, "Data Notes", extract_note1, startRow = 19)
-addStyle(wb, "Data Notes", orange_11, rows = 19, cols = 1)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 19, cols = 1)
 writeData(wb, "Data Notes", extract_note2, startRow = 20)
-addStyle(wb, "Data Notes", orange_11, rows = 20, cols = 1)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 20, cols = 1)
 
 writeData(wb, "Data Notes", extract_note3, startRow = 23)
 writeData(wb, "Data Notes", extract_note4, startRow = 24)
 writeData(wb, "Data Notes", extract_note5, startRow = 25)
-addStyle(wb, "Data Notes", black_11, rows = 23:25, cols = 1, gridExpand = TRUE)
+addStyle(wb, "Data Notes", styles$black_11, rows = 23:25, cols = 1, gridExpand = TRUE)
 writeData(wb, "Data Notes", extract_note6, startRow = 25, startCol = 2)
-addStyle(wb, "Data Notes", orange_11, rows = 25, cols = 2)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 25, cols = 2)
 writeData(wb, "Data Notes", extract_note6, startRow = 27, startCol = 2)
-addStyle(wb, "Data Notes", orange_11, rows = 27, cols = 2)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 27, cols = 2)
 
 writeData(wb, "Data Notes", cohort_note1.1, startRow = 39)
 writeData(wb, "Data Notes", cohort_note1.2, startRow = 39, startCol = 2)
@@ -255,24 +236,24 @@ writeData(wb, "Data Notes", cohort_note2.3, startRow = 40, startCol = 3)
 writeData(wb, "Data Notes", cohort_note3.1, startRow = 41)
 writeData(wb, "Data Notes", cohort_note3.2, startRow = 41, startCol = 2)
 writeData(wb, "Data Notes", cohort_note3.3, startRow = 41, startCol = 3)
-addStyle(wb, "Data Notes", black_border_11, rows = 39:41, cols = 1:3, gridExpand = TRUE)
+addStyle(wb, "Data Notes", styles$black_border_11, rows = 39:41, cols = 1:3, gridExpand = TRUE)
 
 showGridLines(wb, "Data Notes", showGridLines = FALSE)
 
 # Scotland Summary
 writeData(wb, "Scotland Summary", data_header, startRow = 2)
-addStyle(wb, "Scotland Summary", black_12, rows = 2, cols = 1)
+addStyle(wb, "Scotland Summary", styles$black_12, rows = 2, cols = 1)
 writeData(wb, "Scotland Summary", qpmg_review, startRow = 3)
-addStyle(wb, "Scotland Summary", bold_black_12, rows = 3, cols = 1)
+addStyle(wb, "Scotland Summary", styles$black_bold_12, rows = 3, cols = 1)
 writeData(wb, "Scotland Summary", today, startRow = 5)
-addStyle(wb, "Scotland Summary", black_12, rows = 5, cols = 1)
+addStyle(wb, "Scotland Summary", styles$black_12, rows = 5, cols = 1)
 
 writeData(wb, "Scotland Summary", year_end_vv, startRow = 10, startCol = 6)
-addStyle(wb, "Scotland Summary", white_centre_12, rows = 10, cols = 6)
+addStyle(wb, "Scotland Summary", styles$white_centre_12, rows = 10, cols = 6)
 writeData(wb, "Scotland Summary", year_end_ww, startRow = 10, startCol = 7)
-addStyle(wb, "Scotland Summary", white_centre_12, rows = 10, cols = 7)
+addStyle(wb, "Scotland Summary", styles$white_centre_12, rows = 10, cols = 7)
 writeData(wb, "Scotland Summary", year_end_xx, startRow = 10, startCol = 8)
-addStyle(wb, "Scotland Summary", white_centre_12, rows = 10, cols = 8)
+addStyle(wb, "Scotland Summary", styles$white_centre_12, rows = 10, cols = 8)
 
 writeData(wb, "Scotland Summary", kpi_1, startRow = 12,
           startCol = 6, colNames = FALSE)
@@ -305,7 +286,7 @@ writeData(wb, "Scotland Summary", rolling3, startRow = 30, startCol = 8)
 addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 8)
 
 writeData(wb, "Scotland Summary", summary_note1, startRow = 44)
-addStyle(wb, "Scotland Summary", orange_11, rows =44, cols = 1)
+addStyle(wb, "Scotland Summary", styles$orange_11, rows =44, cols = 1)
 
 showGridLines(wb, "Scotland Summary", showGridLines = FALSE)
 

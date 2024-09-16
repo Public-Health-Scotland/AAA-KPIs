@@ -23,6 +23,7 @@ library(stringr)
 library(tidylog)
 library(tidyr)
 library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(svDialogs)
 
 
 rm(list = ls())
@@ -31,7 +32,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble,
+rm (exclusions_path, output_path, simd_path, fy_tibble,
     qpmg_month, cut_off_date, cutoff_date, year1_end, year1_start, year2_end, 
     year2_start, year1, year2, extract_date)
 
@@ -42,6 +43,9 @@ coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
 # Table 4 variables
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
+
+# SIMD level
+simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
 
 # QA standard not met detailed reasons list
 qa_detail_list <- tibble(detail = c("Calliper - APL",
@@ -94,7 +98,10 @@ extract2 <- extract %>%
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66)),
          # flags screens performed with new devices
-         device = if_else(date_screen > ymd(device_swap_date), "new", "old")) 
+         device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"),
+                         levels = c("old", "new")),
+         financial_year = droplevels(financial_year),
+         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown"))
 
 ### KPI 2.1a ----
 # Percentage of screening appointments, where the aorta could not be visualised
@@ -105,9 +112,7 @@ kpi_2_1a <- extract2 %>%
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup()
-
-kpi_2_1a <- kpi_2_1a %>%
+  ungroup() |> 
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
          non_vis_p = round_half_up(non_vis_n/screen_n*100, 1)) %>%
   arrange(hb_screen) |> 
@@ -127,15 +132,11 @@ kpi_2_1a_dc <- extract2 %>%
   group_by(financial_year, device) |>
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
-  select(financial_year, hb_screen, device, non_vis_n, screen_n) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_1a_dc <- kpi_2_1a_dc %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1)) %>%
-  arrange(hb_screen) |> 
-  mutate(kpi = "KPI 2.1a dc") |> 
+         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1),
+         kpi = "KPI 2.1a dc") %>%
   select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
+  arrange(hb_screen, device) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
 
@@ -183,32 +184,38 @@ rm(kpi_2_1b_hb, kpi_2_1b_scotland)
 
 #### KPI 2.1b by Scotland SIMD ----
 
-
 kpi_2_1b_hb_simd <- extract2_dedup_hb %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>%
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
-  ungroup()
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |> 
+  ungroup() |> 
+  complete(financial_year, hb_screen, simd2020v2_sc_quintile) |> # creates all combinations of hb_screen/simd/group
+  mutate_at(vars(non_vis_n:screen_n), ~ifelse(is.na(.), 0, .))
 
 kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
   mutate(hb_screen = "Scotland") %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>% 
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup()
 
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
-         kpi = "KPI 2.1b",
-         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
+  mutate(non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+         kpi = "KPI 2.1b SIMD") |> 
   select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
-  pivot_longer(!hb_screen:simd, 
+  pivot_longer(!hb_screen: simd, 
                names_to = "group", values_to = "value") |> 
-  arrange(hb_screen, group, simd)
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         group = fct_relevel(group, c("screen_n", "non_vis_n", "non_vis_p")),
+         simd = fct_relevel(simd, simd_level$simd)) |> 
+  arrange(hb_screen, simd, group)
+
+# Change NaNs to NAs
+kpi_2_1b_simd$value[is.nan(kpi_2_1b_simd$value)] <- NA
 
 rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
-
 
 
 #### KPI 2.1b device comparison (dc) ----
@@ -231,6 +238,7 @@ kpi_2_1b_dc <- bind_rows(kpi_2_1b_scotland_dc, kpi_2_1b_hb_dc) %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
          kpi = "KPI 2.1b dc") |> 
+  arrange(hb_screen, device) |> 
   select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
@@ -246,7 +254,8 @@ extract_audit <- extract %>%
          # keep records sampled for QA audit
          audit_flag == '01') %>%
   mutate(# flags screens performed with new devices
-         device = if_else(date_screen > ymd(device_swap_date), "new", "old"),
+         device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"), 
+                         levels = c("old", "new")),
          audit_n = if_else(audit_flag == '01', 1, 0),
          # failed audit and immediate recall
          recall_n = if_else(audit_result == '02' & 
@@ -256,10 +265,10 @@ extract_audit <- extract %>%
                                        !audit_result %in% c("01", "02") ~ 1,
                                        TRUE ~ 0),
          # passed audit
-         standard_met_n = if_else(audit_result == '01', 1, 0),
+         standard_met_n = if_else(audit_result == '01', 1, 0), # issues with NAs - Orkney
          # failed audit
          standard_not_met_n = case_when(audit_result=='02' ~ 1,
-                                        is.na(audit_result) ~ 1,
+                                        is.na(audit_result) ~ 1,  # issues with NAs - Orkney
                                         TRUE ~ 0),
          # immediate recall
          imm_recall_n =  case_when(audit_outcome == '01' ~ 1, TRUE ~ 0),
@@ -276,15 +285,13 @@ extract_audit <- extract %>%
 kpi_2_2 <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%
   summarise(audit_n = sum(audit_n),
-            recall_n = sum(recall_n)) %>%
+            recall_n = sum(recall_n, na.rm = T)) %>% # removing NAs because of the orkney issue
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
-  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1))
-
-kpi_2_2 <- kpi_2_2 %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1), 
+         hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         kpi = "KPI 2.2") %>%
   arrange(financial_year, hb_screen) %>%
-  mutate(kpi = "KPI 2.2") |> 
   select(hb_screen, kpi, financial_year, audit_n, recall_n, recall_p) |> 
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
@@ -295,19 +302,15 @@ kpi_2_2 <- kpi_2_2 %>%
 kpi_2_2_dc <- extract_audit %>%
   group_by(financial_year, hb_screen, device) %>%
   summarise(audit_n = sum(audit_n),
-            recall_n = sum(recall_n)) %>%
+            recall_n = sum(recall_n, na.rm = T)) %>% # removing NAs because of the orkney issue
   ungroup() |> 
   group_by(financial_year, device) |> 
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
-  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1)) |> 
-  select(financial_year, hb_screen, device, audit_n, recall_n, recall_p) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_2_dc <- kpi_2_2_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
-  arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 dc") |> 
+  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1),
+         hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         kpi = "KPI 2.2 dc") |> 
+  arrange(hb_screen, device) %>%
   select(hb_screen, kpi, financial_year, device, audit_n, recall_n, recall_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
@@ -319,8 +322,8 @@ kpi_2_2_add_a <- extract_audit %>%
   summarise(audit_n = sum(audit_n),
             no_audit_result_n = sum(no_audit_result_n),
             audit_n2 = sum(audit_n),
-            standard_met_n = sum(standard_met_n),
-            standard_not_met_n = sum(standard_not_met_n),
+            standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
+            standard_not_met_n = sum(standard_not_met_n)
             ) %>%
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
@@ -342,28 +345,25 @@ kpi_2_2_add_a <- kpi_2_2_add_a %>%
 ### KPI 2.2 Additional A device comparison (dc)----
 # includes additional grouping by "new" or "old" device
 kpi_2_2_add_a_dc <- extract_audit %>%
-  group_by(financial_year, hb_screen, device) %>%
-  summarise(audit_n = sum(audit_n),
-            no_audit_result_n = sum(no_audit_result_n),
-            audit_n2 = sum(audit_n),
-            standard_met_n = sum(standard_met_n),
-            standard_not_met_n = sum(standard_not_met_n),
-  ) %>%
+  group_by(financial_year, hb_screen, device) %>% # summarising cols
+  summarise(
+    audit_n = sum(audit_n),
+    no_audit_result_n = sum(no_audit_result_n),
+    audit_n2 = sum(audit_n),
+    standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
+    standard_not_met_n = sum(standard_not_met_n, na.rm = T) # removing NAs because of the orkney issue
+  ) %>% 
   ungroup() |> 
-  group_by(financial_year, device) |> 
+  group_by(financial_year, device) |> # adding scotland totals
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |>
   mutate(
     no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
     standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1)) |> 
-  select(financial_year, hb_screen, device, audit_n:standard_not_met_p) |> 
-  arrange(financial_year, hb_screen, device)
-
-kpi_2_2_add_a_dc <- kpi_2_2_add_a_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1),
+    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+    kpi = "KPI 2.2 Additional A dc") %>%
   arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 Additional A dc") |> 
   select(hb_screen, kpi, financial_year, device, audit_n, no_audit_result_n,
          no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
          standard_not_met_n, standard_not_met_p) |> 
@@ -404,7 +404,7 @@ kpi_2_2_add_b <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%
   summarise(
     audit_n = sum(audit_n),
-    standard_met_n = sum(standard_met_n),
+    standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
     standard_not_met_n = sum(standard_not_met_n),
     imm_recall_n = sum(imm_recall_n),
     recall_cc_n = sum(recall_cc_n),
@@ -443,7 +443,7 @@ kpi_2_2_add_b_dc <- extract_audit %>%
   group_by(financial_year, hb_screen, device) %>%
   summarise(
     audit_n = sum(audit_n),
-    standard_met_n = sum(standard_met_n),
+    standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
     standard_not_met_n = sum(standard_not_met_n),
     imm_recall_n = sum(imm_recall_n),
     recall_cc_n = sum(recall_cc_n),
@@ -462,16 +462,10 @@ kpi_2_2_add_b_dc <- extract_audit %>%
     no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
     no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
     no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
-    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1)
-  ) |> 
-  select(financial_year, hb_screen, device, audit_n:no_audit_result_p) |> 
-  arrange(financial_year, hb_screen, device)
-  
-
-kpi_2_2_add_b_dc <- kpi_2_2_add_b_dc %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland")) %>%
+    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1),
+    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+    kpi = "KPI 2.2 Additional B dc") %>%
   arrange(financial_year, hb_screen, device) %>%
-  mutate(kpi = "KPI 2.2 Additional B dc") |> 
   select(hb_screen, kpi, financial_year, device, standard_not_met_n, imm_recall_n, 
          imm_recall_p, recall_cc_n, recall_cc_p, recall_cc_n, recall_cc_p, 
          no_recall_sat_interim_n, no_recall_sat_interim_p, no_recall_refer_vasc_n, 
@@ -479,6 +473,9 @@ kpi_2_2_add_b_dc <- kpi_2_2_add_b_dc %>%
          no_audit_result_n, no_audit_result_p) |> 
   pivot_longer(!hb_screen:device, 
                names_to = "group", values_to = "value")
+
+# Change NaNs to NAs
+kpi_2_2_add_b_dc$value[is.nan(kpi_2_2_add_b_dc$value)] <- NA
 
 rm(extract_audit)
     
@@ -668,7 +665,8 @@ qa_standard <- extract %>%
                                          "angle",
                                          "image quality",
                                          "anatomy",
-                                         "no audit fail"))
+                                         "no audit fail"),
+    financial_year = droplevels(financial_year))
 
 qa_standard_sum <- qa_standard %>%
   group_by(financial_year, hb_screen, audit_fail_reason_text) %>%
@@ -678,6 +676,8 @@ qa_standard_sum <- qa_standard %>%
   group_by(financial_year, audit_fail_reason_text) |> 
   group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |> 
   ungroup() |> 
+  complete(financial_year, hb_screen, audit_fail_reason_text) |> 
+  mutate(standard_not_met_n = replace_na(standard_not_met_n, 0)) |> 
   select(financial_year, hb_screen, standard_not_met_n, audit_fail_reason_text)
 
 
@@ -718,6 +718,9 @@ qa_reason <- crossing(hb_tibble, kpi_report_years) %>%
          image_quality_n, image_quality_p, anatomy_n, anatomy_p) |> 
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
+
+# Change NaNs to NAs
+qa_reason$value[is.nan(qa_reason$value)] <- NA
 
 rm(qa_standard_sum, qa_standard_totals)  
   
@@ -784,6 +787,7 @@ summary_detail <- detail %>%
   group_by(financial_year, detail_text) %>%
   summarise(n = n()) %>%
   ungroup() %>%
+  complete(financial_year, detail_text) |> 
   pivot_wider(names_from = financial_year,
               values_from = n) %>%
   rename(detail = detail_text) %>%
@@ -982,6 +986,7 @@ rm(qa_batch_recall_hb, qa_batch_recall_scot)
 ## Check names of variables to see if they can be combined
 names(kpi_2_1a)
 names(kpi_2_1b)
+names(kpi_2_1b_simd)
 names(kpi_2_2)
 names(kpi_2_2_add_a)
 names(table_4)
@@ -996,14 +1001,30 @@ names(qa_batch_recall)
 # Note: Table 4 and QA standard not met (reason and detail) not added until 
 # after new historical file has been created, as data is recalculated for each 
 # report and not retained in historical file
-kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b,  
-                   qa_batch_scot, qa_batch_hb, qa_batch_recall) %>% 
+kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a, 
+                   kpi_2_2_add_b, qa_batch_scot, qa_batch_hb, qa_batch_recall) %>% 
   rename(fin_year = financial_year,
-         hbres = hb_screen) # done to make formatting easier in Write Excel
+         hbres = hb_screen) |>  # done to make formatting easier in Write Excel
+  select(hbres, kpi, fin_year, simd, group, value)
+  
+# AMc note: trying to get output correct - this might work in some cases but not here
+# mutate(value = ifelse((is.na(value) & substr(group, nchar(group), nchar(group)) == "n"),
+#     replace_na(value, 0), value))
 
 kpi_2_dc <- bind_rows(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc) |> 
   rename(fin_year = financial_year,
          hbres = hb_screen)
+
+# tidy env
+rm(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, 
+   qa_batch_list, qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
+
+rm(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc)
+
+# create current kpi table - only most recent year of data
+current_kpi <- kpi_2 |> 
+  filter(fin_year == kpi_report_years[3])
+table(current_kpi$kpi, current_kpi$fin_year)
 
 ### Historical database ---
 ## Full records (currently only from 2019/20; need to add full historical)
@@ -1013,16 +1034,11 @@ table(hist_db$kpi, hist_db$fin_year)
 table(kpi_2$kpi, kpi_2$fin_year)
 
 # add to historical database (only runs in autumn)
-phsaaa::build_history(hist_db, current_kpi, "2")
-
-rm(kpi_2_1a, kpi_2_1b, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, qa_batch_list, 
-   qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
-
-rm(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc)
+build_history(hist_db, current_kpi, "2")
 
 ### Current database ---
 ## Take current reporting years from new historic
-kpi_2_full <- phsaaa::add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
+kpi_2_full <- add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
   filter(fin_year %in% c(kpi_report_years))
 
 table(kpi_2_full$kpi, kpi_2_full$fin_year)
@@ -1054,18 +1070,6 @@ table(kpi_2_full$kpi, kpi_2_full$fin_year)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative
 
 ## Save data block
-phsaaa::query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
-
-## Save data block
-user_in <- dlgInput("Do you want to save the KPI 2.1b SIMD and KPI 2 device comparison output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(kpi_2_dc, paste0(temp_path, "/3_1_kpi_2_dc_", yymm, ".rds"))
-  write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_1_kpi_2_1b_simd_", yymm, ".rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
+# extra kpis - save
+query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))

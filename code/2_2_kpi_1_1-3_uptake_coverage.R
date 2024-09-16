@@ -215,17 +215,7 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+query_write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 
 #invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
@@ -600,7 +590,7 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-phsaaa::build_history(hist_db, kpi_summary, "1.1-1.3")
+build_history(hist_db, kpi_summary, "1.1-1.3")
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22
@@ -618,7 +608,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 
 ## Current report output ----
 ## Add new records onto full database
-report_db <- phsaaa::add_new_rows(hist_db, kpi_summary, fin_year, kpi)
+report_db <- add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
 table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
@@ -627,7 +617,7 @@ table(report_db$kpi, report_db$fin_year) # current year (year1) should match
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-phsaaa::query_write_rds(report_db,
+query_write_rds(report_db,
                         paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 #write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
