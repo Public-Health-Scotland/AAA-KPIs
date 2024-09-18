@@ -70,7 +70,7 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 hist_path <- "/PHI_conf/AAA/Topics/Screening/KPI/historical"
 
 simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
-                    "/postcode_2024_1_simd2020v2.rds")
+                    "/postcode_2024_2_simd2020v2.rds")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")
