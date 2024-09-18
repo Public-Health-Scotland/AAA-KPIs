@@ -18,16 +18,16 @@ library(lubridate)
 
 # year (YYYY) and month (MM) at time of running
 # e.g. autumn (usually september) YYYY09, spring (usually march) YYYY03
-yymm <- 202403
+yymm <- 202409
 
-season <- "spring" # options are "spring" or "autumn"
+season <- "autumn" # options are "spring" or "autumn"
 
 # date that most recent extract was downloaded
 # format: date + month e.g. 1 September
-extract_date <- "7 March"
+extract_date <- "1 September"
 
 # month in which QPMG is planned
-qpmg_month <- "April"
+qpmg_month <- "October"
 
 
 ### UPDATE THESE IN THE SPRING ONLY ###
