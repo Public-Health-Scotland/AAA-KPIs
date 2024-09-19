@@ -159,6 +159,7 @@ rm(gp_history)
 # Flag GP practice that was relevant at the end of the financial year
 ## AMc question: how do these dates relate to the 'end' of the financial year? should they be automated?
 ## also, what does the { is.na(valid_from) & is.na(valid_to) > dmy("01-04-2022") } do?
+## I think this date relates to the 2021/22 FY run
 gp_prac <- mutate(gp_prac,
                   valid = case_when(
                     valid_from < dmy("01-04-2022") & 
