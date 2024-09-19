@@ -35,9 +35,8 @@ rm (exclusions_path, hist_path, output_path, simd_path, qpmg_month, extract_date
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Variables
-fy_start <- "01-04-2022"
-fy_end <- "31-03-2023"
-
+fy_start <- paste0("01-04-", substr(yymm, 1, 2), (as.numeric(substr(yymm, 3, 4))-1))
+fy_end <- paste0("31-03-", substr(yymm, 1, 4))
 
 ## File paths
 ## The GP practice history may be a single file or may be downloaded as two
@@ -158,6 +157,8 @@ rm(gp_history)
 
 
 # Flag GP practice that was relevant at the end of the financial year
+## AMc question: how do these dates relate to the 'end' of the financial year? should they be automated?
+## also, what does the { is.na(valid_from) & is.na(valid_to) > dmy("01-04-2022") } do?
 gp_prac <- mutate(gp_prac,
                   valid = case_when(
                     valid_from < dmy("01-04-2022") & 
