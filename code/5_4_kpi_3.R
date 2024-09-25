@@ -449,8 +449,9 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
 
 # temp: renaming "financial_year" to "fin_year" to make below function work
 # AMc note: discuss with KH as to whether this can be changed permanently??
-hist_db <- hist_db |> 
-  rename(fin_year = financial_year)
+# hist_db <- hist_db |> 
+#   rename(fin_year = financial_year)
+## AMc note: not required as have changed historical db names
 
 kpi_3 <- kpi_3 |> 
   rename(fin_year = financial_year)
@@ -458,7 +459,7 @@ kpi_3 <- kpi_3 |>
 # create historical backup + new file with this year's data
 phsaaa::build_history(hist_db, kpi_3, "3")
 
-table(hist_db$financial_year, hist_db$kpi) 
+viz_kpi_finyear(hist_db)
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
 # 2012/13                45                45               9
 # 2013/14                45                45              27
@@ -474,6 +475,6 @@ table(hist_db$financial_year, hist_db$kpi)
 
 ## Save report file
 report_db <- kpi_3 |> 
-  filter(financial_year %in% c(kpi_report_years))
+  filter(fin_year %in% c(kpi_report_years))
 
 phsaaa::query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))

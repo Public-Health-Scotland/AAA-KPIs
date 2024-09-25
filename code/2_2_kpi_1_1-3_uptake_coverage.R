@@ -43,7 +43,6 @@ library(phsmethods)
 library(stringr)
 library(forcats)
 library(tidylog)
-library(svDialogs)
 library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
 
 rm(list = ls())
@@ -215,17 +214,7 @@ rm(pc_simd, simd_path)
 
 
 ### Step 4: Save out basefiles ----
-user_in <- dlgInput("Do you want to save this output? Doing so will overwrite previous version. Enter 'yes' or 'no' below.")$res
-
-if (user_in == "yes"){
-  write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
-} else {
-  if (user_in == "no"){
-    print("No output saved, carry on")
-  } else {
-    stop("Check your answer is either 'yes' or 'no' please")
-  }
-}
+query_write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 
 #invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
@@ -600,7 +589,15 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-phsaaa::build_history(hist_db, kpi_summary, "1.1-1.3")
+phsaaa::build_history(df_hist = hist_db, 
+                      df_new = kpi_summary, 
+                      kpi_number = "1.1-1.3",
+                      season = season,
+                      kpi_report_years = kpi_report_years,
+                      fy_list = fy_list,
+                      hb_list = hb_list,
+                      year_n = year2,
+                      hist_path = hist_path)
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22
