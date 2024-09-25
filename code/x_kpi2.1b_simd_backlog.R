@@ -38,6 +38,13 @@ rm (exclusions_path, output_path, simd_path, fy_list, hb_list, fy_tibble,
 start_date <- "2021-04-01" # was "2023-04-01"
 end_date <- "2023-03-31" # was "2024-03-31"
 
+# SIMD levels
+simd_levels <- c("1", "2", "3", "4", "5", "Unknown")
+
+# table for right join later on
+hb_simd <- crossing(hb_tibble, simd_levels, tibble(financial_year = c("2021/22", "2022/23"))) |> 
+  rename(simd = simd_levels,
+         hb_screen = hbres)
 
 
 #### Step 2: Read in data ----
@@ -95,16 +102,51 @@ kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
-         kpi = "KPI 2.1b",
+         kpi = "KPI 2.1b SIMD",
          simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
   select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
+  right_join(hb_simd) |> 
   pivot_longer(!hb_screen:simd, 
                names_to = "group", values_to = "value") |> 
-  arrange(hb_screen, group, simd)
+  arrange(hb_screen, financial_year, simd, group)
 
 rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
+
+# formatting output - to match historical db
+
+output <- kpi_2_1b_simd |> 
+  rename(fin_year = financial_year,
+         hbres = hb_screen) |> 
+  droplevels()
+
 
 # saving output -----------------------------------------------------------
 
 query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_1_kpi_2_1b_simd_backlog(2021-2023).rds"))
 
+# adding to historical db -------------------------------------------------
+
+hist_db <- read_rds(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+
+# add in SIMD column to historical db
+hist_db <- hist_db |> 
+  mutate(simd = NA, .before = "group")
+
+new_hist <- add_new_rows(hist_db, output, kpi, fin_year)
+
+# save out new hist_db (overwrite current one)
+viz_kpi_finyear(hist_db)
+viz_kpi_finyear(new_hist)
+
+query_write_rds(new_hist, paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+
+# add to backup hist too
+hist_bckp <- read_rds(paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
+viz_kpi_finyear(hist_bckp)
+
+viz_kpi_finyear(new_hist)
+new_bckp <- new_hist |> 
+  filter(!fin_year == "2022/23")
+viz_kpi_finyear(new_bckp)
+
+query_write_rds(new_bckp, paste0(hist_path, "/aaa_kpi_historical_theme3_bckp.rds"))
