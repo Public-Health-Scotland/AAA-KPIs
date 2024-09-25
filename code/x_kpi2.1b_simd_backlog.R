@@ -108,7 +108,7 @@ kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
   right_join(hb_simd) |> 
   pivot_longer(!hb_screen:simd, 
                names_to = "group", values_to = "value") |> 
-  arrange(hb_screen, financial_year, simd, group)
+  arrange(hb_screen, financial_year, group, simd)
 
 rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
 
