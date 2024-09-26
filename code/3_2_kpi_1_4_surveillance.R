@@ -34,7 +34,7 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm (output_path, simd_path, fy_list, fy_tibble, qpmg_month, extract_date,
+rm (output_path, simd_path, fy_tibble, qpmg_month, extract_date,
     cut_off_date, cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
@@ -471,6 +471,7 @@ kpi_1_4b <- quarterly_surveillance_w_excl %>%
   summarise(cohort_n = n(), met_kpi_1_4b_n = sum(met_kpi_1_4b)) %>% 
   group_modify(~ adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() %>% 
+  complete(fy_due, hbres) |> # add in any combinations missing
   mutate(met_kpi_1_4b_p = round_half_up(met_kpi_1_4b_n * 100 / cohort_n, 1),
          kpi = "KPI 1.4b") |>
   pivot_longer(cols = cohort_n:met_kpi_1_4b_p,
@@ -511,7 +512,10 @@ sup_tab_6 <- bind_rows(sup_tab_6_hb, sup_tab_6_scotland) |>
                                 c("quarterly", "annual"))) |> 
   arrange(fin_year, surveillance_interval)
 
-sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres") 
+sup_tab_6 <- hb_tibble |> 
+  left_join(sup_tab_6, by = "hbres") |> 
+  complete(hbres, fin_year, surveillance_interval, kpi, group) |> 
+  mutate(value = replace_na(value, 0))
 
 ## DNA exclusions
 # summarise by pat_inelig and financial_year
@@ -519,16 +523,19 @@ sup_tab_6 <- hb_tibble |> left_join(sup_tab_6, by = "hbres")
 dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
-  mutate(pat_inelig = case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
-                                pat_inelig == "08" ~ "Non Responder Surveillance"),
+  mutate(pat_inelig = as.factor(case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
+                                pat_inelig == "08" ~ "Non Responder Surveillance")),
          kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
-  select(kpi, fin_year = financial_year, pat_inelig, count)
+  select(kpi, fin_year = financial_year, pat_inelig, count) |> 
+  ungroup() |> 
+  complete(kpi, fin_year, pat_inelig) |> 
+  mutate(count = replace_na(count, 0))
 
 
 ## Write to temp
-saveRDS(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
-saveRDS(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
+query_write_rds(sup_tab_6, paste0(temp_path, "/2_2_Table_6_", yymm, ".rds"))
+query_write_rds(dna_excluded_table, paste0(temp_path, "/2_3_dna_exclusions_", 
                                    yymm, ".rds"))
 
 # Read in file created in previous script (2_2_kpi_1_1-3_uptake_coverage.R)
@@ -544,12 +551,12 @@ kpi_1_4 <- kpi_1_4 |>
 
 
 ## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
-report_db <- phsaaa::add_new_rows(kpi_1, kpi_1_4, fin_year, kpi)
+report_db <- add_new_rows(kpi_1, kpi_1_4, fin_year, kpi)
 
 table(report_db$kpi, report_db$fin_year)
 
 ## Write out new invite_attend file
-phsaaa::query_write_rds(report_db, 
+query_write_rds(report_db, 
                         paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 # call in historical db to run next funtion
@@ -558,4 +565,4 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-phsaaa::build_history(hist_db, kpi_1_4, "1.4")
+build_history(hist_db, kpi_1_4, "1.4")

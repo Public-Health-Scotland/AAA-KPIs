@@ -141,7 +141,8 @@ open_hb_screen <- fy_tibble |> left_join(open_hb_screen,
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Add B: Screen", .before = financial_year) |> 
-  mutate(surg_method = "Open", .before = financial_year)
+  mutate(surg_method = "Open", .before = financial_year) |> 
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), 0, .)))
 
 ## Open surgery deaths by financial year and health board of SURGERY ---
 open_hb_surgery <- kpi_4_1 %>%
@@ -163,7 +164,8 @@ open_hb_surgery <- fy_tibble |> left_join(open_hb_surgery,
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.1 Add C: Surgery", .before = financial_year) |> 
-  mutate(surg_method = "Open", .before = financial_year)
+  mutate(surg_method = "Open", .before = financial_year) |> 
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), 0, .)))
 
 
 ### 4: KPI 4.2 EVAR Surgery ----
@@ -217,7 +219,8 @@ evar_hb_screen <- fy_tibble |> left_join(evar_hb_screen,
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.2 Add B: Screen", .before = financial_year) |> 
-  mutate(surg_method = "EVAR", .before = financial_year)
+  mutate(surg_method = "EVAR", .before = financial_year) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .)))
 
 ## EVAR surgery deaths by financial year and health board by SURGERY ---
 evar_hb_surgery <- kpi_4_2 %>%
@@ -239,7 +242,8 @@ evar_hb_surgery <- fy_tibble |> left_join(evar_hb_surgery,
   group_modify(~ adorn_totals(.x, where = "row", 
                               name = "Cumulative")) |> 
   mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
-  mutate(surg_method = "EVAR", .before = financial_year)
+  mutate(surg_method = "EVAR", .before = financial_year) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .)))
 
 rm(fy_tibble, open_hb_screen_scot, open_hb_surgery_scot, 
    kpi_4_1, kpi_4_2, evar_hb_screen_scot, evar_hb_surgery_scot)
@@ -382,11 +386,14 @@ mortality_hb_res <- mortality %>%
   group_by(surg_method, hbres) %>% 
   summarise(across(c(surg_1_year, surg_3_year, surg_5_year,  
                      mort_1_year, mort_3_year, mort_5_year), sum)) %>% 
+  ungroup() |> 
+  complete(hbres, surg_method) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
-  ungroup() |> 
-  mutate(kpi = "KPI 4 Cumulative: Residence", .before = surg_method) 
+  mutate(kpi = "KPI 4 Cumulative: Residence", .before = surg_method,
+         across(where(is.numeric), ~ ifelse(is.nan(.), NA, .))) 
   
 # Join
 mortality_hb_res <- mortality_hb_res |>   
@@ -404,13 +411,17 @@ mortality_hb_res <- mortality_hb_res |>
 
 ## HB of Surgery summary
 mortality_hb_surg <- mortality %>% 
+  mutate(hb_surgery = replace_na(hb_surgery, "Unknown")) |> 
   group_by(surg_method, hb_surgery) %>% 
   summarise(across(c(surg_1_year, surg_3_year, surg_5_year,  
                      mort_1_year, mort_3_year, mort_5_year), sum)) %>% 
+  ungroup() |> 
+  complete(hb_surgery, surg_method) |> 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   mutate(rate_1_year = round_half_up(mort_1_year * 100 / surg_1_year, 1), 
          rate_3_year = round_half_up(mort_3_year * 100 / surg_3_year, 1), 
          rate_5_year = round_half_up(mort_5_year * 100 / surg_5_year, 1)) |> 
-  ungroup()
+  mutate(across(where(is.numeric), ~ ifelse(is.nan(.), NA, .)))
 
 # No need to add Scotland, as this will be same as for residence
 
@@ -461,7 +472,7 @@ table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
 # saving outputs
 
-phsaaa::query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-phsaaa::query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
+query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
+query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
 

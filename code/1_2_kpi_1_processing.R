@@ -19,7 +19,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(tidylog)
-library(phsaaa)
+library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
 
 rm(list = ls())
 gc()
@@ -531,5 +531,5 @@ cohort1 <- cohort1 %>%
          inresult,
          inoffer)
 
-
 query_write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
+

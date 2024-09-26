@@ -589,15 +589,15 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-phsaaa::build_history(df_hist = hist_db, 
-                      df_new = kpi_summary, 
-                      kpi_number = "1.1-1.3",
-                      season = season,
-                      kpi_report_years = kpi_report_years,
-                      fy_list = fy_list,
-                      hb_list = hb_list,
-                      year_n = year2,
-                      hist_path = hist_path)
+build_history(df_hist = hist_db, 
+              df_new = kpi_summary, 
+              kpi_number = "1.1-1.3",
+              season = season,
+              kpi_report_years = kpi_report_years,
+              fy_list = fy_list,
+              hb_list = hb_list,
+              year_n = year2,
+              hist_path = hist_path)
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22
@@ -615,7 +615,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 
 ## Current report output ----
 ## Add new records onto full database
-report_db <- phsaaa::add_new_rows(hist_db, kpi_summary, fin_year, kpi)
+report_db <- add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
 table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
@@ -624,7 +624,7 @@ table(report_db$kpi, report_db$fin_year) # current year (year1) should match
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))
 
-phsaaa::query_write_rds(report_db,
+query_write_rds(report_db,
                         paste0(temp_path, "/2_1_invite_attend_", yymm, ".rds"))
 
 #write_csv(report_db, paste0(temp_path, "/2_1_invite_attend_", yymm, ".csv")) # for checking
