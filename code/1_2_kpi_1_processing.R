@@ -74,10 +74,8 @@ first_result <- last_results_initial_screens %>%
 first_result <- first_result %>%
   arrange(upi, date_screen) %>%
   group_by(upi) %>%
-  mutate(
-    results = n(),
-    first_screen_flag = if_else(date_screen == min(date_screen), 1, 0)
-  ) %>%
+  add_count(name = "results") %>%
+  mutate(first_screen_flag = if_else(date_screen == min(date_screen), 1, 0)) %>%
   ungroup() %>%
   filter(first_screen_flag == 1) %>%
   select(upi, results,
@@ -144,7 +142,9 @@ cohort1 <- cohort1 %>%
 # Start with all the non-duplicates, then bring more records in
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(keep = if_else(n() == 1, 1, 0)) %>%
+  add_count(name = "n") %>%
+  mutate(keep = if_else(n == 1, 1, 0)) %>%
+  select(-n) |> 
   # keep only the last offer
   mutate(keep = case_when(keep == 1 ~ 1,
                           date_offer_sent == max(date_offer_sent) ~ 1,
@@ -184,8 +184,10 @@ cohort1 <- filter(cohort1, keep == 1)
 # one with the mismatching chi
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(keep = tidytable::case_when(n() != 1 & chi != upi ~ 0,
+  add_count(name = "n") |> 
+  mutate(keep = tidytable::case_when(n != 1 & chi != upi ~ 0,
                                      TRUE ~ 1)) %>%
+  select(-n) |> 
   ungroup() %>%
   filter(keep == 1) %>% 
   select(upi, postcode, ca2019, simd2020v2_sc_quintile,
