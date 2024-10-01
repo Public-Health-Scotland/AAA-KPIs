@@ -22,10 +22,16 @@ styles$black_bold_18 <- createStyle(fontSize = 18, fontColour = "#000000",
 styles$black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
+# bold black size 14, no wrap
+styles$black_bold_nowrap_14 <- createStyle(fontSize = 14, fontColour = "#000000",
+                                    fontName = "Arial", textDecoration = "bold")
 # bold black 12, wrapped
 styles$black_bold_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
                              wrapText = TRUE)
+# bold black 12, no wrap
+styles$black_bold_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000",
+                                    fontName = "Arial", textDecoration = "bold")
 # black 12, wrapped
 styles$black_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
@@ -93,3 +99,8 @@ styles$report_type_style <- eval_seasonal_diff(
                textDecoration = "bold", fontColour = "#000000")} # autumn
 )
 
+# rolling font used in theme 1 workbook
+styles$rolling_font <- createStyle(fontSize = 12, fontName = "Arial",
+                                   textDecoration = "bold", fontColour = "#000000",
+                                   wrapText = TRUE, border = c("top", "bottom", "left", "right"),
+                            borderStyle = "medium", halign = "center", valign = "center")

@@ -23,7 +23,7 @@ library(lubridate)
 library(reporter)
 library(openxlsx)
 library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
-
+library(forcats)
 
 rm(list=ls())
 gc()
@@ -88,6 +88,8 @@ table_three <- theme_5 |>
 ## Table 5 ----
 table_five <- theme_5 |> 
   filter(table == "Table 5") |> 
+  mutate(group = fct_relevel(group, c("tested", "positive", "rate"))) |> 
+  arrange(hbres, year_screen, group) |> 
   pivot_wider(names_from = c(year_screen, group), 
               values_from = value) %>% 
   select(-c(table, simd2020v2_sc_quintile)) |> 

@@ -54,13 +54,8 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
 
-# KPI 2.1b by SIMD (new for 202409)
-data_kpi_2_1b_simd <- read_rds(paste0(temp_path, "/3_2_kpi_2_1b_simd_", yymm, ".rds")) |> 
-  rename(fin_year = financial_year)
-table(data_kpi_2_1b_simd$kpi, data_kpi_2_1b_simd$fin_year) 
-
 #KPI 2.1a, 2.1b, + 2.2 device comparison (new for 202409)
-kpi_2_dc <- read_rds(paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
+kpi_2_dc <- read_rds(paste0(temp_path, "/3_2_kpi_2_dc_", yymm, ".rds"))
 kpi_2_dc <- kpi_2_dc |> 
   droplevels() |> 
   mutate(fin_year = as.character(fin_year))
@@ -84,6 +79,16 @@ kpi_2_1b <- theme_3 |>
   # match Excel tables
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
+## KPI 2.1b by SIMD (new for 202409) ----
+kpi_2_1b_simd <- theme_3 |> 
+  filter(kpi == "KPI 2.1b SIMD") |>
+  mutate(group = fct_relevel(group, c("screen_n", "non_vis_n", "non_vis_p"))) |> 
+  arrange(fin_year, hbres, simd, group) |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
+  select(hbres, simd, FY_kpi_group, value) |> 
+  # match Excel tables
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  select(-c(hbres, simd))
 
 ## KPI 2.2 ----
 kpi_2_2 <- theme_3 |> 
@@ -256,16 +261,6 @@ qa_recall <- qa_recall %>%
   arrange(hbres) %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
-
-
-## KPI 2.1b by SIMD (new for 202409) ----
-kpi_2_1b_simd <- data_kpi_2_1b_simd |> 
-  filter(kpi == "KPI 2.1b SIMD") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(hb_screen, simd, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(-c(hb_screen, simd))
 
 ## KPI 2.1a device comparison (new for 202409) ----
 kpi_2_1a_dc <- kpi_2_dc |> 
@@ -473,7 +468,7 @@ addStyle(wb, "Table of Contents", styles$black_nowrap_12,
          rows = 3, cols = 1)
 writeData(wb, "Table of Contents", qpmg_review, 
           startRow = 4)
-addStyle(wb, "Table of Contents", styles$black_bold_12,
+addStyle(wb, "Table of Contents", styles$black_bold_nowrap_12,
          rows = 4, cols = 1)
 writeData(wb, "Table of Contents", today, 
           startRow = 6)
@@ -517,8 +512,6 @@ writeData(wb, sheet = "KPI 2.1b", screened_year_xx,
           startRow = 4, startCol = 8)
 addStyle(wb, "KPI 2.1b", styles$black_border_centre_12, 
          rows = 4, cols = 2:10, gridExpand = TRUE)
-writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, 
-          startRow = 30)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, 
             startRow = 30)
@@ -560,10 +553,12 @@ writeData(wb, sheet = "KPI 2.2", screened_year_xx,
           startRow = 4, startCol = 8)
 addStyle(wb, "KPI 2.2", styles$black_border_centre_12,
          rows = 4, cols = 2:10, gridExpand = T)
-writeData(wb, sheet = "KPI 2.2", kpi_2_notep, 
-          startRow = 30)
-addStyle(wb, "KPI 2.2", styles$black_11,
-         rows = 30, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 2.2", kpi_2_notep,
+            startRow = 30)
+  addStyle(wb, "KPI 2.2", styles$black_11,
+           rows = 30, cols = 1)
+}
 # data
 writeData(wb, sheet = "KPI 2.2", kpi_2_2, 
           startRow = 7, colNames = FALSE)
@@ -699,20 +694,20 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_xx,
 addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
          rows = 14, cols = 2:16)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
-          startRow = 22, startCol = 2)
+          startRow = 25, startCol = 2)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
-          startRow = 22, startCol = 8)
+          startRow = 25, startCol = 8)
 writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
-          startRow = 22, startCol = 14)
+          startRow = 25, startCol = 14)
 addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
-         rows = 22, cols = 2:19)
+         rows = 25, cols = 2:19)
 # data
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, 
           startRow = 7, colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, 
           startRow = 18, colNames = FALSE)
 writeData(wb, sheet = "Batch QA standard not met", qa_recall, 
-          startRow = 26, colNames = FALSE)
+          startRow = 29, colNames = FALSE)
 showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
 
 ## KPI 2.1a device comparison ----

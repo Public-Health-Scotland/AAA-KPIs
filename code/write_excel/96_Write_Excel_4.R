@@ -47,7 +47,7 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 # 2: Import data ----
 # KPI 3.1 and 3.2
 theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
-table(theme4_3$kpi, theme4_3$financial_year) 
+table(theme4_3$kpi, theme4_3$fin_year) 
 
 # KPI 4.1 and 4.2
 theme4_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
@@ -80,7 +80,7 @@ theme4_unfit_deaths <- read_rds(paste0(temp_path, "/4_91_unfit_deaths_cause_",
 ## KPI 3.1 ----
 kpi_3_1 <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.1 Residence")) |> 
-  mutate(FY_kpi_group = paste(financial_year, kpi, group, sep = "_")) |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(health_board, FY_kpi_group, value)
 
 # Match Excel tables
@@ -90,7 +90,7 @@ kpi_3_1 <- kpi_3_1 |>
 ## KPI 3.2 HB of Residence ----
 kpi_3_2_res <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.2 Residence")) |> 
-  mutate(FY_kpi_group = paste(financial_year, kpi, group, sep = "_")) |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(health_board, FY_kpi_group, value)
 
 # Match Excel tables
@@ -100,7 +100,7 @@ kpi_3_2_res <- kpi_3_2_res |>
 ## KPI 3.2 HB of Surgery ----
 kpi_3_2_surg <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.2 Surgery")) |> 
-  mutate(FY_kpi_group = paste(financial_year, kpi, group, sep = "_")) |> 
+  mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(health_board, FY_kpi_group, value)
 
 # Match Excel tables
@@ -294,7 +294,7 @@ writeData(wb, sheet = "Table of Contents", pub_year,
           startRow = 3, startCol = 1)
 writeData(wb, sheet = "Table of Contents", qpmg_review, 
           startRow = 4, startCol = 1)
-addStyle(wb, sheet = "Table of Contents", styles$black_bold_12,
+addStyle(wb, sheet = "Table of Contents", styles$black_bold_nowrap_12,
          rows = 4, cols = 1)
 writeData(wb, sheet = "Table of Contents", today, 
           startRow = 6)
@@ -536,7 +536,7 @@ showGridLines(wb, "1, 3, 5-year mortality", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "1-year mortality rates", operations_title, 
           startRow = 3,  startCol = 1)
-addStyle(wb, sheet = "1-year mortality rates", styles$black_bold_14,
+addStyle(wb, sheet = "1-year mortality rates", styles$black_bold_nowrap_14,
          rows = 3, cols = 1)
 writeData(wb, sheet = "1-year mortality rates", mort_1_note, 
           startRow = 11, startCol = 1)

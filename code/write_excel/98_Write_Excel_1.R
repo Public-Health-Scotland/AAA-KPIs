@@ -65,13 +65,13 @@ kpi_2 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))|>
 
 ## KPI 3
 kpi_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds")) |> 
-  filter(financial_year %in% c(kpi_report_years),
+  filter(fin_year %in% c(kpi_report_years),
          kpi %in% c("KPI 3.1 Residence", "KPI 3.2 Residence", 
                     "KPI 3.2 Surgery"),  # Should this last one stay in??
          health_board == "Scotland",
          str_ends(group, "_p")) |> 
   # match Excel tables
-  pivot_wider(names_from = financial_year, values_from = value) 
+  pivot_wider(names_from = fin_year, values_from = value) 
 
 ## KPI 4
 kpi_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |> 
@@ -95,7 +95,7 @@ query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 ## Format for Excel input
 kpi_1 <- kpi_1 %>% select(-c(hbres, kpi, simd, group)) %>% 
   mutate_all(.funs = function(x) paste0(x, "%"))
-kpi_2 <- kpi_2 %>% select(-c(hbres, kpi, group)) %>% 
+kpi_2 <- kpi_2 %>% select(-c(hbres, kpi, simd, group)) %>% 
   mutate_all(.funs = function(x) paste0(x, "%"))
 kpi_3 <- kpi_3 %>% select(-c(health_board, kpi, group)) %>% 
   mutate_all(.funs = function(x) paste0(x, "%"))
@@ -214,9 +214,9 @@ writeData(wb, "Data Notes", today, startRow = 5)
 addStyle(wb, "Data Notes", styles$black_12, rows = 5, cols = 1)
 
 writeData(wb, "Data Notes", extract_note1, startRow = 19)
-addStyle(wb, "Data Notes", styles$orange_11, rows = 19, cols = 1)
+addStyle(wb, "Data Notes", styles$black_11, rows = 19, cols = 1)
 writeData(wb, "Data Notes", extract_note2, startRow = 20)
-addStyle(wb, "Data Notes", styles$orange_11, rows = 20, cols = 1)
+addStyle(wb, "Data Notes", styles$black_11, rows = 20, cols = 1)
 
 writeData(wb, "Data Notes", extract_note3, startRow = 23)
 writeData(wb, "Data Notes", extract_note4, startRow = 24)
@@ -266,24 +266,19 @@ writeData(wb, "Scotland Summary", kpi_4, startRow = 31,
 
 # 5-year titles for kpi 4
 
-rolling_font <- createStyle(fontSize = 12, fontName = "Arial",
-                               textDecoration = "bold", fontColour = "#000000",
-                            wrapText = TRUE, border = c("top", "bottom", "left", "right"),
-                            borderStyle = "medium", halign = "center", valign = "center")
-
-rolling1 <- paste0("Results for ", year_uu-4, "/", substr(year_vv-4, 3, 4), " - ", 
-                   '\n', year_uu, "/", substr(year_vv, 3, 4))
-rolling2 <- paste0("Results for ", year_vv-4, "/", substr(year_ww-4, 3, 4), " - ", 
-                   '\n', year_vv, "/", substr(year_ww, 3, 4))
-rolling3 <- paste0("Results for ", year_ww-4, "/", substr(year_xx-4, 3, 4), " - ", 
-                   '\n', year_ww, "/", substr(year_xx, 3, 4))
+rolling1 <- paste0(year_uu-4, "/", substr(year_vv-4, 3, 4), " - ", 
+                   year_uu, "/", substr(year_vv, 3, 4))
+rolling2 <- paste0(year_vv-4, "/", substr(year_ww-4, 3, 4), " - ", 
+                   year_vv, "/", substr(year_ww, 3, 4))
+rolling3 <- paste0(year_ww-4, "/", substr(year_xx-4, 3, 4), " - ", 
+                   year_ww, "/", substr(year_xx, 3, 4))
 
 writeData(wb, "Scotland Summary", rolling1, startRow = 30, startCol = 6)
-addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 6)
+addStyle(wb, "Scotland Summary", styles$rolling_font, rows =30, cols = 6)
 writeData(wb, "Scotland Summary", rolling2, startRow = 30, startCol = 7)
-addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 7)
+addStyle(wb, "Scotland Summary", styles$rolling_font, rows =30, cols = 7)
 writeData(wb, "Scotland Summary", rolling3, startRow = 30, startCol = 8)
-addStyle(wb, "Scotland Summary", rolling_font, rows =30, cols = 8)
+addStyle(wb, "Scotland Summary", styles$rolling_font, rows =30, cols = 8)
 
 writeData(wb, "Scotland Summary", summary_note1, startRow = 44)
 addStyle(wb, "Scotland Summary", styles$orange_11, rows =44, cols = 1)
@@ -295,6 +290,5 @@ showGridLines(wb, "Glossary and Key Terms", showGridLines = FALSE)
 
 
 ## Save ----
-saveWorkbook(wb, paste0(output_path,
-                        "/1_Scotland KPI Summary_", yymm, ".xlsx"), 
-             overwrite = TRUE)
+query_saveWorkbook(wb, paste0(output_path,
+                        "/1_Scotland KPI Summary_", yymm, ".xlsx"))
