@@ -39,12 +39,11 @@ start_date <- "2021-04-01" # was "2023-04-01"
 end_date <- "2023-03-31" # was "2024-03-31"
 
 # SIMD levels
-simd_levels <- c("1", "2", "3", "4", "5", "Unknown")
+simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
 
 # table for right join later on
-hb_simd <- crossing(hb_tibble, simd_levels, tibble(financial_year = c("2021/22", "2022/23"))) |> 
-  rename(simd = simd_levels,
-         hb_screen = hbres)
+hb_simd <- crossing(hb_tibble, simd_level, tibble(financial_year = c("2021/22", "2022/23"))) |> 
+  rename(hb_screen = hbres)
 
 
 #### Step 2: Read in data ----
@@ -90,6 +89,7 @@ kpi_2_1b_hb_simd <- extract2_dedup_hb %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>%
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |> 
   ungroup()
 
 kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
@@ -97,20 +97,40 @@ kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
   group_by(financial_year, hb_screen, simd2020v2_sc_quintile) %>% 
   summarise(non_vis_n = sum(non_vis_n),
             screen_n = sum(screened_n)) %>%
+  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |> 
   ungroup()
 
+# kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
+#   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+#          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+#          kpi = "KPI 2.1b SIMD",
+#          simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
+#   select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
+#   right_join(hb_simd) |> 
+#   pivot_longer(!hb_screen:simd, 
+#                names_to = "group", values_to = "value") |> 
+#   arrange(hb_screen, financial_year, group, simd)
+
+# rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
+
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
+  rename(simd = simd2020v2_sc_quintile) |> 
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         simd = replace_na(simd, "Unknown")) |> 
+  right_join(crossing(hb_tibble, 
+                      simd_level, 
+                      tibble(financial_year = droplevels(unique(kpi_2_1b_hb_simd$financial_year))))
+             |> rename(hb_screen = hbres))|> 
+  mutate(across(where(is.numeric), \(x) replace_na(x, 0)),
          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
-         kpi = "KPI 2.1b SIMD",
-         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
-  select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
-  right_join(hb_simd) |> 
+         kpi = "KPI 2.1b SIMD") |> 
+  select(hb_screen, kpi, financial_year, simd, screen_n, non_vis_n, non_vis_p) |>
   pivot_longer(!hb_screen:simd, 
                names_to = "group", values_to = "value") |> 
-  arrange(hb_screen, financial_year, group, simd)
-
-rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         group = fct_relevel(group, c("screen_n", "non_vis_n", "non_vis_p")),
+         simd = fct_relevel(simd, simd_level$simd)) |> 
+  arrange(hb_screen, simd, group)
 
 # formatting output - to match historical db
 
@@ -122,11 +142,12 @@ output <- kpi_2_1b_simd |>
 
 # saving output -----------------------------------------------------------
 
-query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_1_kpi_2_1b_simd_backlog(2021-2023).rds"))
+query_write_rds(kpi_2_1b_simd, paste0(temp_path, "/3_3_kpi_2_1b_simd_backlog(2021-2023).rds"))
 
 # adding to historical db -------------------------------------------------
 
 hist_db <- read_rds(paste0(hist_path, "/aaa_kpi_historical_theme3.rds"))
+viz_kpi_finyear(hist_db)
 
 # add in SIMD column to historical db
 hist_db <- hist_db |> 

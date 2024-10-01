@@ -227,7 +227,7 @@ kpi_1_1 <- invite_uptake  |>
   filter(dob >= dmy("01-04-1948")) |> 
   select(hbres, cohort_year1:offer_add_year2) |> 
   group_by(hbres) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) %>%
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) %>%
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() |> 
   glimpse() # offer_not_assigned what does this tell us? Why included??
@@ -263,7 +263,7 @@ kpi_1_1 <- hb_tibble |> left_join(kpi_1_1, by = "hbres")
 kpi_1_1_simd <- invite_uptake  |> 
   select(hbres, simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -272,7 +272,7 @@ kpi_1_1_simd <- invite_uptake  |>
 kpi_1_1_simd_scot <- invite_uptake  |> 
   select(simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -316,7 +316,7 @@ kpi_1_1_simd <- hb_tibble |> left_join(kpi_1_1_simd, by = "hbres")
 kpi_1_2a <- invite_uptake  |> 
   select(hbres, cohort_year1, cohort_year2, test_a_year1:test_a_add_not_assigned) |> 
   group_by(hbres) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -351,7 +351,7 @@ kpi_1_2a <- hb_tibble |> left_join(kpi_1_2a, by = "hbres")
 kpi_1_2b <- invite_uptake |> 
   select(hbres, offer_year1, offer_year2, test_b_year1:test_b_not_assigned) |> 
   group_by(hbres) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -385,7 +385,7 @@ kpi_1_3a <- invite_uptake  |>
   select(hbres, simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -395,7 +395,7 @@ kpi_1_3a_scot <- invite_uptake  |>
   select(simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -442,7 +442,7 @@ kpi_1_3a_hb <- invite_uptake  |>
   select(hbres, simd2020v2_hb2019_quintile, cohort_year1, test_a_year1, 
          test_a_not_assigned) |> 
   group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(cohort_year1:test_a_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -481,7 +481,7 @@ kpi_1_3b <- invite_uptake  |>
   select(hbres, simd2020v2_sc_quintile, offer_year1, test_b_year1,  
          test_b_not_assigned) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -491,7 +491,7 @@ kpi_1_3b_scot <- invite_uptake  |>
   select(simd2020v2_sc_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -531,7 +531,7 @@ kpi_1_3b_hb <- invite_uptake  |>
   select(hbres, simd2020v2_hb2019_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
   group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??

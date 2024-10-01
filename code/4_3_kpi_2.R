@@ -39,9 +39,6 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
 
-# simd levels
-simd <- tibble(simd2020v2_sc_quintile = c("1", "2", "3", "4", "5", "Unknown"))
-
 # Table 4 variables
 end_minus_1 <- end_current %m-% years(1) 
 end_minus_2 <- end_current %m-% years(2)
@@ -204,16 +201,17 @@ kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
   ungroup()
 
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
+  rename(simd = simd2020v2_sc_quintile) |> 
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown")) |> 
+         simd = replace_na(simd, "Unknown")) |> 
   right_join(crossing(hb_tibble, 
-                      simd, 
+                      simd_level, 
                       tibble(financial_year = droplevels(unique(kpi_2_1b_hb_simd$financial_year))))
                        |> rename(hb_screen = hbres))|> 
   mutate(across(where(is.numeric), \(x) replace_na(x, 0)),
          non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
          kpi = "KPI 2.1b SIMD") |> 
-  select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |>
+  select(hb_screen, kpi, financial_year, simd, screen_n, non_vis_n, non_vis_p) |>
   pivot_longer(!hb_screen:simd, 
                names_to = "group", values_to = "value") |> 
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
@@ -1083,5 +1081,5 @@ viz_kpi_finyear(kpi_2_full)
 query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 
 ## Save data block - device comparison
-query_write_rds(kpi_2_dc, paste0(temp_path, "/3_1_kpi_2_dc_", yymm, ".rds"))
+query_write_rds(kpi_2_dc, paste0(temp_path, "/3_2_kpi_2_dc_", yymm, ".rds"))
 

@@ -40,11 +40,32 @@ files <- files_all |>
   pivot_longer(cols = everything()) |> 
   select(-name) |> 
   pull()
+
+files <- paste0("code/", files)
+
+
     
 
 # source all files --------------------------------------------------------
 
 for(x in files) {
   
+  print(paste0("code",))
+  
   source_file_from_subdir("code", x)
 }
+
+
+# AMC -- THIS DOESN'T WORK BECAUSE ALL THE OTHER FILES DO RM ALL
+
+source(here(files[1]))
+source(here(files[2]))
+source(here(files[3]))
+source(here(files[4]))
+source(here(files[5]))
+source(here(files[6]))
+source(here(files[7]))
+source(here(files[8]))
+source(here(files[9]))
+source(here(files[10]))
+source(here(files[11]))

@@ -454,7 +454,7 @@ table(kpi_3$kpi)
 ## Historical file
 # Create backup of last year's file
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
-table(hist_db$kpi, hist_db$financial_year)
+table(hist_db$kpi, hist_db$fin_year)
 
 
 # temp: renaming "financial_year" to "fin_year" to make below function work

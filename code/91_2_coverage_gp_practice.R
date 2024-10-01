@@ -342,4 +342,4 @@ self_ref_gp <- self_ref_gp %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
-saveWorkbook(wb, paste0(temp_path, "/sr_all_boards.xlsx"), overwrite = TRUE)
+query_saveWorkbook(wb, paste0(temp_path, "/sr_all_boards.xlsx"))
