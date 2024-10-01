@@ -214,9 +214,9 @@ writeData(wb, "Data Notes", today, startRow = 5)
 addStyle(wb, "Data Notes", styles$black_12, rows = 5, cols = 1)
 
 writeData(wb, "Data Notes", extract_note1, startRow = 19)
-addStyle(wb, "Data Notes", styles$black_11, rows = 19, cols = 1)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 19, cols = 1)
 writeData(wb, "Data Notes", extract_note2, startRow = 20)
-addStyle(wb, "Data Notes", styles$black_11, rows = 20, cols = 1)
+addStyle(wb, "Data Notes", styles$orange_11, rows = 20, cols = 1)
 
 writeData(wb, "Data Notes", extract_note3, startRow = 23)
 writeData(wb, "Data Notes", extract_note4, startRow = 24)
