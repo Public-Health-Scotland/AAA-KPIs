@@ -199,51 +199,58 @@ vasc_refs <- select(theme4_referral, -source_ref_to_vasc)
 
 ## Vascular Referrals: Outcomes ----
 vasc_outcomes1 <- theme4_outcomes |> 
-  filter(result_size == "large" & outcome_type == "Total") |> 
+  filter(result_size == "large" & outcome_type == "Total") |>
   select(-c(result_size, outcome_type)) %>% 
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sep24: 99
 
 vasc_outcomes2 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
   select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  # remove rows where all the years have NAs (these not included in wb) 
+  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sep24: 98, 01, 03, 06, 07, 08, 11, 12, 13, 15, 16, 20
 
 vasc_outcomes3 <- theme4_outcomes |> 
   filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
   select(-c(result_size, outcome_type)) %>% 
   # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sept24: 97, 09, 10, 17, 18, 19
 
 vasc_outcomes4 <- theme4_outcomes |> 
   filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
   select(-c(result_size, outcome_type)) %>% 
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sept24: 96
 
 vasc_outcomes5 <- theme4_outcomes |> 
   filter(result_size == "small" & outcome_type == "Total") |> 
   select(-c(result_size, outcome_type)) %>% 
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sept24: 99
 
 vasc_outcomes6 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: final outcome" | 
                                      outcome_type == "final outcome")) |> 
   select(-c(result_size, outcome_type)) %>% 
   # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sept24: 98, 06, 15, 20
 
 vasc_outcomes7 <- theme4_outcomes |> 
   filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | 
                                      outcome_type == "non-final outcome")) |> 
   select(-c(result_size, outcome_type)) %>% 
   # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(!is.na(select_if(.,  is.numeric))) > 0) %>% 
+  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
   relocate(result_outcome, .after = "cumulative")
+# ResOuts Sept24: none - need to add in zeroes
 
 ## Vascular Referrals: AAA Repairs ----
 aaa_repairs <- theme4_repairs |> 

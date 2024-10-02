@@ -547,7 +547,8 @@ table(kpi_1_4$kpi, kpi_1_4$fin_year)
 
 # keep only new records for most recent complete year
 kpi_1_4 <- kpi_1_4 |>
-  filter(fin_year == kpi_report_years[3])
+  filter(fin_year == kpi_report_years[3]) |> 
+  mutate_all(~replace(., is.nan(.), NA)) # replacing NaNs
 
 
 ## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)

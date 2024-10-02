@@ -1071,7 +1071,8 @@ kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |>
                                       "Grampian", "Greater Glasgow & Clyde", 
                                       "Highland", "Lanarkshire", "Lothian", "Orkney", 
                                       "Shetland", "Tayside", "Western Isles"))) |> 
-  arrange(kpi, fin_year, hbres)
+  arrange(kpi, fin_year, hbres) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 viz_kpi_finyear(kpi_2_full)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative

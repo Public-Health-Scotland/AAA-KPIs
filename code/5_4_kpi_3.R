@@ -486,7 +486,8 @@ viz_kpi_finyear(hist_db)
 
 ## Save report file
 report_db <- kpi_3 |> 
-  filter(fin_year %in% c(kpi_report_years))
+  filter(fin_year %in% c(kpi_report_years)) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 

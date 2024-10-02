@@ -618,7 +618,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 report_db <- add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
-table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
+viz_kpi_finyear(report_db) # current year (year1) should match 
 # previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2 & KPI 1.4
 
 report_db <- report_db |> 
