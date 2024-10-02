@@ -1041,7 +1041,14 @@ viz_kpi_finyear(hist_db)
 viz_kpi_finyear(kpi_2)
 
 # add to historical database (only runs in autumn)
-build_history(hist_db, current_kpi, "2")
+build_history(df_hist = hist_db, 
+              df_new = current_kpi, 
+              kpi_number = "2",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
 
 ### Current database ---
 ## Take current reporting years from new historic

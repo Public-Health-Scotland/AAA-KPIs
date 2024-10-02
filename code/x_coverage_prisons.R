@@ -138,7 +138,7 @@ practice_history <- practice_history |>
 #read in invite and uptake rates file created for recent QPMG report (this file is one record
 #per UPI with the date of their first invite and the scrn_date they were first 'tested')
 #men_screened <- 
-invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))
+invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 
 #join men screened file with men who were registered with prison practice
@@ -179,7 +179,7 @@ exclusion_upi <- exclusion |>
 
 table(exclusion_upi$upi)
 # All 4 UPIs appear on exclusions list (and still open)
-rm(check, check_upi, exclusion_path, exclusion, exclusion_upi)
+rm(check, check_upi, exclusions_path, exclusion, exclusion_upi)
 ###
 
 joined <- joined |> 

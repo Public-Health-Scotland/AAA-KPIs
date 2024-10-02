@@ -592,12 +592,11 @@ table(kpi_summary$kpi, kpi_summary$fin_year)
 build_history(df_hist = hist_db, 
               df_new = kpi_summary, 
               kpi_number = "1.1-1.3",
-              season = season,
-              kpi_report_years = kpi_report_years,
-              fy_list = fy_list,
-              hb_list = hb_list,
-              year_n = year2,
-              hist_path = hist_path)
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22

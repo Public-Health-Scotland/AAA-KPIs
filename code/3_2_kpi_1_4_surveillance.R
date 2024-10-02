@@ -566,4 +566,11 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-build_history(hist_db, kpi_1_4, "1.4")
+build_history(df_hist = hist_db, 
+              df_new = kpi_1_4, 
+              kpi_number = "1.4",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
