@@ -42,14 +42,14 @@ gp_reg_date <- paste0("01-04-", substr(yymm, 1, 2), substr(yymm, 3, 4)) # day af
 ## File paths
 ## The GP practice history may be a single file or may be downloaded as two
 ## separate. If two files, use the a_path/b_path; if one, use the history_path
-# gp_prac_a_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
-#                           "GP_Practice_History_with_dob_selection_-_prior_to_1_4_1952.csv")
-# 
-# gp_prac_b_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
-#                           "GP_Practice_History_with_dob_selection_-_post_1_4_1952.csv")
+gp_prac_a_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+                          "GP_Practice_History_with_dob_selection_-_prior_to_1_4_1952.csv")
 
-gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
-                          "/data/GP_Practice_History_with_dob_selection.csv")
+gp_prac_b_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+                          "GP_Practice_History_with_dob_selection_-_post_1_4_1952.csv")
+
+# gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
+#                           "/data/GP_Practice_History_with_dob_selection.csv")
 
 prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
                             "/data/gp_coverage_", substr(kpi_report_years[2], 3, 4),
@@ -137,9 +137,9 @@ make_gp_vars <- function(df, gp_lookup) {
 coverage_basefile <- read_rds(paste0(temp_path,
                                      "/1_2_coverage_basefile.rds"))
 
-gp_history <- read_csv(gp_history_path)
-# gp_prac_a <- read_csv(gp_prac_a_path)
-# gp_prac_b <- read_csv(gp_prac_b_path)
+# gp_history <- read_csv(gp_history_path)
+gp_prac_a <- read_csv(gp_prac_a_path)
+gp_prac_b <- read_csv(gp_prac_b_path)
 
 gp_lookup <- read_csv(gp_lookup_path) %>%
   select(gp_join = praccode,
@@ -151,12 +151,12 @@ gp_lookup <- read_csv(gp_lookup_path) %>%
 ### Step 3 : Add GP registration episodes to coverage data ----
 # Rename dataframe
 # Use first line only if two gp_prac files
-#gp_prac <- bind_rows(gp_prac_a, gp_prac_b)
+gp_history <- bind_rows(gp_prac_a, gp_prac_b)
 
 gp_prac <- gp_history |> 
   clean_names()
 
-rm(gp_history)
+rm(gp_history, gp_prac_a, gp_prac_b)
 
 
 # Flag GP practice that was relevant at the end of the financial year
@@ -268,7 +268,7 @@ output_2year <- output_1_2a %>%
 # Change 'NA's to 'NaN's in the two percentage columns for the macro.
 # (This will say it's done nothing but it has)
 # Re-code the NAs in the cohort/test columns as 0 (to match macro formatting).
-x <- output_2year %>%
+output_2year <- output_2year %>%
   mutate(across(contains("percent"), \(x) replace_na(x, NaN)),
          across(contains("percent"), \(x) round(x, digits = 2)),
          across(contains(c("cohort", "test")), \(x) replace_na(x, 0)))
