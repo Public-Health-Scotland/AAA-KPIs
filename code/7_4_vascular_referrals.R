@@ -23,6 +23,7 @@
 library(dplyr)
 library(readr)
 library(janitor)
+library(tidyr)
 library(forcats)
 library(tidylog)
 library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
@@ -431,13 +432,14 @@ rm(method_scot, repair_scot)
 ## Combine to create table of surgery types and total surgeries by hbres
 ## Historical surgeries data ---
 repairs_all <- rbind(method, repair) %>% 
+  mutate(across(where(is.numeric), \(x) replace_na(x, 0))) |> 
   mutate(surg_method = case_when(surg_method == "01" ~ "EVAR",
                                  surg_method == "02" ~ "Open",
                                  surg_method == "99" ~ "Total AAA repairs"),
          surg_method = fct_relevel(surg_method, c("Open", "EVAR",
                                                   "Total AAA repairs"))) %>% 
   arrange(fy_surgery, surg_method) %>% 
-  glimpse()
+  glimpse() 
 
 ## Should this be written out? And rewritten each year as a new historical file?
 repairs_hist <- hb_tibble |> 
