@@ -253,5 +253,5 @@ showGridLines(wb, "5) Self-referral results", showGridLines = FALSE)
 # 5. Save output ----
 query_saveWorkbook(wb, paste0(output_path,
                                       "/5_Results for Eligible",
-                                      "and Self-referrals_", yymm, ".xlsx"))
+                                      " and Self-referrals_", yymm, ".xlsx"))
 

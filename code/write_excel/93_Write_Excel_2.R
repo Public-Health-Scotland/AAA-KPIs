@@ -719,7 +719,7 @@ writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2,
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, 
           startRow = 4, startCol = 8)
 addStyle(wb, "KPI 1.4b", styles$black_border_centre_12,
-         rows = 4, cols = 2:20, gridExpand = TRUE)
+         rows = 4, cols = 2:10, gridExpand = TRUE)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.4b", prov_data_note, 
             startRow = 29, colNames = FALSE)

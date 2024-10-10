@@ -25,6 +25,14 @@ library(phsaaa) # to install, run; devtools::install_github("aoifem01/phsaaa")
 rm(list=ls())
 gc()
 
+## Functions
+# for use on entire numerical df, formats as XX.X%
+format_percentage <- function(df) {
+  df |> 
+    mutate(across(everything(), ~sprintf("%.1f", .))) |> 
+    mutate(across(everything(), ~ paste0(., "%")))
+}
+
 ## Values
 source(here::here("code/0_housekeeping.R"))
 
@@ -68,7 +76,7 @@ kpi_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds")) |>
   filter(fin_year %in% c(kpi_report_years),
          kpi %in% c("KPI 3.1 Residence", "KPI 3.2 Residence", 
                     "KPI 3.2 Surgery"),  # Should this last one stay in??
-         health_board == "Scotland",
+         hbres == "Scotland",
          str_ends(group, "_p")) |> 
   # match Excel tables
   pivot_wider(names_from = fin_year, values_from = value) 
@@ -94,14 +102,13 @@ query_write_rds(kpi_4, paste0(temp_path, "/6_kpi_4_", yymm, ".rds"))
 
 ## Format for Excel input
 kpi_1 <- kpi_1 %>% select(-c(hbres, kpi, simd, group)) %>% 
-  mutate_all(.funs = function(x) paste0(x, "%"))
+  format_percentage()
 kpi_2 <- kpi_2 %>% select(-c(hbres, kpi, simd, group)) %>% 
-  mutate_all(.funs = function(x) paste0(x, "%"))
-kpi_3 <- kpi_3 %>% select(-c(health_board, kpi, group)) %>% 
-  mutate_all(.funs = function(x) paste0(x, "%"))
+  format_percentage()
+kpi_3 <- kpi_3 %>% select(-c(hbres, kpi, group)) %>% 
+  format_percentage()
 kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group)) %>% 
-  mutate_all(.funs = function(x) paste0(x, "%"))
-
+  format_percentage()
 
 ### 3: Output to Excel ----
 

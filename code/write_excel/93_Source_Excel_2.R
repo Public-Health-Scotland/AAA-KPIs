@@ -109,7 +109,7 @@ rm(note_toc_data)
 ## KPI 1.1 notes ----
 ### headers ----
 kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, " ", 
-                            year_xx, " includes men offered screening after",
+                            year_xx, " (includes men offered screening after",
                             " 66th birthday)")
 
 ### footnotes ----

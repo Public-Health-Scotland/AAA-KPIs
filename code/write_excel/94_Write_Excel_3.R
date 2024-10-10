@@ -104,6 +104,11 @@ kpi_2_2 <- theme_3 |>
 kpi_2_2_add_a_top <- theme_3 |> 
   filter(kpi == "KPI 2.2 Additional A",
          fin_year %in% c(kpi_report_years[1:2])) |> 
+  pivot_wider(names_from = group, values_from = value) |> 
+  select(hbres, kpi, fin_year, audit_n, no_audit_result_n,
+         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
+         standard_not_met_n, standard_not_met_p) |> 
+  pivot_longer(!hbres:fin_year, names_to = "group", values_to = "value") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(hbres, FY_kpi_group, value) |> 
   # match Excel tables

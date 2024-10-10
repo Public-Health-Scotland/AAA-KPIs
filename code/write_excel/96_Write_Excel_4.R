@@ -81,7 +81,7 @@ theme4_unfit_deaths <- read_rds(paste0(temp_path, "/4_91_unfit_deaths_cause_",
 kpi_3_1 <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.1 Residence")) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(health_board, FY_kpi_group, value)
+  select(hbres, FY_kpi_group, value)
 
 # Match Excel tables
 kpi_3_1 <- kpi_3_1 |> 
@@ -91,7 +91,7 @@ kpi_3_1 <- kpi_3_1 |>
 kpi_3_2_res <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.2 Residence")) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(health_board, FY_kpi_group, value)
+  select(hbres, FY_kpi_group, value)
 
 # Match Excel tables
 kpi_3_2_res <- kpi_3_2_res |> 
@@ -101,7 +101,7 @@ kpi_3_2_res <- kpi_3_2_res |>
 kpi_3_2_surg <- theme4_3 |> 
   filter(kpi %in% c("KPI 3.2 Surgery")) |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
-  select(health_board, FY_kpi_group, value)
+  select(hbres, FY_kpi_group, value)
 
 # Match Excel tables
 kpi_3_2_surg <- kpi_3_2_surg |> 
