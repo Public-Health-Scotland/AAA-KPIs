@@ -22,6 +22,7 @@ library(tidylog)
 library(lubridate)
 library(openxlsx)
 library(janitor)
+library(phsaaa)
 
 rm(list = ls())
 gc()
@@ -35,6 +36,9 @@ rm (exclusions_path, hist_path, output_path, simd_path, qpmg_month, extract_date
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 ## Variables
+
+temp_path <- "/PHI_conf/AAA/Topics/Screening/KPI/202409/temp"
+
 fy_start <- paste0("01-04-", substr(yymm, 1, 2), (as.numeric(substr(yymm, 3, 4))-1))
 fy_end <- paste0("31-03-", substr(yymm, 1, 4))
 gp_reg_date <- paste0("01-04-", substr(yymm, 1, 2), substr(yymm, 3, 4)) # day after most recent complete FY
@@ -42,10 +46,10 @@ gp_reg_date <- paste0("01-04-", substr(yymm, 1, 2), substr(yymm, 3, 4)) # day af
 ## File paths
 ## The GP practice history may be a single file or may be downloaded as two
 ## separate. If two files, use the a_path/b_path; if one, use the history_path
-gp_prac_a_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+gp_prac_a_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202409/data/",
                           "GP_Practice_History_with_dob_selection_-_prior_to_1_4_1952.csv")
 
-gp_prac_b_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+gp_prac_b_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202409/data/",
                           "GP_Practice_History_with_dob_selection_-_post_1_4_1952.csv")
 
 # gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
@@ -134,8 +138,7 @@ make_gp_vars <- function(df, gp_lookup) {
 
 ### Step 2 : Import data ----
 
-coverage_basefile <- read_rds(paste0(temp_path,
-                                     "/1_2_coverage_basefile.rds"))
+coverage_basefile <- read_rds("/PHI_conf/AAA/Topics/Screening/KPI/202309/temp/1_2_coverage_basefile.rds")
 
 # gp_history <- read_csv(gp_history_path)
 gp_prac_a <- read_csv(gp_prac_a_path)
@@ -224,7 +227,7 @@ output_1_2a <- breakdown_1_2a %>%
   arrange(hbres, gp_hb)
 
 ## Save output for use next year
-write_rds(output_1_2a, gp_output_path)
+write_rds(output_1_2a, "/PHI_conf/AAA/Topics/Screening/KPI/202309/data/gp_coverage_2223.rds")
 
 
 ### Step 5 : Create KPI 1.2a GP output ----
@@ -237,8 +240,8 @@ prev_gp_data <- read_rds(prev_gp_data_path) %>%
   select(hbres, gp_hb, 
          # gp_desc,
          cohort_year_ww = cohort_year1,
-         test_year_ww = test_a_year1,
-         percent_year_ww = percent_a_year1)
+         test_year_ww = tested2_year1,
+         percent_year_ww = percent_year1)
 
 # Format to be like the old file. This step can be changed when the macro
 # gets converted to R
@@ -278,7 +281,7 @@ output_2year <- output_2year %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", output_2year)
-saveWorkbook(wb, paste0(temp_path, "/gp_practice_all_boards.xlsx"), 
+query_saveWorkbook(wb, paste0(temp_path, "/gp_practice_all_boards_202309_correctGPhist.xlsx"), 
              overwrite = TRUE)
 
 rm(hb_1_2a, output_1_2a, prev_gp_data)
@@ -342,4 +345,4 @@ self_ref_gp <- self_ref_gp %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
-query_saveWorkbook(wb, paste0(temp_path, "/sr_all_boards.xlsx"))
+query_saveWorkbook(wb, paste0(temp_path, "/sr_all_boards_202309_correctGPhist.xlsx"))

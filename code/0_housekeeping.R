@@ -20,7 +20,7 @@ here::i_am("code/0_housekeeping.R")
 
 # year (YYYY) and month (MM) at time of running
 # e.g. autumn (usually september) YYYY09, spring (usually march) YYYY03
-yymm <- 202409
+yymm <- 202309
 
 season <- "autumn" # options are "spring" or "autumn"
 
@@ -37,12 +37,12 @@ qpmg_month <- "October"
 # Years included in KPI report: 3 most recent financial years
 # Should be the financial year ending in current calendar year, and the two years prior
 # CHECK: final 2 digits of third FY should match those of yymm above
-kpi_report_years <- c("2021/22", "2022/23", "2023/24") 
+kpi_report_years <- c("2020/21", "2021/22", "2022/23") 
 
 # financial year list (list of FYs covered by program from start)
 # Need to add on FY ending in current calendar year
 fy_list <- c("2012/13", "2013/14", "2014/15", "2015/16", "2016/17", "2017/18", 
-             "2018/19", "2019/20", "2020/21", "2021/22", "2022/23", "2023/24")
+             "2018/19", "2019/20", "2020/21", "2021/22", "2022/23")
 fy_tibble <- tibble::tibble(financial_year = c(fy_list))
 
 
