@@ -22,6 +22,7 @@ library(tidylog)
 library(lubridate)
 library(openxlsx)
 library(janitor)
+library(phsaaa)
 
 rm(list = ls())
 gc()
@@ -56,8 +57,7 @@ prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
                             substr(kpi_report_years[2], 6, 7), ".rds")
 
 gp_output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
-                         "/data/gp_coverage_", substr(kpi_report_years[3], 3, 4),
-                         substr(kpi_report_years[3], 6, 7), ".rds")
+                         "/data")
 
 gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
                          "National Reference Files/gpprac.csv")
@@ -224,7 +224,8 @@ output_1_2a <- breakdown_1_2a %>%
   arrange(hbres, gp_hb)
 
 ## Save output for use next year
-write_rds(output_1_2a, gp_output_path)
+write_rds(output_1_2a, paste0(gp_output_path, "/gp_coverage_", substr(kpi_report_years[3], 3, 4),
+                         substr(kpi_report_years[3], 6, 7), ".rds"))
 
 
 ### Step 5 : Create KPI 1.2a GP output ----
@@ -343,3 +344,7 @@ wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
 query_saveWorkbook(wb, paste0(temp_path, "/sr_all_boards.xlsx"))
+
+query_write_rds(self_ref_gp, paste0(gp_output_path, "/self_referrals_", 
+                                    substr(kpi_report_years[3], 3, 4),
+                                    substr(kpi_report_years[3], 6, 7), ".rds"))
