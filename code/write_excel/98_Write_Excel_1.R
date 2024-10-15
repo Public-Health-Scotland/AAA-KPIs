@@ -214,9 +214,9 @@ source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
 
 # Data Notes
 writeData(wb, "Data Notes", data_header, startRow = 2)
-addStyle(wb, "Data Notes", styles$black_12, rows = 2, cols = 1)
+addStyle(wb, "Data Notes", styles$black_nowrap_12, rows = 2, cols = 1)
 writeData(wb, "Data Notes", qpmg_review, startRow = 3)
-addStyle(wb, "Data Notes", styles$black_bold_12, rows = 3, cols = 1)
+addStyle(wb, "Data Notes", styles$black_bold_nowrap_12, rows = 3, cols = 1)
 writeData(wb, "Data Notes", today, startRow = 5)
 addStyle(wb, "Data Notes", styles$black_12, rows = 5, cols = 1)
 

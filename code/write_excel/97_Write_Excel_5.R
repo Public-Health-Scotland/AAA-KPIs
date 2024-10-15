@@ -166,7 +166,7 @@ addStyle(wb, "Table of Contents", styles$report_type_style,
          rows = 5, cols = 1)
 writeData(wb, "Table of Contents", today, 
           startRow = 6)
-addStyle(wb, "Table of Contents", styles$black_12,
+addStyle(wb, "Table of Contents", styles$black_nowrap_12,
          rows = c(3, 6), cols = 1)
 writeData(wb, "Table of Contents", note_toc, 
           startRow = 16)

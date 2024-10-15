@@ -422,15 +422,18 @@ self_ref_year_xx <- eval_seasonal_diff(
 
 std_not_met_y1 <- qa_reason_top %>% filter(hbres=="Scotland") %>% 
   select(contains(kpi_report_years[1]) & contains("Reason_standard_not_met_n")) %>% 
-  pull()
+  pull() |> 
+  prettyNum(big.mark=",", preserve.width="none")
          
 std_not_met_y2 <- qa_reason_top %>% filter(hbres=="Scotland") %>% 
   select(contains(kpi_report_years[2]) & contains("Reason_standard_not_met_n")) %>% 
-  pull()
+  pull()|> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 std_not_met_y3 <- qa_reason_bot %>% filter(hbres=="Scotland") %>% 
   select(contains(kpi_report_years[3]) & contains("Reason_standard_not_met_n")) %>% 
-  pull()
+  pull()|> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 ### QA standard not met detail notes ----
 
@@ -449,7 +452,8 @@ qa_detail_3 <- left_join(qa_reason_top, qa_reason_bot) |>
   filter(hbres == "Scotland") |> 
   select(hbres, ends_with("anatomy_n")) |> 
   mutate(anatomy_sum = sum(c_across(where(is.numeric)))) |> 
-  select(anatomy_sum)
+  select(anatomy_sum)|> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detail_3, 
                           " scans with anatomy as the reason the standard was not ", 
