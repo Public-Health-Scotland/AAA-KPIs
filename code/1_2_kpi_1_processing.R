@@ -19,7 +19,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(tidylog)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()
@@ -74,10 +74,8 @@ first_result <- last_results_initial_screens %>%
 first_result <- first_result %>%
   arrange(upi, date_screen) %>%
   group_by(upi) %>%
-  mutate(
-    results = n(),
-    first_screen_flag = if_else(date_screen == min(date_screen), 1, 0)
-  ) %>%
+  add_count(name = "results") %>%
+  mutate(first_screen_flag = if_else(date_screen == min(date_screen), 1, 0)) %>%
   ungroup() %>%
   filter(first_screen_flag == 1) %>%
   select(upi, results,
@@ -144,7 +142,9 @@ cohort1 <- cohort1 %>%
 # Start with all the non-duplicates, then bring more records in
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(keep = if_else(n() == 1, 1, 0)) %>%
+  add_count(name = "n") %>%
+  mutate(keep = if_else(n == 1, 1, 0)) %>%
+  select(-n) |> 
   # keep only the last offer
   mutate(keep = case_when(keep == 1 ~ 1,
                           date_offer_sent == max(date_offer_sent) ~ 1,
@@ -184,8 +184,10 @@ cohort1 <- filter(cohort1, keep == 1)
 # one with the mismatching chi
 cohort1 <- cohort1 %>%
   group_by(upi) %>%
-  mutate(keep = tidytable::case_when(n() != 1 & chi != upi ~ 0,
+  add_count(name = "n") |> 
+  mutate(keep = tidytable::case_when(n != 1 & chi != upi ~ 0,
                                      TRUE ~ 1)) %>%
+  select(-n) |> 
   ungroup() %>%
   filter(keep == 1) %>% 
   select(upi, postcode, ca2019, simd2020v2_sc_quintile,
@@ -222,8 +224,8 @@ external_only <- aaa_extract %>%
   distinct(upi, screen_result)
 
 table(external_only$screen_result)
-# 05: 135
-# 06: 583
+# 05: 137
+# 06: 628
 
 external_only <- select(external_only, upi)
 
@@ -245,8 +247,8 @@ deceased <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(deceased$pat_inelig)
-# 15: 5281 
-# 16: 1107
+# 15: 5500
+# 16: 1224
 
 deceased <- deceased %>% select(upi) %>% arrange(upi)
 
@@ -267,7 +269,7 @@ prior_scr <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(prior_scr$pat_inelig)
-# 21: 891
+# 21: 916
 
 prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
 
@@ -293,7 +295,7 @@ optout <- optout %>%
   distinct(upi, pat_inelig)
 
 table(optout$pat_inelig)
-# 01: 2280
+# 01: 2367
 
 optout <- optout %>% select(upi) %>% arrange(upi)
 
@@ -319,7 +321,7 @@ repaired <- repaired %>%
   distinct(upi, pat_inelig)
 
 table(repaired$pat_inelig)
-# 04: 228
+# 04: 234
 
 repaired <- repaired %>% select(upi) %>% arrange(upi)
 
@@ -345,7 +347,7 @@ vasc_sur <- vasc_sur %>%
   distinct(upi, pat_inelig)
 
 table(vasc_sur$pat_inelig)
-# 06: 571
+# 06: 599
 
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
@@ -397,7 +399,7 @@ unfit <- unfit %>%
   distinct(upi, pat_inelig)
 
 table(unfit$pat_inelig)
-# 18: 457
+# 18: 475
 
 unfit <- unfit %>% select(upi) %>% arrange(upi)
 
@@ -438,7 +440,7 @@ other <- other %>%
 
 table(other$pat_inelig)
 #   11   12   17 
-# 1112 1219 1418 
+# 1153 1262 1469 
 
 other <- other %>% distinct(upi) %>% arrange(upi)
 
@@ -451,8 +453,8 @@ temp_gana <- aaa_exclusions %>%
   mutate(exlength = date_end - date_start)
 
 table(temp_gana$pat_inelig)
-# 25: 1564 
-# 26: 512
+# 25: 2121
+# 26: 557
 
 temp_gana <- temp_gana %>% distinct(upi) %>% arrange(upi)
 
@@ -532,3 +534,4 @@ cohort1 <- cohort1 %>%
          inoffer)
 
 query_write_rds(cohort1, paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
+

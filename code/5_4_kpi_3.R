@@ -27,7 +27,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
 rm(list = ls())
@@ -454,22 +454,32 @@ table(kpi_3$kpi)
 ## Historical file
 # Create backup of last year's file
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
-table(hist_db$kpi, hist_db$financial_year)
+table(hist_db$kpi, hist_db$fin_year)
 
 
 # temp: renaming "financial_year" to "fin_year" to make below function work
 # AMc note: discuss with KH as to whether this can be changed permanently??
-hist_db <- hist_db |> 
-  rename(fin_year = financial_year)
+# hist_db <- hist_db |> 
+#   rename(fin_year = financial_year)
+## AMc note: not required as have changed historical db names
 
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years)) |> 
-  rename(fin_year = financial_year)
+  rename(fin_year = financial_year,
+         hbres = health_board)|> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 # create historical backup + new file with this year's data
-build_history(hist_db, report_db, "3")
+build_history(df_hist = hist_db, 
+              df_new = report_db, 
+              kpi_number = "3",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
 
-table(hist_db$financial_year, hist_db$kpi) 
+table(hist_db$fin_year, hist_db$kpi)
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
 # 2012/13                45                45               9
 # 2013/14                45                45              27
@@ -485,3 +495,4 @@ table(hist_db$financial_year, hist_db$kpi)
 
 ## Save report file
 query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+
