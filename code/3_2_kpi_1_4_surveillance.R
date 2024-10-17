@@ -25,7 +25,7 @@ pacman::p_load(
   readr,
   tidylog,
   svDialogs,
-  phsaaa # to install: devtools::install_github("aoifem01/phsaaa")
+  phsaaa # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 )
 
 rm(list = ls())

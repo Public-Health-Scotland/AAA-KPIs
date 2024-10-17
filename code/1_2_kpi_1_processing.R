@@ -19,7 +19,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(tidylog)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()

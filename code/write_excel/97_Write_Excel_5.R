@@ -22,7 +22,7 @@ library(tidyr)
 library(lubridate)
 library(reporter)
 library(openxlsx)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 library(forcats)
 
 rm(list=ls())

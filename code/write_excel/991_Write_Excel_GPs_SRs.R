@@ -16,7 +16,7 @@ library(dplyr)
 library(readr)
 library(tidylog)
 library(openxlsx)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list=ls())
 gc()
@@ -95,7 +95,7 @@ sr_data <- read_rds(sr_path)
 # 3: Create Excel output function -----------------------------------------
 
 # function to write Excel output for both KPI 1.2a and Self-referrals
-create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, selfref_data, output_filepath) {
+create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, selfref_data, output_filepath, date_aaa_extracted, dat_gp_extracted) {
   
   # 1. text and styles inputs ----
   
@@ -115,7 +115,7 @@ create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, s
     content = c("", 
                 paste0("Men turning age 66 in the financial year ending 31 March ", year_xx, ". Men become eligible for screening when they reach age 65 and should be invited for screening before their 66th birthday."),
                 paste0("Men are counted as having been tested if they were screened before they reached the age of 66 and 3 months and had a screening result of positive, negative or non-visualisation. Men who attended clinics and were not screened due to technical failure are not included."),
-                paste0("Data are based on the GP practice the man was registered at on 31 March ", year_xx, " and so may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", gp_prac_extract_date, " ", year_xx, ") and mapped to the PHS extract (from ", extract_date, " ", year_xx, ").")))
+                paste0("Data are based on the GP practice the man was registered at on 31 March ", year_xx, " and so may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ").")))
   ### self-referrals - specific texts 
   text$sr_title <- "Self-referrals: Number of men tested by GP practice"
   text$sr_heads <- c("Practice Code", "Practice Name", paste0("Tested in year ending 31 March ", year_xx))
@@ -128,7 +128,7 @@ create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, s
     content = c("",
                 "Any man over the age of 65 who has not previously been screened and who contacts their local AAA screening centre directly to request screening.",
                 "Men are counted as tested if they have an initial screening result of positive, negative or non-visualisation. Men who attended clinics and were not screened due to technical failure are not included.",
-                paste0("Data for year ending 31 March ", year_xx, " are based on the GP practice that the individual was registered at on 31 March ", year_xx, ". This means the data may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", gp_prac_extract_date, " ", year_xx, ") and mapped to the PHS extract (from ", extract_date, " ", year_xx, ")."),
+                paste0("Data for year ending 31 March ", year_xx, " are based on the GP practice that the individual was registered at on 31 March ", year_xx, ". This means the data may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ")."),
                 "Self-referrals who had initial screens in more than one year are counted under the year of their most recent screening result only."))
   ### general text
   text$disclosure_text <- c("Practice-level data and disclosive cells", 

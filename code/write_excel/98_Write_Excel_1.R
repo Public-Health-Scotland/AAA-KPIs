@@ -20,7 +20,7 @@ library(tidyr)
 library(stringr)
 library(openxlsx)
 library(lubridate)
-library(phsaaa) # to install, run; devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install, run; devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list=ls())
 gc()

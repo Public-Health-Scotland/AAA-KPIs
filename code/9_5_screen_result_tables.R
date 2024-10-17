@@ -17,7 +17,7 @@ library(readr)
 library(janitor)
 library(phsmethods)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
 rm(list = ls())

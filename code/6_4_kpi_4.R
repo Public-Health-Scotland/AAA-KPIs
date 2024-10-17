@@ -31,7 +31,7 @@ library(zoo)
 library(stringr)
 library(janitor)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()
