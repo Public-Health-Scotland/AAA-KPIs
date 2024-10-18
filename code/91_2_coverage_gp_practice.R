@@ -59,9 +59,8 @@ prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
                             "/data/gp_coverage_", substr(kpi_report_years[2], 3, 4),
                             substr(kpi_report_years[2], 6, 7), ".rds")
 
-gp_output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
-                         "/data/gp_coverage_", substr(kpi_report_years[3], 3, 4),
-                         substr(kpi_report_years[3], 6, 7), ".rds")
+gp_output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/202409",
+                         "/data/gp_coverage_2223_correctGPhist.rds")
 
 gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
                          "National Reference Files/gpprac.csv")
@@ -227,7 +226,7 @@ output_1_2a <- breakdown_1_2a %>%
   arrange(hbres, gp_hb)
 
 ## Save output for use next year
-write_rds(output_1_2a, "/PHI_conf/AAA/Topics/Screening/KPI/202309/data/gp_coverage_2223.rds")
+write_rds(output_1_2a, "/PHI_conf/AAA/Topics/Screening/KPI/202409/data/gp_coverage_2223_correctGPhist.rds")
 
 
 ### Step 5 : Create KPI 1.2a GP output ----
@@ -281,8 +280,7 @@ output_2year <- output_2year %>%
 wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", output_2year)
-query_saveWorkbook(wb, paste0(temp_path, "/gp_practice_all_boards_202309_correctGPhist.xlsx"), 
-             overwrite = TRUE)
+query_saveWorkbook(wb, paste0(temp_path, "/gp_practice_all_boards_202309_correctGPhist.xlsx"))
 
 rm(hb_1_2a, output_1_2a, prev_gp_data)
 
@@ -346,3 +344,5 @@ wb <- createWorkbook()
 addWorksheet(wb, "data")
 writeData(wb, sheet = "data", self_ref_gp)
 query_saveWorkbook(wb, paste0(temp_path, "/sr_all_boards_202309_correctGPhist.xlsx"))
+
+query_write_rds(self_ref_gp, "/PHI_conf/AAA/Topics/Screening/KPI/202409/data/self_referrals_2223_correctGPhist.rds")
