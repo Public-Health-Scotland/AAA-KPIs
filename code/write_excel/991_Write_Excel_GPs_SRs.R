@@ -23,13 +23,15 @@ gc()
 
 ## functions ----
 
-# concatenate year (from 20XX/YY to XXYY)
-shorten_fy <- function(financial_year) {
+## AMc note: have transferred all these (plus create_gp_extracts) over to phsaaa, so once integrated, these can be deleted
+
+# simplify year (from 20XX/YY to XXYY)
+simplify_fy <- function(financial_year) {
   paste0(substr(financial_year, 3, 4), substr(financial_year, 6, 7))
 }
 
 # function to create hyperlink for openxlsx
-create_hyperlink <- function(name, url) {
+format_excel_hyperlink <- function(name, url) {
   
   link <- data.frame(x = paste0("HYPERLINK(\"", url, "\", \"", name, "\")" ))
   class(link$x) <- c("formula","hyperlink")
@@ -51,13 +53,13 @@ year_ww <- year_xx - 1
 gp_prac_extract_date <- "10 October"
 
 current_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, 
-                               "/data/gp_coverage_", shorten_fy(kpi_report_years[3]),".rds")
+                               "/data/gp_coverage_", simplify_fy(kpi_report_years[3]),".rds")
 
 prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
-                            "/data/gp_coverage_", shorten_fy(kpi_report_years[2]), ".rds")
+                            "/data/gp_coverage_", simplify_fy(kpi_report_years[2]), ".rds")
 
 sr_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, 
-                  "/data/self_referrals_", shorten_fy(kpi_report_years[3]), ".rds")
+                  "/data/self_referrals_", simplify_fy(kpi_report_years[3]), ".rds")
 
 
 # 2: Data import ----
@@ -95,7 +97,7 @@ sr_data <- read_rds(sr_path)
 # 3: Create Excel output function -----------------------------------------
 
 # function to write Excel output for both KPI 1.2a and Self-referrals
-create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, selfref_data, output_filepath, date_aaa_extracted, dat_gp_extracted) {
+create_aaa_gp_outputs <- function(hb_name, financial_year, coverage_data, selfref_data, output_filepath, date_aaa_extracted, date_gp_extracted) {
   
   # 1. text and styles inputs ----
   
@@ -133,7 +135,7 @@ create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, s
   ### general text
   text$disclosure_text <- c("Practice-level data and disclosive cells", 
                             "These data are released for management purposes and have not been adjusted to conform to PHS’s Statistical Disclosure Control protocol. The tables may contain disclosive cells (cells with small numbers that might enable an individual patient or member of staff to be identified, perhaps with the aid of further knowledge of the topic) and should not be published without further consideration of the contents in light of the guidance (link below). Please contact phs.aaascreenstats@phs.scot if you have any queries regarding this.")
-  text$disclosure_link <- create_hyperlink("PHS Statistical Disclosure Control", "https://publichealthscotland.scot/publications/public-health-scotland-statistical-disclosure-protocol/public-health-scotland-statistical-disclosure-protocol-version-22/")
+  text$disclosure_link <- format_excel_hyperlink("PHS Statistical Disclosure Control", "https://publichealthscotland.scot/publications/public-health-scotland-statistical-disclosure-protocol/public-health-scotland-statistical-disclosure-protocol-version-22/")
   text$legend <- c("-   Zero", "..   Not applicable")
   
   ## styles
@@ -450,7 +452,7 @@ create_gp_coverage_outputs <- function(hb_name, financial_year, coverage_data, s
   set_sr_row_heights(row = row_refs$sr_notes_start+4, height = 40)
   
   # 5: Write output ----
-  output <- paste0(output_filepath, "/GP Practices/NHS ", hb_name, " Practice level ", shorten_fy(financial_year), ".xlsx")
+  output <- paste0(output_filepath, "/GP Practices/NHS ", hb_name, " Practice level ", simplify_fy(financial_year), ".xlsx")
   saveWorkbook(wb, output, overwrite = T)
   print(paste0("Output saved for NHS ", hb_name))
 }
@@ -468,7 +470,7 @@ eval_seasonal_diff(season,
                    {print("GP Practice coverage and self-referrals are only calculated in Autumn")}, # spring
                    {for (i in health_boards) {
                      
-                     create_gp_coverage_outputs(hb_name = i,
+                     create_aaa_gp_outputs(hb_name = i,
                                                 financial_year = kpi_report_years[3],
                                                 coverage_data = gp_data, 
                                                 selfref_data = sr_data, 
