@@ -471,8 +471,11 @@ eval_seasonal_diff(season,
                    {for (i in health_boards) {
                      
                      create_aaa_gp_outputs(hb_name = i,
-                                                financial_year = kpi_report_years[3],
-                                                coverage_data = gp_data, 
-                                                selfref_data = sr_data, 
-                                                output_filepath = output_path)}} # autumn
+                                           financial_year = kpi_report_years[3],
+                                           coverage_data = gp_data, 
+                                           selfref_data = sr_data, 
+                                           output_filepath = output_path,
+                                           date_aaa_extracted = extract_date,
+                                           date_gp_extracted = gp_prac_extract_date
+                                           )}} # autumn
                    )
