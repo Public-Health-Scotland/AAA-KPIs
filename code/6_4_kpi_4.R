@@ -31,7 +31,7 @@ library(zoo)
 library(stringr)
 library(janitor)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()
@@ -454,19 +454,22 @@ kpi_4_1y_mort <- bind_rows(open_1yr_mort, evar_1yr_mort) |>
                names_to = "group", values_to = "value") |> 
   rename(financial_year = rolling_financial_year)
 
-kpi_4 <- bind_rows(kpi_4_roll, kpi_4_surgery, kpi_4_1y_mort)
+kpi_4 <- bind_rows(kpi_4_roll, kpi_4_surgery, kpi_4_1y_mort) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 table(kpi_4$kpi, kpi_4$surg_method)
 
 ## KPI 4 additional B and C
 kpi_4_hb <- bind_rows(open_hb_screen, open_hb_surgery, 
                       evar_hb_screen, evar_hb_surgery) |> 
-  relocate(Scotland, .after = last_col())
+  relocate(Scotland, .after = last_col()) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 table(kpi_4_hb$kpi, kpi_4_hb$surg_method)
 
 ## Cumulative mortality rates (1, 3, 5-year)
-kpi_4_mortality <- bind_rows(mortality_hb_res, mortality_hb_surg)
+kpi_4_mortality <- bind_rows(mortality_hb_res, mortality_hb_surg) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 

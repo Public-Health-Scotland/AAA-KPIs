@@ -22,7 +22,7 @@ library(forcats)
 library(stringr)
 library(tidylog)
 library(tidyr)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 library(svDialogs)
 
 
@@ -38,7 +38,6 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
 
 # Cover base file location
 coverage_basefile_path <- paste0(temp_path, "/1_2_coverage_basefile.rds")
-
 
 # Table 4 variables
 end_minus_1 <- end_current %m-% years(1) 
@@ -202,10 +201,18 @@ kpi_2_1b_scotland_simd <- extract2_dedup_scotland %>%
   ungroup()
 
 kpi_2_1b_simd <- bind_rows(kpi_2_1b_scotland_simd, kpi_2_1b_hb_simd) %>%
-  mutate(non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
+  rename(simd = simd2020v2_sc_quintile) |> 
+  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
+         simd = replace_na(simd, "Unknown")) |> 
+  right_join(crossing(hb_tibble, 
+                      simd_level, 
+                      tibble(financial_year = droplevels(unique(kpi_2_1b_hb_simd$financial_year))))
+                       |> rename(hb_screen = hbres))|> 
+  mutate(across(where(is.numeric), \(x) replace_na(x, 0)),
+         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
          kpi = "KPI 2.1b SIMD") |> 
-  select(hb_screen, kpi, financial_year, simd = simd2020v2_sc_quintile, screen_n, non_vis_n, non_vis_p) |> 
-  pivot_longer(!hb_screen: simd, 
+  select(hb_screen, kpi, financial_year, simd, screen_n, non_vis_n, non_vis_p) |>
+  pivot_longer(!hb_screen:simd, 
                names_to = "group", values_to = "value") |> 
   mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
          group = fct_relevel(group, c("screen_n", "non_vis_n", "non_vis_p")),
@@ -1030,18 +1037,25 @@ table(current_kpi$kpi, current_kpi$fin_year)
 ## Full records (currently only from 2019/20; need to add full historical)
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme3.rds"))
 
-table(hist_db$kpi, hist_db$fin_year)
-table(kpi_2$kpi, kpi_2$fin_year)
+viz_kpi_finyear(hist_db)
+viz_kpi_finyear(kpi_2)
 
 # add to historical database (only runs in autumn)
-build_history(hist_db, current_kpi, "2")
+build_history(df_hist = hist_db, 
+              df_new = current_kpi, 
+              kpi_number = "2",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
 
 ### Current database ---
 ## Take current reporting years from new historic
 kpi_2_full <- add_new_rows(hist_db, kpi_2, fin_year, kpi) |> 
   filter(fin_year %in% c(kpi_report_years))
 
-table(kpi_2_full$kpi, kpi_2_full$fin_year)
+viz_kpi_finyear(kpi_2_full)
 # note QA batch kpis do not need to match across years 
 # (should be >= 5 for Reason, and >=6 for Recall Advice)
 
@@ -1056,7 +1070,7 @@ kpi_2_subgroup <- bind_rows(table_4, qa_reason, qa_detail) |>
          hbres = hb_screen) |> ## move this higher up
   filter(fin_year %in% c(kpi_report_years)) ## can probably remove, just check above
 
-table(kpi_2_subgroup$kpi, kpi_2_subgroup$fin_year)
+viz_kpi_finyear(kpi_2_subgroup)
 
 kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |> 
   mutate(hbres = fct_relevel(hbres, c("Scotland", "Ayrshire & Arran", "Borders",
@@ -1064,12 +1078,16 @@ kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |>
                                       "Grampian", "Greater Glasgow & Clyde", 
                                       "Highland", "Lanarkshire", "Lothian", "Orkney", 
                                       "Shetland", "Tayside", "Western Isles"))) |> 
-  arrange(kpi, fin_year, hbres)
+  arrange(kpi, fin_year, hbres) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
-table(kpi_2_full$kpi, kpi_2_full$fin_year)
+viz_kpi_finyear(kpi_2_full)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative
 
 ## Save data block
+
 query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
-# extra kpis - save
-query_write_rds(kpi_2_dc, paste0(temp_path, "/3_3_kpi_2_dc_", yymm, ".rds"))
+
+## Save data block - device comparison
+query_write_rds(kpi_2_dc, paste0(temp_path, "/3_2_kpi_2_dc_", yymm, ".rds"))
+

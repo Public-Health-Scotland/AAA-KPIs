@@ -22,7 +22,7 @@ library(stringr)
 library(openxlsx)
 library(lubridate)
 library(forcats)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list=ls())
 gc()
@@ -363,7 +363,7 @@ writeData(wb, sheet = "KPI 1.1", kpi_1.1,
 # notes
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.1 Additional (20XX-YY)", styles$black_bold_14, 
+addStyle(wb, "KPI 1.1 Additional (20XX-YY)", styles$black_bold_nowrap_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.1 Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
@@ -387,7 +387,8 @@ showGridLines(wb, "KPI 1.1 Additional (20XX-YY)", showGridLines = FALSE)
 # data
 writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_y2, 
           startRow = 9, colNames = FALSE)
-names(wb)[[3]] <- paste0("KPI 1.1 Additional (", year2, ")")
+names_pos <- which("KPI 1.1 Additional (20XX-YY)" == names(wb))[[1]] # finds index position for this name
+names(wb)[[names_pos]] <- paste0("KPI 1.1 Additional (", year2, ")")
 
 ## KPI 1.1 SIMD ----
 # notes
@@ -475,7 +476,7 @@ if (season == "autumn") {
 # notes
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$black_bold_14, 
+addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$black_bold_nowrap_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2a Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
@@ -522,16 +523,17 @@ eval_seasonal_diff(
 )
 if (season == "autumn") {
   writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.2a_head_mgmt,
-            startRow = 33, startCol = 6)
+            startRow = 33, startCol = 5)
   addStyle(wb, "KPI 1.2a Additional (20XX-YY)", styles$blue_border_centre_12,
-           rows = 33, cols = 6)
+           rows = 33, cols = 5)
 }
 
 # data
 writeData(wb, sheet = "KPI 1.2a Additional (20XX-YY)", kpi_1.3a_y2, 
           startRow = 35, startCol = 2, colNames = FALSE)
 showGridLines(wb, "KPI 1.2a Additional (20XX-YY)", showGridLines = FALSE)
-names(wb)[[6]] <- paste0("KPI 1.2a Additional (", year2, ")")
+names_pos <- which("KPI 1.2a Additional (20XX-YY)" == names(wb))[[1]] # finds index position for this name
+names(wb)[[names_pos]] <- paste0("KPI 1.2a Additional (", year2, ")")
 
 ## KPI 1.2b ----
 # notes
@@ -558,7 +560,7 @@ showGridLines(wb, "KPI 1.2b", showGridLines = FALSE)
 # notes
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_cohort_note, 
           startRow = 3)
-addStyle(wb, "KPI 1.2b Additional (20XX-YY)", styles$black_bold_14, 
+addStyle(wb, "KPI 1.2b Additional (20XX-YY)", styles$black_bold_nowrap_14, 
          rows = 3, cols = 1)
 writeData(wb, sheet =  "KPI 1.2b Additional (20XX-YY)", add_performance_note, 
           startRow = 4)
@@ -576,7 +578,8 @@ addStyle(wb, "KPI 1.2b Additional (20XX-YY)", styles$orange_11,
 showGridLines(wb, "KPI 1.2b Additional (20XX-YY)", showGridLines = FALSE)
 writeData(wb, sheet = "KPI 1.2b Additional (20XX-YY)", kpi_1.2b_y2, 
           startRow = 9, colNames = FALSE)
-names(wb)[[8]] <- paste0("KPI 1.2b Additional (", year2, ")")
+names_pos <- which("KPI 1.2b Additional (20XX-YY)" == names(wb))[[1]] # finds index position for this name
+names(wb)[[names_pos]] <- paste0("KPI 1.2b Additional (", year2, ")")
 
 ## KPI 1.3a ----
 # notes
@@ -716,7 +719,7 @@ writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head2,
 writeData(wb, sheet = "KPI 1.4b", kpi_1.4b_head3, 
           startRow = 4, startCol = 8)
 addStyle(wb, "KPI 1.4b", styles$black_border_centre_12,
-         rows = 4, cols = 2:20, gridExpand = TRUE)
+         rows = 4, cols = 2:10, gridExpand = TRUE)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 1.4b", prov_data_note, 
             startRow = 29, colNames = FALSE)

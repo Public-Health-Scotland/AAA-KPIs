@@ -22,8 +22,8 @@ library(tidyr)
 library(lubridate)
 library(reporter)
 library(openxlsx)
-library(phsaaa) # devtools::install_github("aoifem01/phsaaa")
-
+library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
+library(forcats)
 
 rm(list=ls())
 gc()
@@ -88,6 +88,8 @@ table_three <- theme_5 |>
 ## Table 5 ----
 table_five <- theme_5 |> 
   filter(table == "Table 5") |> 
+  mutate(group = fct_relevel(group, c("tested", "positive", "rate"))) |> 
+  arrange(hbres, year_screen, group) |> 
   pivot_wider(names_from = c(year_screen, group), 
               values_from = value) %>% 
   select(-c(table, simd2020v2_sc_quintile)) |> 
@@ -164,7 +166,7 @@ addStyle(wb, "Table of Contents", styles$report_type_style,
          rows = 5, cols = 1)
 writeData(wb, "Table of Contents", today, 
           startRow = 6)
-addStyle(wb, "Table of Contents", styles$black_12,
+addStyle(wb, "Table of Contents", styles$black_nowrap_12,
          rows = c(3, 6), cols = 1)
 writeData(wb, "Table of Contents", note_toc, 
           startRow = 16)
@@ -251,5 +253,5 @@ showGridLines(wb, "5) Self-referral results", showGridLines = FALSE)
 # 5. Save output ----
 query_saveWorkbook(wb, paste0(output_path,
                                       "/5_Results for Eligible",
-                                      "and Self-referrals_", yymm, ".xlsx"))
+                                      " and Self-referrals_", yymm, ".xlsx"))
 

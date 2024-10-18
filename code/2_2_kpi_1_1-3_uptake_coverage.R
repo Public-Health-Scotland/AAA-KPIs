@@ -43,8 +43,7 @@ library(phsmethods)
 library(stringr)
 library(forcats)
 library(tidylog)
-library(svDialogs)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()
@@ -228,7 +227,7 @@ kpi_1_1 <- invite_uptake  |>
   filter(dob >= dmy("01-04-1948")) |> 
   select(hbres, cohort_year1:offer_add_year2) |> 
   group_by(hbres) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) %>%
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) %>%
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) %>% 
   ungroup() |> 
   glimpse() # offer_not_assigned what does this tell us? Why included??
@@ -264,7 +263,7 @@ kpi_1_1 <- hb_tibble |> left_join(kpi_1_1, by = "hbres")
 kpi_1_1_simd <- invite_uptake  |> 
   select(hbres, simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -273,7 +272,7 @@ kpi_1_1_simd <- invite_uptake  |>
 kpi_1_1_simd_scot <- invite_uptake  |> 
   select(simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -317,7 +316,7 @@ kpi_1_1_simd <- hb_tibble |> left_join(kpi_1_1_simd, by = "hbres")
 kpi_1_2a <- invite_uptake  |> 
   select(hbres, cohort_year1, cohort_year2, test_a_year1:test_a_add_not_assigned) |> 
   group_by(hbres) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -352,7 +351,7 @@ kpi_1_2a <- hb_tibble |> left_join(kpi_1_2a, by = "hbres")
 kpi_1_2b <- invite_uptake |> 
   select(hbres, offer_year1, offer_year2, test_b_year1:test_b_not_assigned) |> 
   group_by(hbres) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -386,7 +385,7 @@ kpi_1_3a <- invite_uptake  |>
   select(hbres, simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -396,7 +395,7 @@ kpi_1_3a_scot <- invite_uptake  |>
   select(simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -443,7 +442,7 @@ kpi_1_3a_hb <- invite_uptake  |>
   select(hbres, simd2020v2_hb2019_quintile, cohort_year1, test_a_year1, 
          test_a_not_assigned) |> 
   group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(cohort_year1:test_a_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(cohort_year1:test_a_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -482,7 +481,7 @@ kpi_1_3b <- invite_uptake  |>
   select(hbres, simd2020v2_sc_quintile, offer_year1, test_b_year1,  
          test_b_not_assigned) |> 
   group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -492,7 +491,7 @@ kpi_1_3b_scot <- invite_uptake  |>
   select(simd2020v2_sc_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
   group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
@@ -532,7 +531,7 @@ kpi_1_3b_hb <- invite_uptake  |>
   select(hbres, simd2020v2_hb2019_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
   group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, sum, na.rm = TRUE)) |> 
+  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
   group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
   ungroup() |> 
   glimpse() # _not_assigned: what do these rows do??
@@ -590,7 +589,14 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
-build_history(hist_db, kpi_summary, "1.1-1.3")
+build_history(df_hist = hist_db, 
+              df_new = kpi_summary, 
+              kpi_number = "1.1-1.3",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)
 
 table(hist_db$kpi, hist_db$fin_year) # should be same as when called in 
 #                        2019/20 2020/21 2021/22
@@ -611,7 +617,7 @@ table(hist_db$kpi, hist_db$fin_year) # should be same as when called in
 report_db <- add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 
 ## Check for duplication
-table(report_db$kpi, report_db$fin_year) # current year (year1) should match 
+viz_kpi_finyear(report_db) # current year (year1) should match 
 # previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2 & KPI 1.4
 
 report_db <- report_db |> 

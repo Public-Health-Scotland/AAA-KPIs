@@ -28,7 +28,7 @@ library(forcats)
 library(janitor)
 library(stringr)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
 rm(list = ls())
@@ -392,7 +392,8 @@ total_unfit <- unfit_current |>
   
 
 ### 6: Combine and save ----
-all_deaths <- bind_rows(total_unfit, total_deaths, non_aaa_deaths, aaa_deaths)
+all_deaths <- bind_rows(total_unfit, total_deaths, non_aaa_deaths, aaa_deaths) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 query_write_rds(all_deaths, paste0(temp_path, "/4_91_unfit_deaths_cause_", yymm, ".rds"))
 
