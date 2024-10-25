@@ -27,6 +27,7 @@ library(readr)
 library(lubridate)
 library(janitor)
 library(tidylog)
+library(tidyr)
 library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
@@ -201,6 +202,7 @@ kpi_3_2 <- aaa_extract %>%
   filter(result_outcome %in% c("11", "12", "13", "14", "15", "16", "17") | 
            (result_outcome == "20" & surg_method == "03" & !is.na(date_surgery))) %>% 
   # AMC new: december 31 filter because of follow-up time (mentioned in footnotes of excel)
+  ## AMc note: should this not be ONLY in the spring extract as opposed to the autumn?
   filter(date_screen <= dmy(paste("31-12-", substr(start_date, 1, 4)))) %>% 
   mutate(screen_to_surgery = time_length(date_screen %--% date_surgery, 
                                          "days"), 
