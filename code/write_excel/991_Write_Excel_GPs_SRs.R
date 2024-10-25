@@ -463,7 +463,7 @@ create_aaa_gp_outputs <- function(hb_name, financial_year, coverage_data, selfre
 health_boards <- hb_tibble |> filter(hbres != "Scotland") |> pull()
 
 # create GP Practices folder in output path
-ifelse(!dir.exists(file.path(output_path, "GP Practices")), dir.create(file.path(output_path, "GP Practices")), "Directory already exists")
+ifelse(!dir.exists(file.path(output_path, "GP Practices")), dir.create(file.path(output_path, "GP Practices")), "GP Practice directory already created")
 
 # run loop
 eval_seasonal_diff(season,

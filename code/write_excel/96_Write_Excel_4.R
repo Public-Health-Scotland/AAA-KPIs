@@ -319,7 +319,7 @@ showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
 ## KPI 3.1 ----
 # notes
-writeData(wb, sheet = "KPI 3.1", screened_year_vv, 
+writeData(wb, sheet = "KPI 3.1", screened_year_vvr, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.1", screened_year_wwr, 
           startRow = 4, startCol = 5)
@@ -344,7 +344,7 @@ showGridLines(wb, "KPI 3.1", showGridLines = FALSE)
 
 ## KPI 3.2 HB Residence ----
 # notes
-writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_vv, 
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_vvr, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_wwr, 
           startRow = 4, startCol = 5)
@@ -369,7 +369,7 @@ showGridLines(wb, "KPI 3.2 HB Residence", showGridLines = FALSE)
 
 ## KPI 3.2 HB Surgery ----
 # notes
-writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_vv, 
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_vvr, 
           startRow = 4, startCol = 2)
 writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_wwr, 
           startRow = 4, startCol = 5)
@@ -401,7 +401,7 @@ addStyle(wb, sheet = "KPI 4.1", styles$black_11,
 if (season == "spring") {
   writeData(wb, sheet = "KPI 4.1", kpi_4_prov, 
             startRow = 18, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.1", style = styles$orange_11, 
+  addStyle(wb, sheet = "KPI 4.1", style = styles$black_11, 
            rows = 18, cols = 1)
 }
 # data
@@ -420,7 +420,7 @@ addStyle(wb, sheet = "KPI 4.2", styles$black_11,
 if (season == "spring") {
   writeData(wb, sheet = "KPI 4.2", kpi_4_prov, 
             startRow = 18, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.2", styles$orange_11, 
+  addStyle(wb, sheet = "KPI 4.2", styles$black_11, 
            rows = 18, cols = 1)
 }
 # data
@@ -436,7 +436,7 @@ showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_prov, 
             startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$orange_11, 
+  addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$black_11, 
            rows = 62, cols = 1)
 }
 # data
@@ -454,7 +454,7 @@ showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_prov, 
             startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$orange_11, 
+  addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$black_11, 
            rows = 62, cols = 1)
 }
 # data
@@ -547,10 +547,8 @@ addStyle(wb, sheet = "1-year mortality rates", styles$black_bold_nowrap_14,
          rows = 3, cols = 1)
 writeData(wb, sheet = "1-year mortality rates", mort_1_note, 
           startRow = 11, startCol = 1)
-if (season == "spring") {
-  writeData(wb, sheet = "1-year mortality rates", mort_1_prov,
-            startRow = 15, startCol = 1)
-}
+writeData(wb, sheet = "1-year mortality rates", mort_1_prov,
+          startRow = 15, startCol = 1)
 addStyle(wb, sheet = "1-year mortality rates", styles$black_11,
          rows = c(11, 15), cols = 1)
 # data
