@@ -458,13 +458,6 @@ table(kpi_3$kpi)
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme4.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
-
-# temp: renaming "financial_year" to "fin_year" to make below function work
-# AMc note: discuss with KH as to whether this can be changed permanently??
-# hist_db <- hist_db |> 
-#   rename(fin_year = financial_year)
-## AMc note: not required as have changed historical db names
-
 report_db <- kpi_3 |> 
   filter(financial_year %in% c(kpi_report_years)) |> 
   rename(fin_year = financial_year,

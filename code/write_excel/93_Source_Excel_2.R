@@ -168,9 +168,9 @@ rm(kpi_1.1_no_invite_before_66, kpi_1.1_invited_after_66, kpi_1.1_not_invited) #
 ### footnotes ----
 kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage, ",
                             "the equivalent percentages of men offered screening ",
-                            "before age 66 were {x}% (", year_uu, "/", 
-                            substr(year_vv, 3,4), ") and {x}% (", year_vv, "/",
-                            substr(year_ww, 3,4), ").")
+                            "before age 66 were {x}% (", year_vv, "/", 
+                            substr(year_ww, 3,4), ") and {x}% (", year_ww, "/",
+                            substr(year_xx, 3,4), ").")
 
 ## KPI 1.1 SIMD Notes ----
 # none
@@ -196,8 +196,8 @@ if (season == "autumn"){
 ### footnotes ----
 kpi_1.2a_add_note1 <- paste0("1. For the previous eligible cohort at this stage, ",
                              "the equivalent percentage of men tested before age ",
-                             "66 and 3 months was {x}% (", year_vv, "/", 
-                             substr(year_ww, 3, 4), ").")
+                             "66 and 3 months was {x}% (", year_ww, "/", 
+                             substr(year_xx, 3, 4), ").")
 
 kpi_1.2a_add_note2 <- paste0("2. Some individuals in this cohort have not reached age ",
                              "66 and 3 months yet. The oldest men in the cohort ",
@@ -214,7 +214,7 @@ kpi_1.2a_add_note2 <- paste0("2. Some individuals in this cohort have not reache
 ### footnotes ----
 kpi_1.2badd_foot <- paste0("1. The equivalent figure for the previous eligible ",
                            "cohort in Scotland at this stage was {x}% (", 
-                           year_vv, "/", substr(year_ww, 3, 4), ").")
+                           year_ww, "/", substr(year_xx, 3, 4), ").")
 
 ## KPI 1.3a Notes ----
 # none

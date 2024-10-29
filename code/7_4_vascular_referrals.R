@@ -160,7 +160,7 @@ table(vasc$result_size)
 # 01 - 957, 02 - 6, Mar 2023
 # 01 - 973, 02 - 6, Sep 2023
 # large - 1062, small - 6, Mar 2024
-# large - 1096, small - 6, Mar 2024
+# large - 1096, small - 6, Sep 2024
 
 table(vasc$result_outcome, vasc$result_size)
 
@@ -332,6 +332,7 @@ table(extract$surg_method, useNA = "ifany")
 # 296 EVAR (01), 335 open (02), Mar 2023
 # 328 EVAR (01), 372 open (02), Sep 2023
 # 369 EVAR (01), 401 open (02), Mar 2024
+# 377 EVAR (01), 410 open (02), Sep 2024
 
 ###
 check <- extract[extract$surg_method == "03",]
@@ -350,12 +351,12 @@ extract <- extract |>
 ## 16 (approp for surgery and died within 30 days)
 table(extract$result_outcome, extract$surg_method)
 
-#   Feb 2023  Sep 2023    Mar 2024 
-#     01  02    01  02    01  02
-# 15 294 328   326 364    366 391
-# 16   1   7     1   8    1  10
-# 17                      1   0
-# 20   1   0     1   0    1   0
+#   Feb 2023  Sep 2023    Mar 2024   Sep 2024
+#     01  02    01  02    01  02      01  02
+# 15 294 328   326 364    366 391    375  400
+# 16   1   7     1   8    1  10        1  10
+# 17                      1   0       
+# 20   1   0     1   0    1   0        1   0
 
 ## One record has result_outcome == 20 (other final outcome)
 check <- extract[extract$result_outcome == "20",]

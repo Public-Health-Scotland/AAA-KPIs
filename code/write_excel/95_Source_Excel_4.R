@@ -79,7 +79,7 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 3.1 ----
-screened_year_vvr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
+screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})
 screened_year_wwr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
 screened_year_xx <- eval_seasonal_diff(
   season,

@@ -425,9 +425,6 @@ sup_tab_6_cohort <- aaa_extract |>
 # they are being screened, and with AAA there are no repeat screenings other
 # than as part of surveillance. May be one to revisit
 
-### Next section taken directly from previous script 
-### 6_2_Supplementary_Surveillance
-
 ## Step 6: opt-out/non-response surveillance exclusions ----
 
 # filter if excluded from surveillance due to dna ('08') or has opted out ('02')
