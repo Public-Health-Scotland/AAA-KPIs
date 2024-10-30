@@ -379,7 +379,7 @@ note_toc <- paste0("The data for the year ending 31 March ", year_xx,
 
 source(here::here("code", "src", "Source_Excel_Styles.R"))
 
-### KPI 2 & QA ----
+### KPI 2 & additional ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- eval_seasonal_diff(
@@ -388,16 +388,20 @@ screened_year_xx <- eval_seasonal_diff(
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
   )
 
-kpi_2_notep <- paste0("p Screened 1 April ", year_ww, " to 28 February ",
-                        year_xx, ": provisional rates are presented for the ",
-                        "11-month period 1 April ", year_ww, " to 28 February ",
-                        year_xx, " as data are not yet available for the full ",
-                        "financial year ending 31 March ", year_xx, " from the ",
-                        "PHS extract at ", extract_date, " ", year_xx, ". Data ",
-                        "for the complete financial year ending 31 March ", year_xx,
-                        " will be produced from the PHS data extract at 1 ",
-                        "September ", year_xx, ".")
+kpi_2_notep <- paste0("p Screened in year ending 31 March ", year_xx, " (partial data): ",
+                      "provisional rates are presented for the 9-month period ",
+                      "1 April ", year_ww, " to 31 December ", year_ww, " as data are ",
+                      "not yet available for the full financial year ending 31 March ",
+                      year_xx, " from the PHS extract at ", extract_date, " ", year_xx,
+                      ". Screens between 1 January ", year_xx, " to 31 March ", year_xx,
+                      " were selected for the audit on 1 April ", year_xx, ". Data for ",
+                      "the complete financial year ending 31 March ", year_xx, " will be ",
+                      "produced from  the PHS data extract at 1 September ", year_xx, ".")
 
+kpi_2_add_note1 <- paste0("1. Selected for audit: the number of screen images selected for ",
+                          "inclusion in the quality assurance audit at ", extract_date, " ",
+                          year_xx, " (date of PHS extract). Data are collated by the date of ",
+                          "screening (i.e. when the image was taken).")
 
 ### Table 4 ----
 eligible_year_vv <- paste0("Eligible cohort: Turned 66 in year ending 31 March ", 
@@ -585,6 +589,16 @@ writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx,
           startRow = 25, startCol = 2)
 addStyle(wb, "KPI 2.2 Additional (A)", styles$black_border_centre_12,
          rows = 25, cols = 2:9, gridExpand = T)
+if(season == "spring") {
+  writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_notep,
+            startRow = 25, startCol = 11)
+  addStyle(wb, "KPI 2.2 Additional (A)", styles$black_11,
+           rows = 25, cols = 11)
+}
+writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_add_note1,
+          startRow = 29, startCol = 11)
+addStyle(wb, "KPI 2.2 Additional (A)", styles$black_11,
+         rows = 29, cols = 11)
 #data
 writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_2_add_a_top, 
           startRow = 8, colNames = FALSE)
@@ -623,6 +637,12 @@ writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx,
           startRow = 25, startCol = 2)
 addStyle(wb, "KPI 2.2 Additional (B)", styles$black_border_centre_12,
          rows = 25, cols = 2:14, gridExpand = T)
+if(season == "spring") {
+  writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_notep,
+            startRow = 26, startCol = 16)
+  addStyle(wb, "KPI 2.2 Additional (B)", styles$black_11,
+           rows = 26, cols = 16)
+}
 # data
 writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_2_add_b_top, 
           startRow = 8, colNames = FALSE)
