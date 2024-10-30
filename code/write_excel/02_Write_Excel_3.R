@@ -33,7 +33,7 @@ rm(list=ls())
 gc()
 
 ## Values
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, fy_list, hb_list,
     fy_tibble, hb_tibble, cutoff_date, end_current, end_date, start_date, 
@@ -377,7 +377,7 @@ note_toc <- paste0("The data for the year ending 31 March ", year_xx,
 
 ### Styles ----
 
-source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
+source(here::here("code", "src", "Source_Excel_Styles.R"))
 
 ### KPI 2 & QA ----
 screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)

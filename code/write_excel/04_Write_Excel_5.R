@@ -29,7 +29,7 @@ rm(list=ls())
 gc()
 
 
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, 
     fy_list, hb_list, fy_tibble, hb_tibble, kpi_report_years,
@@ -126,7 +126,7 @@ note_toc <- paste0(note_toc_add, "data for the year ending 31 March ",
 result_type <- eval_seasonal_diff(season, {"Management information -- provisional"}, {"Due for publication"})
 
 ### Styles ----
-source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
+source(here::here("code", "src", "Source_Excel_Styles.R"))
 
 ### Tables 1, 2, & 3 ----
 turn66_year_vv <- paste0("Turned 66 in year ending 31 March ", year_vv, '\n',

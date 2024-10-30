@@ -28,7 +28,7 @@ rm(list=ls())
 gc()
 
 ## Values
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path, fy_tibble, 
     hb_tibble, cutoff_date, end_current, end_date, start_date,
@@ -289,7 +289,7 @@ dna_exclude <- theme2_dna |>
 wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
 
-source(here::here(paste0("code/write_excel/93_Source_Excel_2.R")))
+source(here::here("code", "src", "Source_Excel_2.R"))
 
 ## Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, 

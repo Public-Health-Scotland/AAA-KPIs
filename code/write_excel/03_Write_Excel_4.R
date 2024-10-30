@@ -32,7 +32,7 @@ gc()
 
 
 ## Values
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path,
     fy_list, hb_list, fy_tibble, hb_tibble,
@@ -290,7 +290,7 @@ wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
                           season, ".xlsx"))
 
 ## Source notes script
-source(here::here(paste0("code/write_excel/95_Source_Excel_4.R")))
+source(here::here("code", "src", "Source_Excel_4.R"))
 
 rm(list=ls(pattern = "theme4_"))
 
