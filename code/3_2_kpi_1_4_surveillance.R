@@ -25,7 +25,7 @@ pacman::p_load(
   readr,
   tidylog,
   svDialogs,
-  phsaaa # to install: devtools::install_github("aoifem01/phsaaa")
+  phsaaa # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 )
 
 rm(list = ls())
@@ -54,6 +54,7 @@ aaa_exclusions %>% nrow()
 # 143,256 rows 2023/03
 # 153,558 rows 2023/09
 # 164,471 rows 2024/03
+# 175,119 rows 2024/09
 
 # organize data
 aaa_exclusions %<>%
@@ -92,6 +93,7 @@ aaa_extract %<>%
 # 551,027 rows 2023/03
 # 579,917 rows 2023/09
 # 609,774 rows 2024/03
+# 638,936 rows 2024/09
 
 ### 2.4: Create cohort of all of the screenings ----
 screened_cohort <- aaa_extract %>% 
@@ -132,7 +134,7 @@ check_dups <- annual_surveillance_cohort %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
-# 50, mixture of date ranges, though most are close together
+# 32, mixture of date ranges, though most are close together
 # KH: what columns are we actually checking here?
 
 # Remove those where the appointment is within less than six months
@@ -151,7 +153,7 @@ check_dups <- annual_surveillance_cohort %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
-# 10, look more reasonable
+# 2, look more reasonable
 # KH: not clear 
 
 # for Spring run, introduce date filter to allow enough follow-up time 
@@ -222,7 +224,7 @@ check_dups <- annual_surveillance_w_excl %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
-# 8 duplicates, look ok
+# 2 duplicates, look ok
 
 # Save annual surveillance cohort (only if needed for checking)
 # saveRDS(annual_surveillance_w_excl, paste0(temp_path, 
@@ -423,9 +425,6 @@ sup_tab_6_cohort <- aaa_extract |>
 # they are being screened, and with AAA there are no repeat screenings other
 # than as part of surveillance. May be one to revisit
 
-### Next section taken directly from previous script 
-### 6_2_Supplementary_Surveillance
-
 ## Step 6: opt-out/non-response surveillance exclusions ----
 
 # filter if excluded from surveillance due to dna ('08') or has opted out ('02')
@@ -439,6 +438,7 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 94 rows 2023/03
 # 97 rows 2023/09
 # 100 rows 2024/03
+# 109 rows 2024/09
 
 ## Step 7: Create KPI output ----
 ## KPI 1.4a
@@ -544,7 +544,8 @@ table(kpi_1_4$kpi, kpi_1_4$fin_year)
 
 # keep only new records for most recent complete year
 kpi_1_4 <- kpi_1_4 |>
-  filter(fin_year == kpi_report_years[3])
+  filter(fin_year == kpi_report_years[3]) |> 
+  mutate_all(~replace(., is.nan(.), NA)) # replacing NaNs
 
 
 ## add kpi 1.4 to the summary already created (includes most recent year's kpi 1.1-1.3)
@@ -562,4 +563,11 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 
 # Save KPI 1.4 a/b to theme 2 data block
-build_history(hist_db, kpi_1_4, "1.4")
+build_history(df_hist = hist_db, 
+              df_new = kpi_1_4, 
+              kpi_number = "1.4",
+              season_var = season,
+              fys_in_report = kpi_report_years,
+              list_of_fys = fy_list,
+              list_of_hbs = hb_list,
+              historical_path = hist_path)

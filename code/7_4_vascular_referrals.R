@@ -1,4 +1,4 @@
-###############################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 7_4_vascular_referrals.R
 # Calum Purdie & Karen Hotopp & Salomi Barkat
 # 16/02/2023
@@ -7,7 +7,7 @@
 #
 # Written/run on Posit Server
 # R version 4.1.2
-###############################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 ## Notes:
@@ -17,15 +17,16 @@
 # - AAA Repair Operations
 
 
-### 1: Housekeeping ----
+# 1: Housekeeping ----
 
 # Load packages
 library(dplyr)
 library(readr)
 library(janitor)
+library(tidyr)
 library(forcats)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 rm(list = ls())
 gc()
@@ -55,9 +56,11 @@ resout_list <- resout_list %>%
                                   result_outcome == "97" ~ "Total: non-final outcome",
                                   result_outcome == "96" ~ "Total: no outcome recorded"))
 
-#----------------------Table 7: Vascular Referrals-----------------------------#
 
-### 2: Data Extraction ----
+# Table 7 Vascular Referrals ----------------------------------------------
+
+
+## 2: Data Extraction ----
 # Keep where they were referred to vascular, had a large aneurysm, date_screen
 # is less than or equal to cut_off_date and result_outcome is not referred in 
 # error
@@ -88,7 +91,7 @@ aaa_extract <- aaa_extract %>%
     TRUE ~ "Other"))
 
 
-### 3: Create Vascular Referral Output ----
+## 3: Create Vascular Referral Output ----
 vascular_referral_count <- aaa_extract %>% 
   count(source_ref_to_vasc, year_screen) %>% 
   complete(source_ref_to_vasc, year_screen) |> 
@@ -113,19 +116,21 @@ vascular_referral_count <- vascular_referral_count %>%
   arrange(source_ref_to_vasc != "Total", source_ref_to_vasc) %>% 
   select(source_ref_to_vasc, starts_with(kpi_report_years[1]), 
          starts_with(kpi_report_years[2]), starts_with(kpi_report_years[3]), 
-         starts_with("Cumulative"))
+         starts_with("Cumulative")) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 
-### 4: Save Output ----
+## 4: Save Output ----
 query_write_rds(vascular_referral_count,
                         paste0(temp_path, "/4_5_vasc_referrals_", yymm, ".rds"))
 
 rm(vascular_referral_count, aaa_extract)
 
 
-#----------------------Vascular Referral Outcomes------------------------------#
+# Vascular Referral Outcomes ----------------------------------------------
 
-#### 5: Re-call in data ####
+
+## 5: Re-call in data ####
 vasc <- read_rds(extract_path) %>% 
   select(financial_year, upi, hbres, hb_screen, date_screen, 
          screen_result, largest_measure, aaa_size, 
@@ -143,6 +148,7 @@ table(vasc$screen_result)
 # 01 - 962, 02 - 01, Mar 2023
 # 01 - 978, 02 - 01, Sep 2023
 # 01 - 1067, 02 - 01 Mar 2024
+# 01 - 1101, 02 - 01 Sep 2024
 
 ## Who has negative screen_result?
 neg <- vasc[vasc$screen_result == "02",]
@@ -154,11 +160,13 @@ table(vasc$result_size)
 # 01 - 957, 02 - 6, Mar 2023
 # 01 - 973, 02 - 6, Sep 2023
 # large - 1062, small - 6, Mar 2024
+# large - 1096, small - 6, Sep 2024
 
 table(vasc$result_outcome, vasc$result_size)
 
 
-#### 6: Reformat data ####
+
+## 6: Reformat data ####
 # Divide result_outcome into 'referrals with a final outcome' and 'referrals 
 # with a non-final outcome' 
 vasc <- vasc |> 
@@ -179,8 +187,8 @@ table(vasc$result_outcome, useNA = "ifany")
 # Note: should include "01", "03":"20", though some values may not be 
 # represented in data; these are added in below using resout_list
 
-### Create annual (financial year) summaries by referral outcome ----
-## Size >= 5.5cm ----
+## Create annual (financial year) summaries by referral outcome ----
+### Size >= 5.5cm ----
 ## Referrals with final & non-final outcomes
 greater <- vasc %>% 
   filter(result_size == "large") %>% 
@@ -239,7 +247,7 @@ annual_great <- resout_list |>
   mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) |> 
   select(result_size, outcome_type, result_outcome, all_of(fy_list), cumulative)
 
-## Size < 5.5cm ----
+### Size < 5.5cm ----
 
 ## Referrals with final & non-final outcomes
 less <- vasc %>% 
@@ -301,7 +309,8 @@ annual_less <- resout_list |>
 
 
 ## Combine annual totals ----
-annual <- rbind(annual_great, annual_less)
+annual <- rbind(annual_great, annual_less) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 query_write_rds(annual, paste0(temp_path, "/4_6_vasc_outcomes_", yymm, ".rds"))
 
@@ -309,9 +318,9 @@ rm(greater, greater_grantot, greater_subtotal, annual_great, resout_list,
    less, less_grantot, less_subtotal, annual_less, annual, vasc, fy_list)
 
 
-#---------------------------AAA Repair Operations------------------------------#
+# AAA Repair Operations ---------------------------------------------------
 
-#### 7: Re-call and format Data ####
+## 7: Re-call and format Data ####
 extract <- read_rds(extract_path) %>% 
   select(hbres, aaa_size, date_referral_true, result_outcome,
          date_surgery, hb_surgery, fy_surgery, surg_method) |> 
@@ -323,6 +332,7 @@ table(extract$surg_method, useNA = "ifany")
 # 296 EVAR (01), 335 open (02), Mar 2023
 # 328 EVAR (01), 372 open (02), Sep 2023
 # 369 EVAR (01), 401 open (02), Mar 2024
+# 377 EVAR (01), 410 open (02), Sep 2024
 
 ###
 check <- extract[extract$surg_method == "03",]
@@ -341,12 +351,12 @@ extract <- extract |>
 ## 16 (approp for surgery and died within 30 days)
 table(extract$result_outcome, extract$surg_method)
 
-#   Feb 2023  Sep 2023    Mar 2024 
-#     01  02    01  02    01  02
-# 15 294 328   326 364    366 391
-# 16   1   7     1   8    1  10
-# 17                      1   0
-# 20   1   0     1   0    1   0
+#   Feb 2023  Sep 2023    Mar 2024   Sep 2024
+#     01  02    01  02    01  02      01  02
+# 15 294 328   326 364    366 391    375  400
+# 16   1   7     1   8    1  10        1  10
+# 17                      1   0       
+# 20   1   0     1   0    1   0        1   0
 
 ## One record has result_outcome == 20 (other final outcome)
 check <- extract[extract$result_outcome == "20",]
@@ -376,7 +386,7 @@ View(check)
 rm(check)
 
 
-#### 8: Create Tables ####
+## 8: Create Tables ####
 ## These tables are used by HBs to look which type of surgical method was used 
 # to treat their patients, not identify which HBs use each type of surgery. 
 # Therefore, hbres is used instead of hb_surgery to create tables
@@ -423,13 +433,14 @@ rm(method_scot, repair_scot)
 ## Combine to create table of surgery types and total surgeries by hbres
 ## Historical surgeries data ---
 repairs_all <- rbind(method, repair) %>% 
+  mutate(across(where(is.numeric), \(x) replace_na(x, 0))) |> 
   mutate(surg_method = case_when(surg_method == "01" ~ "EVAR",
                                  surg_method == "02" ~ "Open",
                                  surg_method == "99" ~ "Total AAA repairs"),
          surg_method = fct_relevel(surg_method, c("Open", "EVAR",
                                                   "Total AAA repairs"))) %>% 
   arrange(fy_surgery, surg_method) %>% 
-  glimpse()
+  glimpse() 
 
 ## Should this be written out? And rewritten each year as a new historical file?
 repairs_hist <- hb_tibble |> 
@@ -448,6 +459,7 @@ repairs_cum <- repairs_all %>%
   mutate(fy_surgery = "Cumulative", .after = hbres)
 
 repairs_current <- add_new_rows(
-  repairs_current, repairs_cum, fy_surgery, surg_method)
+  repairs_current, repairs_cum, fy_surgery, surg_method) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 query_write_rds(repairs_current, paste0(temp_path, "/4_7_vasc_ref_repairs_", yymm, ".rds"))

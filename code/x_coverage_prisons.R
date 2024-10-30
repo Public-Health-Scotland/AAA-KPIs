@@ -24,7 +24,7 @@ library(lubridate)
 library(janitor)
 library(openxlsx)
 library(tidylog)
-
+library(phsaaa)
 
 rm(list = ls())
 gc()
@@ -32,24 +32,31 @@ gc()
 
 source(here::here("code/0_housekeeping.R"))
 
-rm(cutoff_date, hb_list, financial_year_due, hist_path, simd_path,
-   year1, year1_end, year1_start, year2, year2_end, year2_start)
+rm(cutoff_date, hb_list, hist_path, simd_path,
+   year1, year1_start, year2, year2_end, year2_start)
 
 financial_year <- kpi_report_years[3]
 
-cutoff_date <- "31-03-1957"
+cutoff_date <- year1_end ## AMc note: this date not verified, was 31-03-1957 when came to do 202409 autumn run
+
+rm(year1_end)
 
 # date of GP history extract
 # used to create valid_to date for queries (not sure what queries)
-date_valid_to <- "15-11-2023"
+date_valid_to <- "02-10-2024"
 
-fy_start <- "01-04-2022"
-fy_end <- "31-03-2023"
+fy_start <- start_date
+fy_end <- end_date
+
+rm(start_date, end_date)
 
 
 ## Filepaths
-gp_history_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
-                          "GP_Practice_History_with_dob_selection.csv")
+gp_history_path_a <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+                          "GP_Practice_History_with_dob_selection_-_prior_to_1_4_1952.csv")
+
+gp_history_path_b <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm, "/data/",
+                            "GP_Practice_History_with_dob_selection_-_post_1_4_1952.csv")
 
 gp_lookup_path <- paste0("/conf/linkage/output/lookups/Unicode/",
                          "National Reference Files/gpprac.csv")
@@ -69,12 +76,24 @@ prev_gp_data_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm - 100,
 # Use the variables valid_from and valid_to to identify length of registration 
 # with prison practice code.
 
-gp_history <- read.csv(gp_history_path) |>
+# pre-1952 birthdays GP history
+gp_history_a <- read_csv(gp_history_path_a) |> 
   rename(upi = Upinumber,
-         hb_residence = Area.of.Residence,
-         practice_code = Practice.Code,
-         valid_from = Valid.from,
-         valid_to = Valid.to) |> 
+         hb_residence = `Area of Residence`,
+         practice_code = `Practice Code`,
+         valid_from = `Valid from`,
+         valid_to = `Valid to`)
+
+# post-1952 birthdays GP history
+gp_history_b <- read_csv(gp_history_path_b) |> 
+  rename(upi = Upinumber,
+         hb_residence = `Area of Residence`,
+         practice_code = `Practice Code`,
+         valid_from = `Valid from`,
+         valid_to = `Valid to`)
+
+# full extract
+gp_history <- bind_rows(gp_history_a, gp_history_b) |> 
   filter(practice_code == "N3139") |>
   mutate(upi = as.character(upi),
          upi = chi_pad(upi)) |> 
@@ -86,6 +105,8 @@ gp_history <- read.csv(gp_history_path) |>
 
 # Check that all CHI are valid
 chi_check(gp_history$upi)
+
+rm(gp_history_a, gp_history_b) # tidy env
 
 
 # Re-code valid_to to allow "status" queries
@@ -138,7 +159,7 @@ practice_history <- practice_history |>
 #read in invite and uptake rates file created for recent QPMG report (this file is one record
 #per UPI with the date of their first invite and the scrn_date they were first 'tested')
 #men_screened <- 
-invite_uptake <- read_rds(paste0(temp_path, "/2_coverage_basefile.rds"))
+invite_uptake <- read_rds(paste0(temp_path, "/1_2_coverage_basefile.rds"))
 
 
 #join men screened file with men who were registered with prison practice
@@ -165,7 +186,7 @@ joined <- joined |>
 ###
 ## Check eligibility
 table(joined$dob_eligibility, useNA = "ifany")
-# Small number of men (4) with no dob_eligibility 
+# Small number of men (15) with no dob_eligibility 
 # Need to check against exclusions extract
 
 check <- joined[is.na(joined$dob_eligibility),]
@@ -178,8 +199,8 @@ exclusion_upi <- exclusion |>
   filter(upi %in% check_upi)
 
 table(exclusion_upi$upi)
-# All 4 UPIs appear on exclusions list (and still open)
-rm(check, check_upi, exclusion_path, exclusion, exclusion_upi)
+# All but 1 UPI appear on exclusions list (and still open)
+rm(check, check_upi, exclusions_path, exclusion, exclusion_upi)
 ###
 
 joined <- joined |> 

@@ -17,7 +17,7 @@ library(readr)
 library(janitor)
 library(phsmethods)
 library(tidylog)
-library(phsaaa) # to install: devtools::install_github("aoifem01/phsaaa")
+library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
 rm(list = ls())
@@ -359,7 +359,8 @@ table_5 <- bind_rows(individual_years, all_years) |>
 
 ### 9 Combine and Save ----
 # Combine tables
-theme5_tables <- bind_rows(table_1, table_2, table_3, table_5)
+theme5_tables <- bind_rows(table_1, table_2, table_3, table_5) |> 
+  mutate_all(~replace(., is.nan(.), NA))
 
 # Save
 query_write_rds(theme5_tables, paste0(temp_path, "/5_1_results_tables_", yymm, ".rds"))

@@ -109,7 +109,7 @@ rm(note_toc_data)
 ## KPI 1.1 notes ----
 ### headers ----
 kpi_1.1_head_mgmt <- paste0("Offered screening before ", extract_date, " ", 
-                            year_xx, " includes men offered screening after",
+                            year_xx, " (includes men offered screening after",
                             " 66th birthday)")
 
 ### footnotes ----
@@ -133,7 +133,8 @@ invited_before_66 <- kpi_1.1 %>%
   select(contains(kpi_report_years[3]) & contains("KPI 1.1_offer_n")) %>% 
   pull()
 
-kpi_1.1_no_invite_before_66 <- cohort_n - invited_before_66
+kpi_1.1_no_invite_before_66 <- (cohort_n - invited_before_66) |> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 # calculated number of men invited after age of 66
 invited_any_age <- kpi_1.1 %>% 
@@ -141,10 +142,12 @@ invited_any_age <- kpi_1.1 %>%
   select(contains(kpi_report_years[3]) & contains("Sept coverage_offer_n")) %>% 
   pull()
 
-kpi_1.1_invited_after_66 <- invited_any_age - invited_before_66
+kpi_1.1_invited_after_66 <- (invited_any_age - invited_before_66) |> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 # calculated number of men not invited despite eligible
-kpi_1.1_not_invited <- cohort_n - invited_any_age
+kpi_1.1_not_invited <- (cohort_n - invited_any_age) |> 
+  prettyNum(big.mark=",", preserve.width="none")
 
 rm(cohort_n, invited_before_66, invited_any_age) # tidy environment
 

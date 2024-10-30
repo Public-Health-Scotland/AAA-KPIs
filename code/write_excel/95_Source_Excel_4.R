@@ -79,7 +79,7 @@ note_toc <- paste0(note_toc_data, "data for the year ending 31 March ",
 rm(note_toc_data)
 
 ## KPI 3.1 ----
-screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
+screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})
 screened_year_wwr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
 screened_year_xx <- eval_seasonal_diff(
   season,
@@ -146,9 +146,8 @@ kpi_4_prov <- paste0("p  Provisional. Data for ", year_ww, "/", substr(year_xx, 
                      " are for the 11-month period 1 April ", year_ww, " to 28 ",
                      "February ", year_xx, ". The vascular referral data recorded ",
                      "for this period are incomplete at this stage. At ", extract_date,
-                     " ", year_xx, " (date of data extraction), around a third ",
-                     "of all vascular referrals in the 11-month period had no ",
-                     "vascular outcome data recorded.")
+                     " ", year_xx, " (date of data extraction), a proportion of vascular ",
+                     "referrals in the 11-month period will have no vascular outcome data recorded.")
 
 ## KPI 4.2 ----
 kpi_4_2_note <- paste0("1. Due to small numbers, data are reported for five-year ", 
@@ -211,12 +210,7 @@ mort_135_prov <- paste0("p Provisional. The number and percentage of deaths ",
   
 
 ## 1-year mortality rates ----
-operations_title <- eval_seasonal_diff(
-  season,
-  {paste0("Operations in five-year period ", 
-          kpi_4_1yr_tail$financial_year, {supsc('p')})}, # spring
-  {paste0("Operations in five-year period ", kpi_4_1yr_tail$financial_year)} # autumn
-)
+operations_title <- paste0("Operations in five-year period ", kpi_4_1yr_tail$financial_year, {supsc('p')})
 
 mort_1_note <- paste0("1. Five-year total: Due to small numbers, data are reported ", 
                       "for five-year rolling periods and are presented at Scotland ",
