@@ -384,11 +384,21 @@ screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 screened_year_xx <- eval_seasonal_diff(
   season,
-  {paste0("Screened in year ending 31 March ", year_xx, " (partial data)")}, # spring
+  {paste0("Screened in year ending 31 March ", year_xx, " (partial data)", {supsc('p')})}, # spring
   { paste0("Screened in year ending 31 March ", year_xx) } # autumn
   )
 
-kpi_2_notep <- paste0("p Screened in year ending 31 March ", year_xx, " (partial data): ",
+kpi_2.1_notep <- paste0("p Screened in year ending 31 March ", year_xx, " (partial data):",
+                        " provisional rates are presented for the ",
+                        "11-month period 1 April ", year_ww, " to 28 February ",
+                        year_xx, " as data are not yet available for the full ",
+                        "financial year ending 31 March ", year_xx, " from the ",
+                        "PHS extract at ", extract_date, " ", year_xx, ". Data ",
+                        "for the complete financial year ending 31 March ", year_xx,
+                        " will be produced from the PHS data extract at 1 ",
+                        "September ", year_xx, ".")
+
+kpi_2.2_notep <- paste0("p Screened in year ending 31 March ", year_xx, " (partial data): ",
                       "provisional rates are presented for the 9-month period ",
                       "1 April ", year_ww, " to 31 December ", year_ww, " as data are ",
                       "not yet available for the full financial year ending 31 March ",
@@ -398,7 +408,7 @@ kpi_2_notep <- paste0("p Screened in year ending 31 March ", year_xx, " (partial
                       "the complete financial year ending 31 March ", year_xx, " will be ",
                       "produced from  the PHS data extract at 1 September ", year_xx, ".")
 
-kpi_2_add_note1 <- paste0("1. Selected for audit: the number of screen images selected for ",
+kpi_2.2_add_note1 <- paste0("1. Selected for audit: the number of screen images selected for ",
                           "inclusion in the quality assurance audit at ", extract_date, " ",
                           year_xx, " (date of PHS extract). Data are collated by the date of ",
                           "screening (i.e. when the image was taken).")
@@ -505,7 +515,7 @@ writeData(wb, sheet = "KPI 2.1a", screened_year_xx,
 addStyle(wb, "KPI 2.1a", styles$black_border_centre_12, 
          rows = 4, cols = 2:10, gridExpand = TRUE)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 2.1a", kpi_2_notep, 
+  writeData(wb, sheet = "KPI 2.1a", kpi_2.1_notep, 
             startRow = 30)
   addStyle(wb, "KPI 2.1a", styles$black_11,
            rows = 30, cols = 1)
@@ -526,7 +536,7 @@ writeData(wb, sheet = "KPI 2.1b", screened_year_xx,
 addStyle(wb, "KPI 2.1b", styles$black_border_centre_12, 
          rows = 4, cols = 2:10, gridExpand = TRUE)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 2.1b", kpi_2_notep, 
+  writeData(wb, sheet = "KPI 2.1b", kpi_2.1_notep, 
             startRow = 30)
   addStyle(wb, "KPI 2.1b", styles$black_11,
            rows = 30, cols = 1)
@@ -546,7 +556,7 @@ writeData(wb, sheet = "KPI 2.1b by SIMD", screened_year_xx,
 addStyle(wb, "KPI 2.1b by SIMD", styles$black_border_centre_12,
          rows = 4, cols = 3:11, gridExpand = TRUE)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2_notep,
+  writeData(wb, sheet = "KPI 2.1b by SIMD", kpi_2.1_notep,
             startRow = 119)
   addStyle(wb, "KPI 2.1b by SIMD", styles$black_11,
            rows = 119, cols = 1)
@@ -567,7 +577,7 @@ writeData(wb, sheet = "KPI 2.2", screened_year_xx,
 addStyle(wb, "KPI 2.2", styles$black_border_centre_12,
          rows = 4, cols = 2:10, gridExpand = T)
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 2.2", kpi_2_notep,
+  writeData(wb, sheet = "KPI 2.2", kpi_2.2_notep,
             startRow = 30)
   addStyle(wb, "KPI 2.2", styles$black_11,
            rows = 30, cols = 1)
@@ -590,12 +600,12 @@ writeData(wb, sheet = "KPI 2.2 Additional (A)", screened_year_xx,
 addStyle(wb, "KPI 2.2 Additional (A)", styles$black_border_centre_12,
          rows = 25, cols = 2:9, gridExpand = T)
 if(season == "spring") {
-  writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_notep,
+  writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2.2_notep,
             startRow = 25, startCol = 11)
   addStyle(wb, "KPI 2.2 Additional (A)", styles$black_11,
            rows = 25, cols = 11)
 }
-writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2_add_note1,
+writeData(wb, sheet = "KPI 2.2 Additional (A)", kpi_2.2_add_note1,
           startRow = 29, startCol = 11)
 addStyle(wb, "KPI 2.2 Additional (A)", styles$black_11,
          rows = 29, cols = 11)
@@ -618,6 +628,12 @@ writeData(wb, sheet = "4) Eligible no final result", self_ref_year_xx,
           startRow = 24, startCol = 9)
 addStyle(wb, "4) Eligible no final result", styles$black_border_centre_12,
          rows = c(4, 24), cols = 2:15, gridExpand = T)
+if (season == "spring") {
+  writeData(wb, sheet = "4) Eligible no final result", kpi_2.1_notep,
+            startRow = 45)
+  addStyle(wb, "4) Eligible no final result", styles$black_11,
+           rows = 45, cols = 1)
+}
 #data
 writeData(wb, sheet = "4) Eligible no final result", table_4_top, 
           startRow = 8, colNames = FALSE)
@@ -638,7 +654,7 @@ writeData(wb, sheet = "KPI 2.2 Additional (B)", screened_year_xx,
 addStyle(wb, "KPI 2.2 Additional (B)", styles$black_border_centre_12,
          rows = 25, cols = 2:14, gridExpand = T)
 if(season == "spring") {
-  writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2_notep,
+  writeData(wb, sheet = "KPI 2.2 Additional (B)", kpi_2.2_notep,
             startRow = 26, startCol = 16)
   addStyle(wb, "KPI 2.2 Additional (B)", styles$black_11,
            rows = 26, cols = 16)
@@ -662,6 +678,12 @@ writeData(wb, sheet = "QA standard not met reason", screened_year_xx,
           startRow = 25, startCol = 2)
 addStyle(wb, "QA standard not met reason", styles$black_border_centre_12,
          rows = 25, cols = 2:10, gridExpand = T)
+if (season == "spring") {
+  writeData(wb, sheet = "QA standard not met reason", kpi_2.2_notep,
+            startRow = 26, startCol = 12)
+  addStyle(wb, "QA standard not met reason", styles$black_11,
+           rows = 26, cols = 12)
+}
 # data
 writeData(wb, sheet = "QA standard not met reason", qa_reason_top, 
           startRow = 8, colNames = FALSE)
@@ -693,12 +715,18 @@ addStyle(wb, "QA standard not met detail", styles$black_border_centre_12,
          rows = c(4, 7),  cols = 2:7, gridExpand = T, stack = T)
 addStyle(wb,"QA standard not met detail", createStyle(fgFill = "#F2DCDB"),
          rows = 4, cols = 2:7, gridExpand = T, stack = T)
+if (season == "spring") {
+  writeData(wb, sheet = "QA standard not met detail", kpi_2.2_notep,
+            startRow = 30, startCol = 1)
+  addStyle(wb, "QA standard not met detail", styles$black_11,
+           rows = 30, cols = 1)
+}
 #writeData(wb, sheet = "QA standard not met detail", qa_detail_note1, startRow = 30)
 #writeData(wb, sheet = "QA standard not met detail", qa_detail_note2, startRow = 31)
 writeData(wb, sheet = "QA standard not met detail", qa_detail_note3, 
-          startRow = 32)
+          startRow = 33)
 addStyle(wb,"QA standard not met detail", styles$black_11,
-         rows = 32, cols = 1)
+         rows = 33, cols = 1)
 #data
 writeData(wb, sheet = "QA standard not met detail", qa_detail, 
           startRow = 9, startCol = 2, colNames = FALSE)
@@ -730,6 +758,12 @@ writeData(wb, sheet = "Batch QA standard not met", screened_year_xx,
           startRow = 25, startCol = 14)
 addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
          rows = 25, cols = 2:19)
+if (season == "spring") {
+  writeData(wb, sheet = "Batch QA standard not met", kpi_2.2_notep,
+            startRow = 32, startCol = 1)
+  addStyle(wb, "Batch QA standard not met", styles$black_11,
+           rows = 32, cols = 1)
+}
 # data
 writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, 
           startRow = 7, colNames = FALSE)
