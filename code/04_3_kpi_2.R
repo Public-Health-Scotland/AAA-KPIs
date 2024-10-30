@@ -289,6 +289,13 @@ extract_audit <- extract %>%
          no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
                                           is.na(audit_outcome) ~ 0, TRUE ~ 0))
 
+# below is a legacy filter based on headers in Spring Excel templates from before Autumn '23 (i.e. reported dates were 1 April - 31 Dec)
+eval_seasonal_diff(season,
+                   {extract_audit <- extract_audit |> 
+                     filter(date_screen <= dmy(paste0("31-12-"), substr(kpi_report_years[3], 1, 4)))}, # spring
+                   {"No additional filter required"} # autumn
+                   )
+
 kpi_2_2 <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%
   summarise(audit_n = sum(audit_n),
