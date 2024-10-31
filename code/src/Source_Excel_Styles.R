@@ -104,3 +104,16 @@ styles$rolling_font <- createStyle(fontSize = 12, fontName = "Arial",
                                    textDecoration = "bold", fontColour = "#000000",
                                    wrapText = TRUE, border = c("top", "bottom", "left", "right"),
                             borderStyle = "medium", halign = "center", valign = "center")
+
+# general styles ----------------------------------------------------------
+
+### borders
+styles$b_left <- createStyle(border = "left")
+styles$b_top <- createStyle(border = "top")
+styles$b_left_bold <- createStyle(border = "left", borderStyle = "medium")
+styles$b_top_bold <- createStyle(border = "top", borderStyle = "medium")
+### aligning
+styles$a_middle <- createStyle(valign = "center")
+styles$a_right <- createStyle(halign = "right")
+styles$a_centre <- createStyle(halign = "center")
+

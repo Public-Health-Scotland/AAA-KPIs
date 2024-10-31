@@ -17,6 +17,7 @@ library(common)
 write_dna_exclusions <- function(workbook, sheet_name, season_var, data, provisional_note) {
   
 
+
 # notes and styles --------------------------------------------------------
   ## text for writing in
   text <- list()
@@ -27,19 +28,8 @@ write_dna_exclusions <- function(workbook, sheet_name, season_var, data, provisi
     text$final_header <- paste0(colnames(data)[max(ncol(data))], " (provisional data)", {supsc("p")})
   }
   
-  ## styles
-  styles <- list()
-  ### text
-  styles$body <- createStyle(fontSize = 12, fontName = "Arial", wrapText = T)
-  styles$subhead <- createStyle(fontSize = 12, fontName = "Arial", textDecoration = "bold", wrapText = F)
-  ### borders
-  styles$b_left <- createStyle(border = "left")
-  styles$b_left_bold <- createStyle(border = "left", borderStyle = "medium")
-  styles$b_top_bold <- createStyle(border = "top", borderStyle = "medium")
-  ### aligning
-  styles$a_middle <- createStyle(valign = "center")
-  styles$a_right <- createStyle(halign = "right")
-  styles$a_centre <- createStyle(halign = "center")
+  # source styles
+  source(here::here("code", "src", "Source_Excel_Styles.R"))
   
 # formatting cells --------------------------------------------------------
 
@@ -79,9 +69,9 @@ write_dna_exclusions <- function(workbook, sheet_name, season_var, data, provisi
 # adding styles -----------------------------------------------------------
 
   # text styles
-  addStyle(workbook, sheet_name, styles$subhead,
+  addStyle(workbook, sheet_name, styles$black_bold_nowrap_12,
            rows = 4, cols = 1:(ncol(data)), gridExpand = T, stack = T) # subheader
-  addStyle(workbook, sheet_name, styles$body, 
+  addStyle(workbook, sheet_name, styles$black_12, 
            rows = c(4:8, 10), cols = 1:(ncol(data)), gridExpand = T, stack = T) # body
   
   # alignment
