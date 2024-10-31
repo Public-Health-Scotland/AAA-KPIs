@@ -273,7 +273,7 @@ dna_exclude <- theme2_dna |>
   filter(fin_year %in% c(fy_list)) |> 
   # remove the last two numbers and / from the financial year
   mutate(year = str_remove(fin_year, "[:digit:][:digit:][:punct:]")) |>
-  select(pat_inelig, year, count) |>
+  select(`Exclusion type` = pat_inelig, year, count) |>
   # match Excel output
   pivot_wider(names_from = year, values_from = count)
 
@@ -290,6 +290,7 @@ wb <- loadWorkbook(paste0(template_path, "/2_Invitation and Attendance_",
                           season, ".xlsx"))
 
 source(here::here("code", "src", "Source_Excel_2.R"))
+source(here::here("code", "src", "Source_Excel_functions.R"))
 
 ## Table of Contents ----
 writeData(wb, sheet = "Table of Contents", pub_year, 
@@ -758,17 +759,8 @@ showGridLines(wb, "6) Surveillance", showGridLines = FALSE)
 
 
 ## DNA Exclusions ----
-# notes
-if (season == "spring") {
-  writeData(wb, sheet = "DNA Exclusions", dna_note1,
-            startRow = 10, colNames = FALSE)
-  addStyle(wb, "DNA Exclusions", styles$black_11,
-           rows = 10, cols = 1)
-}
-# data
-writeData(wb, sheet = "DNA Exclusions", dna_exclude,
-          startRow = 6, colNames = FALSE)
-showGridLines(wb, "DNA Exclusions", showGridLines = FALSE)
+write_dna_exclusions(wb, "DNA Exclusions", season,
+                     data = dna_exclude, provisional_note = dna_note1)
 
 ## Prisons ----
 # if (season == "autumn") {

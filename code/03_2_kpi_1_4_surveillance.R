@@ -521,7 +521,7 @@ dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
   mutate(pat_inelig = as.factor(case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
-                                pat_inelig == "08" ~ "Non Responder Surveillance")),
+                                pat_inelig == "08" ~ "Non-responder Surveillance")),
          kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
   select(kpi, fin_year = financial_year, pat_inelig, count) |> 
