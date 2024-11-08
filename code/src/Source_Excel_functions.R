@@ -101,11 +101,6 @@ write_dna_exclusions <- function(workbook, sheet_name, season_var, data, provisi
 
 # Batch QA ----------------------------------------------------------------
 
-
-
-
-
-
 # Write Batch QA standard not met screens excel sheet for theme 3 workbook (sheet and headers already in template)
 write_batch_qa <- function(workbook, sheet_name, season_var, financial_years, data_scot, data_reason, data_recall, provisional_note) {
 
@@ -237,16 +232,93 @@ write_batch_qa <- function(workbook, sheet_name, season_var, financial_years, da
 
 # adding styles -----------------------------------------------------------
 
-  
+  # text styles
+  ## headers
+  addStyle(workbook, sheet_name, styles$black_bold_nowrap_14,
+           rows = c(ref$scot_head, ref$reason_head, ref$recall_head), cols = c(1, 1, 1), gridExpand = T, stack = T) # headers
+  ## scotland table
+  addStyle(workbook, sheet_name, styles$black_11,
+           rows = (ref$scot_head+1):(ref$scot_head+7), cols = 1:(ncol(data_scot)+1), gridExpand = T, stack = T) # body
+  addStyle(workbook, sheet_name, styles$black_bold_11,
+           rows = ref$scot_start+nrow(data_scot)-1, cols = 1:(ncol(data_scot)+1), gridExpand = T, stack = T) # total row
+  ## reason table
+  addStyle(workbook, sheet_name, styles$black_11,
+           rows = (ref$reason_head+1):(ref$reason_head+7), cols = 1:(ncol(data_reason)+1), gridExpand = T, stack = T) # body
+  addStyle(workbook, sheet_name, styles$black_bold_11,
+           rows = ref$reason_start+nrow(data_reason)-1, cols = 1:(ncol(data_reason)+1), gridExpand = T, stack = T) # total row
+  ## recall table
+  addStyle(workbook, sheet_name, styles$black_11,
+          rows = (ref$recall_head+1):(ref$recall_head+8), cols = 1:(ncol(data_recall)+1), gridExpand = T, stack = T) # body
+  addStyle(workbook, sheet_name, styles$black_bold_11,
+           rows = ref$recall_start+nrow(data_recall)-1, cols = 1:(ncol(data_recall)+1), gridExpand = T, stack = T) # total row
+  ## notes
+  addStyle(workbook, sheet_name, styles$black_bold_12,
+           rows = ref$notes_start, cols = 1, gridExpand = T, stack = T) # notes head
+  addStyle(workbook, sheet_name, styles$black_11,
+           rows = (ref$notes_start+1):(ref$notes_start+2), cols = 1, gridExpand = T, stack = T) # notes body
+  addStyle(workbook, sheet_name, styles$blue_nowrap_underline_11,
+           rows = ref$notes_start+6, cols = 1, gridExpand = T, stack = T) # return to contents
+
+  # alignment
+  ## scotland table
+  addStyle(workbook, sheet_name, styles$a_left,
+           rows = (ref$scot_head+1):(ref$scot_start+nrow(data_scot)-1), cols = 1, gridExpand = T, stack = T) # left align
+  addStyle(workbook, sheet_name, styles$a_centre,
+           rows = (ref$scot_head+1):(ref$scot_start+nrow(data_scot)-1), cols = 2:(ncol(data_scot)+1), gridExpand = T, stack = T) # centre halign
+  addStyle(workbook, sheet_name, styles$a_middle,
+           rows = (ref$scot_head+1):(ref$scot_start+nrow(data_scot)-1), cols = 2:(ncol(data_scot)+1), gridExpand = T, stack = T) # middle valign
+  ## reason table
+  addStyle(workbook, sheet_name, styles$a_left,
+           rows = (ref$reason_head+1):(ref$reason_start+nrow(data_reason)-1), cols = 1, gridExpand = T, stack = T) # left align
+  addStyle(workbook, sheet_name, styles$a_centre,
+           rows = (ref$reason_head+1):(ref$reason_start+nrow(data_reason)-1), cols = 2:(ncol(data_reason)+1), gridExpand = T, stack = T) # centre halign
+  addStyle(workbook, sheet_name, styles$a_middle,
+           rows = (ref$reason_head+1):(ref$reason_start+nrow(data_reason)-1), cols = 2:(ncol(data_reason)+1), gridExpand = T, stack = T) # middle valign
+  ## recall table
+  addStyle(workbook, sheet_name, styles$a_left,
+           rows = (ref$recall_head+1):(ref$recall_start+nrow(data_recall)-1), cols = 1, gridExpand = T, stack = T) # left align
+  addStyle(workbook, sheet_name, styles$a_centre,
+           rows = (ref$recall_head+1):(ref$recall_start+nrow(data_recall)-1), cols = 2:(ncol(data_recall)+1), gridExpand = T, stack = T) # centre halign
+  addStyle(workbook, sheet_name, styles$a_middle,
+           rows = (ref$recall_head+1):(ref$recall_start+nrow(data_recall)-1), cols = 2:(ncol(data_recall)+1), gridExpand = T, stack = T) # middle valign
+  ## notes
+  addStyle(workbook, sheet_name, styles$a_right,
+           rows = ref$source, cols = 17, gridExpand = T, stack = T) # right align source
+  addStyle(workbook, sheet_name, styles$a_left,
+           rows = ref$notes_start:(ref$notes_start + 6), cols = 1, gridExpand = T, stack = T) # left align
+
+  # borders
+  ## scotland table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = (ref$scot_head+1):(ref$scot_start+nrow(data_scot)-1),
+           cols = 1:(ncol(data_scot)+1), gridExpand = T, stack = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$scot_head+1, ref$scot_head+2, ref$scot_start, (ref$scot_start+nrow(data_scot))),
+           cols = 1:ncol(data_scot), gridExpand = T, stack = T) # top bold
+  ## reason table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = (ref$reason_head+1):(ref$reason_start+nrow(data_reason)-1),
+           cols = c(1, 2, 7, 12, ncol(data_reason)+1), gridExpand = T, stack = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = (ref$reason_head+3):(ref$reason_start+nrow(data_reason)-1),
+           cols = c(3:6, 8:11, 13:16), gridExpand = T, stack = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$reason_head+1, ref$reason_head+2, ref$reason_start, (ref$reason_start+nrow(data_reason))),
+           cols = 1:ncol(data_reason), gridExpand = T, stack = T) # top bold
+  addStyle(workbook, sheet_name, styles$b_top,
+           rows = c(ref$reason_head+3, ref$reason_head+4), 
+           cols = 1:ncol(data_reason), gridExpand = T, stack = T) # top
+  ## recall table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = (ref$recall_head+1):(ref$recall_start+nrow(data_recall)-1),
+           cols = c(1, 2, 8, 14, ncol(data_recall)+1), gridExpand = T, stack = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = (ref$recall_head+3):(ref$recall_start+nrow(data_recall)-1),
+           cols = c(3:7, 9:13, 15:19), gridExpand = T, stack = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$recall_head+1, ref$recall_head+2, ref$recall_start, (ref$recall_start+nrow(data_recall))),
+           cols = 1:ncol(data_recall), gridExpand = T, stack = T) # top bold
+  addStyle(workbook, sheet_name, styles$b_top,
+           rows = c(ref$recall_head+3, ref$recall_head+4), 
+           cols = 1:ncol(data_recall), gridExpand = T, stack = T) # top
 }
-
-
-
-season <- "spring"
-wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
-                          season, "_TEST.xlsx"))
-write_batch_qa(wb, "Batch QA standard not met", season, financial_years = kpi_report_years, 
-               qa_batch_scot, qa_batch_hb, qa_recall, kpi_2.2_notep)
-
-
-query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, "_TEST.xlsx"))
