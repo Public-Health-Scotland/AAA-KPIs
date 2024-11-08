@@ -733,45 +733,8 @@ writeData(wb, sheet = "QA standard not met detail", qa_detail,
 showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 
 ## Batch QA standard not met ----
-# notes
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
-          startRow = 5, startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
-          startRow = 5, startCol = 3)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
-          startRow = 5, startCol = 4)
-addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
-         rows = 5, cols = 2:4)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
-          startRow = 14, startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
-          startRow = 14, startCol = 7)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
-          startRow = 14, startCol = 12)
-addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
-         rows = 14, cols = 2:16)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_vv, 
-          startRow = 25, startCol = 2)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_ww, 
-          startRow = 25, startCol = 8)
-writeData(wb, sheet = "Batch QA standard not met", screened_year_xx, 
-          startRow = 25, startCol = 14)
-addStyle(wb, "Batch QA standard not met", styles$black_border_centre_12,
-         rows = 25, cols = 2:19)
-if (season == "spring") {
-  writeData(wb, sheet = "Batch QA standard not met", kpi_2.2_notep,
-            startRow = 32, startCol = 1)
-  addStyle(wb, "Batch QA standard not met", styles$black_11,
-           rows = 32, cols = 1)
-}
-# data
-writeData(wb, sheet = "Batch QA standard not met", qa_batch_scot, 
-          startRow = 7, colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_batch_hb, 
-          startRow = 18, colNames = FALSE)
-writeData(wb, sheet = "Batch QA standard not met", qa_recall, 
-          startRow = 29, colNames = FALSE)
-showGridLines(wb, "Batch QA standard not met", showGridLines = FALSE)
+write_batch_qa(wb, "Batch QA standard not met", season, kpi_report_years,
+               qa_batch_scot, qa_batch_hb, qa_recall, kpi_2.2_notep)
 
 ## KPI 2.1a device comparison ----
 # notes
