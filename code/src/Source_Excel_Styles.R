@@ -56,6 +56,9 @@ styles$black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Ari
                                            fontColour = "#000000", border = "TopBottomLeftRight",
                                            wrapText = TRUE, halign = "center", valign = "center",
                                            borderStyle = "thin")
+# bold black 11, wrapped
+styles$black_bold_11 <- createStyle(fontSize = 11, fontColour = "#000000", textDecoration = "bold",
+                                    fontName = "Arial", wrapText = TRUE)
 # black 11, wrapped
 styles$black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
@@ -83,6 +86,10 @@ styles$blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial"
                                                fontColour = "#0000FF", border = "TopBottomLeftRight",
                                                textDecoration = "underline", wrapText = TRUE, 
                                                 halign = "left", valign = "center")
+# blue 11 underlined, no wrap
+styles$blue_nowrap_underline_11 <- createStyle(fontSize = 11, fontName = "Arial",
+                                               fontColour = "#0000FF", textDecoration = "underline",
+                                               halign = "left", valign = "center")
     
 # summary header white font
 styles$white_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
@@ -116,4 +123,5 @@ styles$b_top_bold <- createStyle(border = "top", borderStyle = "medium")
 styles$a_middle <- createStyle(valign = "center")
 styles$a_right <- createStyle(halign = "right")
 styles$a_centre <- createStyle(halign = "center")
+styles$a_left <- createStyle(halign = "left")
 
