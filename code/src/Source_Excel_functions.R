@@ -347,12 +347,14 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   }
   texts$source <- "Source: Scottish AAA Call Recall System"
   texts$notes <- c("Notes", "1. Men may be treated in a different NHS Board to where they are screened; therefore, this KPI is calculated using NHS Board of surgery.",
-                   " ", " ", "-   Zero / Not applicable", " ", " ", "Return to Table of Contents")
+                   " ", " ", "-   Zero / Not applicable", " ", "Return to Table of Contents")
   texts$p_note <- provisional_note
   texts$head_A <- "Open Surgery"  ## table A
   texts$subhead_A <- tibble(x = c("Operations", "Died within 30 days"), y = c("N", "N"))
   texts$head_B <- "NHS Board of Screening"   ## table B
+  texts$names_B <- names(data_B)
   texts$head_C <- "NHS Board of Surgery"  ## table C
+  texts$names_C <- names(data_C)
   
   
   # source styles
@@ -365,11 +367,11 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   ref$start_A <- ref$head_A + 3 # data start A
   ref$src_A <- ref$start_A + nrow(data_A) # source A
   ref$head_B <- ref$src_A + 4 # header B
-  ref$start_B <- ref$head_B + 1 # data start B
-  ref$src_B <- ref$start_B + nrow(data_B) + 1 # source B
+  ref$start_B <- ref$head_B + 2 # data start B
+  ref$src_B <- ref$start_B + nrow(data_B)  # source B
   ref$head_C <- ref$src_B + 4 # header C
-  ref$start_C <- ref$head_C + 1 # data start C
-  ref$src_C <- ref$start_C + nrow(data_C) + 1 # source C
+  ref$start_C <- ref$head_C + 2 # data start C
+  ref$src_C <- ref$start_C + nrow(data_C)  # source C
   ref$notes_start <- ref$src_C + 2 # notes
   
   
@@ -377,27 +379,30 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   
   # merging
   mergeCells(workbook, sheet_name, rows = (ref$head_A):(ref$head_A + 2), cols = 1) # add A table
-  mergeCells(workbook, sheet_name, rows = ref$head_A , cols = 2:(ncol(data_A)-1))
-  mergeCells(workbook, sheet_name, rows = ref$src_A, cols = ncol(data_A):(ncol(data_A) + 1))
+  mergeCells(workbook, sheet_name, rows = ref$head_A , cols = 2:ncol(data_A))
+  mergeCells(workbook, sheet_name, rows = ref$src_A, cols = (ncol(data_A)-1):ncol(data_A))
   mergeCells(workbook, sheet_name, rows = (ref$head_B):(ref$head_B + 1), cols = 1) # add B table
-  mergeCells(workbook, sheet_name, rows = ref$head_B , cols = 2:(ncol(data_B)-1))
-  mergeCells(workbook, sheet_name, rows = ref$src_B, cols = ncol(data_B):(ncol(data_B) + 1)) 
+  mergeCells(workbook, sheet_name, rows = ref$head_B , cols = 2:ncol(data_B))
+  mergeCells(workbook, sheet_name, rows = ref$src_B, cols = (ncol(data_B)-1):ncol(data_B)) 
   mergeCells(workbook, sheet_name, rows = (ref$head_C):(ref$head_C + 1), cols = 1) # add C table
-  mergeCells(workbook, sheet_name, rows = ref$head_C, cols = 2:(ncol(data_C)-1))
-  mergeCells(workbook, sheet_name, rows = ref$src_C, cols = ncol(data_C):(ncol(data_C) + 1)) 
-  mergeCells(workbook, sheet_name, rows = ref$notes_start + 1, cols = 1:6) # notes
-  mergeCells(workbook, sheet_name, rows = ref$notes_start + 2, cols = 1:9)
+  mergeCells(workbook, sheet_name, rows = ref$head_C, cols = 2:ncol(data_C))
+  mergeCells(workbook, sheet_name, rows = ref$src_C, cols = (ncol(data_C)-1):ncol(data_C)) 
+  mergeCells(workbook, sheet_name, rows = ref$notes_start + 1, cols = 1:9) # notes
+  mergeCells(workbook, sheet_name, rows = ref$notes_start + 2, cols = 1:10)
   
   # col/row heights
   setColWidths(workbook, sheet_name, cols = 1, widths = 38)
   setColWidths(workbook, sheet_name, cols = 2:ncol(data_B), widths = 17.8)
   setRowHeights(workbook, sheet_name, rows = c((ref$head_A - 2), (ref$head_B - 2), (ref$head_C - 2)), heights = 23) # titles
   setRowHeights(workbook, sheet_name, rows = c(ref$head_A, ref$head_B, ref$head_C), heights = 19.3) # heads
-  setRowHeights(workbook, sheet_name, rows = c((ref$head_A + 1), (ref$head_B + 1), (ref$head_C + 1)), heights = 31.5) # subheads
+  setRowHeights(workbook, sheet_name, rows = c((ref$head_A + 1), (ref$head_B + 1), (ref$head_C + 1)), heights = 31.5, wrap = F) # subheads
   setRowHeights(workbook, sheet_name, rows = ref$head_A + 2, heights = 16) # subhead 2 add A
   setRowHeights(workbook, sheet_name, 
                 rows = c((ref$start_A:ref$src_A), (ref$start_B:ref$src_B), (ref$start_C:ref$src_C), (ref$notes_start:(ref$notes_start + 7))), 
                 heights = 15.5) # body of tables
+  if(season_var == "spring") {
+    setRowHeights(workbook, sheet_name, rows = ref$notes_start + 2, heights = 28.5)}
+  
   
   # gridlines
   showGridLines(workbook, sheet_name, showGridLines = F)
@@ -417,7 +422,7 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   writeData(workbook, sheet_name, texts$titles[1], startRow = ref$head_A -2)
   writeData(workbook, sheet_name, texts$year_op, startRow = ref$head_A, startCol = 1)
   writeData(workbook, sheet_name, texts$head_A, startRow = ref$head_A, startCol = 2)
-  writeData(workbook, sheet_name, t(texts$subhead_A), startRow = ref$head_A, startCol = 2, colNames = F)
+  writeData(workbook, sheet_name, t(texts$subhead_A), startRow = ref$head_A + 1, startCol = 2, colNames = F)
   writeData(workbook, sheet_name, data_A, startRow = ref$start_A, colNames = F)
   if(season_var == "spring") {
     writeData(workbook, sheet_name, texts$year_end, startRow = ref$src_A - 2, colNames = F)
@@ -426,10 +431,11 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   writeData(workbook, sheet_name, texts$source, startRow = ref$src_A, startCol = (ncol(data_A) - 1), colNames = F)
   
   # Add B table
-  writeData(workbook, sheet_name, texts$titles[1], startRow = ref$head_B -2)
+  writeData(workbook, sheet_name, texts$titles[2], startRow = ref$head_B -2)
   writeData(workbook, sheet_name, texts$year_op, startRow = ref$head_B, startCol = 1)
   writeData(workbook, sheet_name, texts$head_B, startRow = ref$head_B, startCol = 2)
-  writeData(workbook, sheet_name, data_B, startRow = ref$start_B, colNames = T)
+  writeData(workbook, sheet_name, t(texts$names_B), startRow = ref$head_B + 1, startCol = 1, colNames = F)
+  writeData(workbook, sheet_name, data_B, startRow = ref$start_B, colNames = F)
   if(season_var == "spring") {
     writeData(workbook, sheet_name, texts$year_end, startRow = ref$src_B - 2, colNames = F)
   }
@@ -437,31 +443,110 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   writeData(workbook, sheet_name, texts$source, startRow = ref$src_B, startCol = (ncol(data_B) - 1), colNames = F)
   
   # Add C table
-  writeData(workbook, sheet_name, texts$titles[1], startRow = ref$head_C -2)
+  writeData(workbook, sheet_name, texts$titles[3], startRow = ref$head_C -2)
   writeData(workbook, sheet_name, texts$year_op, startRow = ref$head_C, startCol = 1)
   writeData(workbook, sheet_name, texts$head_C, startRow = ref$head_C, startCol = 2)
-  writeData(workbook, sheet_name, data_C, startRow = ref$start_C, colNames = T)
+  writeData(workbook, sheet_name, t(texts$names_C), startRow = ref$head_C + 1, startCol = 1, colNames = F)
+  writeData(workbook, sheet_name, data_C, startRow = ref$start_C, colNames = F)
   if(season_var == "spring") {
     writeData(workbook, sheet_name, texts$year_end, startRow = ref$src_C - 2, colNames = F)
   }
   writeData(workbook, sheet_name, texts$cumulative, startRow = ref$src_C - 1, colNames = F)
   writeData(workbook, sheet_name, texts$source, startRow = ref$src_C, startCol = (ncol(data_C) - 1), colNames = F)
   
+  # Notes
+  writeData(workbook, sheet_name, texts$notes, startRow = ref$notes_start, colNames = F)
+  if(season_var == "spring") {
+    writeData(workbook, sheet_name, texts$p_note, startRow = ref$notes_start + 2, colNames = F)
+  }
+  
   # adding styles -----------------------------------------------------------
   
   # texts styles
+  ## titles
+  addStyle(workbook, sheet_name, styles$black_bold_18, 
+           rows = c(ref$head_A - 2, ref$head_B - 2, ref$head_C - 2), cols = 1, stack = T, gridExpand = T)
+  # add A table
+  addStyle(workbook, sheet_name, styles$black_12, 
+           rows = (ref$head_A):(ref$src_A - 1), cols = 1:ncol(data_A), stack = T, gridExpand = T)
+  addStyle(workbook, sheet_name, styles$black_nowrap_11, 
+           rows = ref$src_A, cols = (ncol(data_A) - 1), stack = T, gridExpand = T)
+  ## add B table
+  addStyle(workbook, sheet_name, styles$black_12, 
+           rows = (ref$head_B):(ref$src_B - 1), cols = 1:ncol(data_B), stack = T, gridExpand = T) 
+  addStyle(workbook, sheet_name, styles$black_nowrap_11, 
+           rows = ref$src_B, cols = (ncol(data_B) - 1), stack = T, gridExpand = T)
+  ## add C table
+  addStyle(workbook, sheet_name, styles$black_12, 
+           rows = (ref$head_C):(ref$src_C - 1), cols = 1:ncol(data_C), stack = T, gridExpand = T) 
+  addStyle(workbook, sheet_name, styles$black_nowrap_11, 
+           rows = ref$src_C, cols = (ncol(data_C) - 1), stack = T, gridExpand = T)
+  ## notes
+  addStyle(workbook, sheet_name, styles$black_bold_nowrap_12, 
+           rows = ref$notes_start, cols = 1, stack = T, gridExpand = T) 
+  addStyle(workbook, sheet_name, styles$black_12,
+           rows = (ref$notes_start + 1):(ref$notes_start + 4), cols = 1, stack = T, gridExpand = T)
+  addStyle(workbook, sheet_name, styles$blue_nowrap_underline_11,
+           rows = ref$notes_start + 6, cols = 1, stack = T, gridExpand = T)
   
   # alignment
+  ## add A table
+  addStyle(workbook, sheet_name, styles$a_middle, 
+           rows = ref$head_A:ref$src_A, cols = 2:ncol(data_A), stack = T, gridExpand = T) # v middle
+  addStyle(workbook, sheet_name, styles$a_centre, 
+           rows = ref$head_A:(ref$src_A - 1), cols = 2:ncol(data_A), stack = T, gridExpand = T) # h centre
+  addStyle(workbook, sheet_name, styles$a_right,
+           rows = ref$src_A, cols = (ncol(data_A) - 1), stack = T, gridExpand = T) # h right
+  ## add B table
+  addStyle(workbook, sheet_name, styles$a_middle, 
+           rows = ref$head_B:ref$src_B, cols = 2:ncol(data_B), stack = T, gridExpand = T) # v middle
+  addStyle(workbook, sheet_name, styles$a_centre, 
+           rows = ref$head_B:(ref$src_B - 1), cols = 2:ncol(data_B), stack = T, gridExpand = T) # h centre
+  addStyle(workbook, sheet_name, styles$a_right,
+           rows = ref$src_B, cols = (ncol(data_B) - 1), stack = T, gridExpand = T) # h right
+  ## add C table
+  addStyle(workbook, sheet_name, styles$a_middle, 
+           rows = ref$head_C:ref$src_C, cols = 2:ncol(data_C), stack = T, gridExpand = T) # v middle
+  addStyle(workbook, sheet_name, styles$a_centre, 
+           rows = ref$head_C:(ref$src_C - 1), cols = 2:ncol(data_C), stack = T, gridExpand = T) # h centre
+  addStyle(workbook, sheet_name, styles$a_centre, 
+           rows = ref$head_C:(ref$src_C - 1), cols = 2:ncol(data_C), stack = T, gridExpand = T) # h right
   
   # borders
+  ## add A table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = ref$head_A:(ref$src_A - 1), cols = c(1, 2, ncol(data_A) + 1), stack = T, gridExpand = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = (ref$head_A + 1):(ref$src_A - 1), cols = ncol(data_A), stack = T, gridExpand = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$head_A, ref$head_A + 1, ref$start_A, ref$src_A - 1, ref$src_A), cols = 1:ncol(data_A), stack = T, gridExpand = T) # top bold
+  addStyle(workbook, sheet_name, styles$b_top,
+           rows = ref$start_A - 1, cols = 2:ncol(data_A), stack = T, gridExpand = T) # top
+  ## add B table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = ref$head_B:(ref$src_B - 1), cols = c(1, 2, ncol(data_B) + 1), stack = T, gridExpand = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = (ref$head_B + 1):(ref$src_B - 1), cols = ncol(data_B), stack = T, gridExpand = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$head_B, ref$head_B + 1, ref$start_B, ref$src_B - 1, ref$src_B), cols = 1:ncol(data_B), stack = T, gridExpand = T) # top bold
+  ## add C table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = ref$head_C:(ref$src_C - 1), cols = c(1, 2, ncol(data_C) + 1), stack = T, gridExpand = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = (ref$head_C + 1):(ref$src_C - 1), cols = ncol(data_B), stack = T, gridExpand = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$head_C, ref$head_C + 1, ref$start_C, ref$src_C - 1, ref$src_C), cols = 1:ncol(data_C), stack = T, gridExpand = T) # top bold
+ 
   
-  
+  # number formats
+  addStyle(workbook, sheet_name, styles$counts,
+           rows = ref$start_A:(ref$src_A - 1), cols = 2:(ncol(data_A) - 1), stack = T, gridExpand = T) # add A
+  addStyle(workbook, sheet_name, styles$counts,
+           rows = ref$start_B:(ref$src_B - 1), cols = 2:(ncol(data_B) - 1), stack = T, gridExpand = T) # add B
+  addStyle(workbook, sheet_name, styles$counts,
+           rows = ref$start_C:(ref$src_C - 1), cols = 2:(ncol(data_C) - 1), stack = T, gridExpand = T) # add C
+
 }
 
-season <- "spring"
-wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
-                          season, "_TEST.xlsx"))
-write_kpi4.1_add(wb, "KPI 4.1 Additional", season, kpi_report_years, kpi_4_1_add_A, kpi_4_1_add_B, kpi_4_1_add_C, kpi_4_prov)
-query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
-                              yymm, "_TEST.xlsx"))
+
 

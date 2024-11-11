@@ -431,22 +431,8 @@ addStyle(wb, sheet = "KPI 4.2", styles$black_border_centre_12,
 showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 
 ## KPI 4.1 Additional ----
-## UPDATE/CHECK LINES EACH RUN ##
-# notes
-if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_prov, 
-            startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$black_11, 
-           rows = 62, cols = 1)
-}
-# data
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_A, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, 
-          startRow = 25, startCol = 2)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, 
-          startRow = 44, startCol = 2)
-showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
+write_kpi4.1_add(wb, "KPI 4.1 Additional", season, kpi_report_years, 
+                 kpi_4_1_add_A, kpi_4_1_add_B, kpi_4_1_add_C, kpi_4_prov)
 
 ## KPI 4.2 Additional ----
 ## UPDATE/CHECK LINES EACH RUN ##
