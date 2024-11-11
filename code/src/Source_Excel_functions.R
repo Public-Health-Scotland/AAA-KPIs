@@ -410,14 +410,6 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   
   # writing data ------------------------------------------------------------
   
-  # formatting data
-  data_A <- data_A |> 
-    mutate(financial_year = paste0("Year ending 31 March ", financial_year))
-  data_B <- data_B |> 
-    mutate(financial_year = paste0("Year ending 31 March ", financial_year))
-  data_C <- data_C |> 
-    mutate(financial_year = paste0("Year ending 31 March ", financial_year))
-  
   # Add A table
   writeData(workbook, sheet_name, texts$titles[1], startRow = ref$head_A -2)
   writeData(workbook, sheet_name, texts$year_op, startRow = ref$head_A, startCol = 1)
@@ -547,6 +539,5 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
            rows = ref$start_C:(ref$src_C - 1), cols = 2:(ncol(data_C) - 1), stack = T, gridExpand = T) # add C
 
 }
-
 
 

@@ -128,7 +128,9 @@ kpi_4_2 <- tail(kpi_4_2, n = 1)
 kpi_4_1_add_A <- theme4_4 |> 
   filter(kpi %in% c("KPI 4.1 Additional A")) |>
   pivot_wider(names_from = group, values_from = value) |> 
-  select(financial_year, procedures_n, deaths)
+  select(financial_year, procedures_n, deaths) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
+
 
 ## KPI 4.2 Additional A ----
 #!! Row needs added in Excel template manually!!
@@ -143,7 +145,8 @@ kpi_4_1_add_B <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add B: Screen") |> 
   select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional B: Screening HB ----
 #!! Row needs added in Excel template manually!!
@@ -159,7 +162,8 @@ kpi_4_1_add_C <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add C: Surgery") |> 
   select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional C: Surgery HB ----
 #!! Row needs added in Excel template manually!!
