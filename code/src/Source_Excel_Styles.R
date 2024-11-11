@@ -125,3 +125,9 @@ styles$a_right <- createStyle(halign = "right")
 styles$a_centre <- createStyle(halign = "center")
 styles$a_left <- createStyle(halign = "left")
 
+
+# number formats ----------------------------------------------------------
+
+### number formatting
+styles$counts <- createStyle(numFmt = '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)') # adds ',' to 1000s numbers, and replaces 0s with "-"
+styles$percentages <- createStyle(numFmt = '[>0]0.0;[<0]"..";0.0') # positive #s have 1 decimal place, zeroes are 0.0, and minus numbers (placeholder for NAs/NaNs) are coded as ".."
