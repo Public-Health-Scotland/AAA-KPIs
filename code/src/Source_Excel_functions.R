@@ -328,15 +328,15 @@ write_batch_qa <- function(workbook, sheet_name, season_var, financial_years, da
 # KPI 4.1 Additional ------------------------------------------------------
 
 # Write KPI 4.1 Additional excel sheet for theme 3 workbook (sheet and headers already in template)
-write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, data_A, data_B, data_C, provisional_note) {
+write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, data_A, data_B, data_C, provisional_note) {
   
   # notes and styles --------------------------------------------------------
   
   # texts for writing in
   texts <- list()
-  texts$titles <- c("KPI 4.1 Additional (A): Number of deaths within 30 days following open elective surgery by financial year",
-                    "KPI 4.1 Additional (B): Number of deaths within 30 days following open elective surgery by NHS Board of Screening",
-                    "KPI 4.1 Additional (C): Number of deaths within 30 days following open elective surgery by NHS Board of Surgery")
+  texts$titles <- c(paste0(sheet_name, " (A): Number of deaths within 30 days following open elective surgery by financial year"),
+                    paste0(sheet_name, " (B): Number of deaths within 30 days following open elective surgery by NHS Board of Screening"),
+                    paste0(sheet_name, " (C): Number of deaths within 30 days following open elective surgery by NHS Board of Surgery"))
   texts$year_op <- "Year of operation"
   texts$year_end <- paste0("Year ending 31 March ", substr(financial_years[3], 1, 2), substr(financial_years[3], 6, 7), {supsc("p")}) # only used in spring
   if (season_var == "spring") {
@@ -349,11 +349,15 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
   texts$notes <- c("Notes", "1. Men may be treated in a different NHS Board to where they are screened; therefore, this KPI is calculated using NHS Board of surgery.",
                    " ", " ", "-   Zero / Not applicable", " ", "Return to Table of Contents")
   texts$p_note <- provisional_note
-  texts$head_A <- "Open Surgery"  ## table A
+  if(sheet_name == "KPI 4.1 Additional") {
+    texts$head_A <- "Open Surgery"  ## table A
+  } else if (sheet_name == "KPI 4.2 Additional") {
+    texts$head_A <- "EVAR"  ## table A
+  }
   texts$subhead_A <- tibble(x = c("Operations", "Died within 30 days"), y = c("N", "N"))
   texts$head_B <- "NHS Board of Screening"   ## table B
   texts$names_B <- names(data_B)
-  texts$head_C <- "NHS Board of Surgery"  ## table C
+  texts$head_C <- paste0("NHS Board of Surgery", {supsc("1")})  ## table C
   texts$names_C <- names(data_C)
   
   
@@ -539,5 +543,3 @@ write_kpi4.1_add <- function(workbook, sheet_name, season_var, financial_years, 
            rows = ref$start_C:(ref$src_C - 1), cols = 2:(ncol(data_C) - 1), stack = T, gridExpand = T) # add C
 
 }
-
-

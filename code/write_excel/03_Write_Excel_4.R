@@ -124,23 +124,20 @@ kpi_4_2 <- theme4_4 |>
 kpi_4_2 <- tail(kpi_4_2, n = 1)
 
 ## KPI 4.1 Additional A ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_A <- theme4_4 |> 
   filter(kpi %in% c("KPI 4.1 Additional A")) |>
   pivot_wider(names_from = group, values_from = value) |> 
   select(financial_year, procedures_n, deaths) |> 
   mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
-
 ## KPI 4.2 Additional A ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_A <- theme4_4 |> 
   filter(kpi %in% c("KPI 4.2 Additional A")) |>
   pivot_wider(names_from = group, values_from = value) |> 
-  select(procedures_n, deaths)
+  select(financial_year, procedures_n, deaths) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.1 Additional B: Screening HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_B <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add B: Screen") |> 
   select(-c(kpi, surg_method)) |> 
@@ -149,15 +146,14 @@ kpi_4_1_add_B <- theme4_4_hb |>
   mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional B: Screening HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_B <- theme4_4_hb |>
   filter(kpi %in% c("KPI 4.2 Add B: Screen")) |>
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.1 Additional C: Surgery HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_C <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add C: Surgery") |> 
   select(-c(kpi, surg_method)) |> 
@@ -166,12 +162,12 @@ kpi_4_1_add_C <- theme4_4_hb |>
   mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional C: Surgery HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_C <- theme4_4_hb |>
   filter(kpi == "KPI 4.2 Add C: Surgery") |>
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4: 1-Year Mortality Rates ----
 kpi_4_1yr <- theme4_4 |>
@@ -435,26 +431,12 @@ addStyle(wb, sheet = "KPI 4.2", styles$black_border_centre_12,
 showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 
 ## KPI 4.1 Additional ----
-write_kpi4.1_add(wb, "KPI 4.1 Additional", season, kpi_report_years, 
+write_kpi4_add(wb, "KPI 4.1 Additional", season, kpi_report_years, 
                  kpi_4_1_add_A, kpi_4_1_add_B, kpi_4_1_add_C, kpi_4_prov)
 
 ## KPI 4.2 Additional ----
-## UPDATE/CHECK LINES EACH RUN ##
-# notes
-if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_prov, 
-            startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$black_11, 
-           rows = 62, cols = 1)
-}
-# data
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_A, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, 
-          startRow = 25, startCol = 2)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, 
-          startRow = 44, startCol = 2)
-showGridLines(wb, "KPI 4.2 Additional", showGridLines = FALSE)
+write_kpi4_add(wb, "KPI 4.2 Additional", season, kpi_report_years, 
+               kpi_4_2_add_A, kpi_4_2_add_B, kpi_4_2_add_C, kpi_4_prov)
 
 ## Table 7: Vascular Referrals ----
 # notes
