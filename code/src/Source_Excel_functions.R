@@ -580,17 +580,40 @@ write_vasc_background <- function(workbook, sheet_name, season_var, financial_ye
                                       result_outcome == "19" ~ "Final outcome pending",
                                       result_outcome == "96" ~ "Referrals with no outcome recorded",
                                       TRUE ~ "Error!!!!"
-                                      ))
+                                      )) |> 
+    filter(!(!str_detect(outcome_type, "Total") & cumulative == 0)) # keeps "Total" rows where cumulative == 0, removes all other cumulative == 0 
   
   
-  data_large <- data_outcomes |> 
-    filter(result_size == "large",
-           !(!str_detect(outcome_type, "Total") & cumulative == 0)) |> # keeps "Total" rows where cumulative == 0, removes all other cumulative == 0 
+  large_tot <- data_outcomes |> 
+    filter(result_size == "large" & outcome_type == "Total") |>
     select(-c(result_size, outcome_type))
   
-  data_small <- data_outcomes |> 
-    filter(result_size == "small",
-           !(!str_detect(outcome_type, "Total") & cumulative == 0)) |> # keeps "Total" rows where cumulative == 0, removes all other cumulative == 0 
+  large_fin <- data_outcomes |> 
+    filter(result_size == "large" & (outcome_type == "Total: final outcome" | outcome_type == "final outcome")) |> 
+    select(-c(result_size, outcome_type))
+  
+  large_nonfin <- data_outcomes |> 
+    filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | outcome_type == "non-final outcome")) |> 
+    select(-c(result_size, outcome_type))
+  
+  large_noout <- data_outcomes |> 
+    filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
+    select(-c(result_size, outcome_type))
+  
+  small_tot <- data_outcomes |> 
+    filter(result_size == "small" & outcome_type == "Total") |>
+    select(-c(result_size, outcome_type))
+  
+  small_fin <- data_outcomes |> 
+    filter(result_size == "small" & (outcome_type == "Total: final outcome" | outcome_type == "final outcome")) |> 
+    select(-c(result_size, outcome_type))
+  
+  small_nonfin <- data_outcomes |> 
+    filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | outcome_type == "non-final outcome")) |> 
+    select(-c(result_size, outcome_type))
+  
+  small_noout <- data_outcomes |> 
+    filter(result_size == "small" & outcome_type == "Total: no outcome recorded") |> 
     select(-c(result_size, outcome_type))
   
   
@@ -600,8 +623,8 @@ write_vasc_background <- function(workbook, sheet_name, season_var, financial_ye
   texts <- list()
   texts$head <- "Vascular referral outcome"
   texts$names <- paste0("Screened in year ending 31 March ", 
-                        substr(names(data_outcomes |> select(-result_outcome)), 1, 2), 
-                        substr(names(data_outcomes |> select(-result_outcome)), 6, 7)) # produces wrong output for cumulative - corrected below
+                        substr(names(data_outcomes |> select(-c(result_size, outcome_type, result_outcome))), 1, 2), 
+                        substr(names(data_outcomes |> select(-c(result_size, outcome_type, result_outcome))), 6, 7)) # produces wrong output for cumulative - corrected below
   if(season_var == "spring") {
     texts$names[length(texts$names) - 1] <- paste0(texts$names[length(texts$names) - 1], {supsc("p")}) # adding provisional p
   }
@@ -609,38 +632,129 @@ write_vasc_background <- function(workbook, sheet_name, season_var, financial_ye
   texts$source <- "Source: Scottish AAA Call Recall System"
   texts$notes <- c("Notes", "1. Only referrals with AAA ≥ 5.5cm are included in the vascular KPIs (3.1 to 4.2).",
                    " ", " ", "-   Zero / Not applicable", " ", " ", "Return to Table of Contents")
+  texts$p_note <- provisional_note
 
   
   # source styles
   source(here::here("code", "src", "Source_Excel_Styles.R"))
   
+  # ref - rows for data to be written to 
+  ref <- list()
+  ref$head <- 4 # table headers
+  ref$l_tot <- ref$head + 1 # large
+  ref$l_fin <- ref$l_tot + nrow(large_tot) + 1
+  ref$l_nonfin <- ref$l_fin + nrow(large_fin) + 1
+  ref$l_noout <- ref$l_nonfin + nrow(large_nonfin) + 1
+  ref$s_tot <- ref$l_noout + nrow(large_noout) + 1 # small
+  ref$s_fin <- ref$s_tot + nrow(small_tot) + 1
+  ref$s_nonfin <- ref$s_fin + nrow(small_fin) + 1
+  ref$s_noout <- ref$s_nonfin + nrow(small_nonfin) + 1
+  ref$src <- ref$s_noout + 1 # source
+  ref$notes <- ref$src + 2 # notes
+  
+  
   # formatting cells --------------------------------------------------------
   
   # merging
-
+  mergeCells(workbook, sheet_name, rows = ref$src, cols = (ncol(large_tot) - 2):(ncol(large_tot))) # source
+  mergeCells(workbook, sheet_name, rows = ref$notes + 1, cols = 1:ncol(large_tot)) # notes
+  mergeCells(workbook, sheet_name, rows = ref$notes + 2, cols = 1:ncol(large_tot))
   
   # col/row heights
-
+  setColWidths(workbook, sheet_name, cols = 1, widths = 64)
+  setColWidths(workbook, sheet_name, cols = 2:ncol(large_tot), widths = 14)
+  setRowHeights(workbook, sheet_name, rows = ref$head, heights = 70)
+  setRowHeights(workbook, sheet_name, rows = ref$l_tot:ref$src, heights = 15.5)
+  setRowHeights(workbook, sheet_name, rows = ref$notes + 2, heights = 33)
   
   # gridlines
-
+  showGridLines(workbook, sheet_name, showGridLines = F)
   
   # writing data ------------------------------------------------------------
   
-  
-
+  writeData(workbook, sheet_name, texts$head, startRow = ref$head, startCol = 1, colNames = F) # headers
+  writeData(workbook, sheet_name, t(texts$names), startRow = ref$head, startCol = 2, colNames = F)
+  writeData(workbook, sheet_name, large_tot, startRow = ref$l_tot, colNames = F) # large
+  writeData(workbook, sheet_name, large_fin, startRow = ref$l_fin, colNames = F)
+  writeData(workbook, sheet_name, large_nonfin, startRow = ref$l_nonfin, colNames = F)
+  writeData(workbook, sheet_name, large_noout, startRow = ref$l_noout, colNames = F)
+  writeData(workbook, sheet_name, small_tot, startRow = ref$s_tot, colNames = F) # small
+  writeData(workbook, sheet_name, small_fin, startRow = ref$s_fin, colNames = F)
+  writeData(workbook, sheet_name, small_nonfin, startRow = ref$s_nonfin, colNames = F)
+  writeData(workbook, sheet_name, small_noout, startRow = ref$s_noout, colNames = F)
+  writeData(workbook, sheet_name, texts$source, startRow = ref$src, startCol = (ncol(large_tot) - 2), colNames = F) # source
+  writeData(workbook, sheet_name, texts$notes, startRow = ref$notes, colNames = F) # notes
+  if(season_var == "spring") {
+    writeData(workbook, sheet_name, texts$p_note, startRow = ref$notes + 2, colNames = F) # provisional note
+  }
   
   # adding styles -----------------------------------------------------------
   
   # texts styles
-
+  ## table
+  addStyle(workbook, sheet_name, styles$black_12, 
+           rows = ref$head:(ref$s_noout), cols = 1:ncol(large_tot), stack = T, gridExpand = T) # body
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$l_tot, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # l tot
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$l_fin, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # l fin
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$l_nonfin, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # l nonfin
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$l_noout, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # l noout
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$s_tot, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # s tot
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$s_fin, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # s fin
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$s_nonfin, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # s nonfin
+  addStyle(workbook, sheet_name, styles$black_bold_12, 
+           rows = ref$s_noout, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # s noout
+  addStyle(workbook, sheet_name, styles$black_11, 
+           rows = ref$src, cols = (ncol(large_tot) - 2), stack = T, gridExpand = T) # source
+  
+  ## notes
+  addStyle(workbook, sheet_name, styles$black_bold_11, 
+           rows = ref$notes, cols = 1, stack = T, gridExpand = T) # head
+  addStyle(workbook, sheet_name, styles$black_11, 
+           rows = (ref$notes + 1):(ref$notes + 4), cols = 1, stack = T, gridExpand = T) # body
+  addStyle(workbook, sheet_name, styles$blue_nowrap_underline_11,
+           rows = (ref$notes + 7), cols = 1, stack = T, gridExpand = T)
+  
   
   # alignment
+  addStyle(workbook, sheet_name, styles$a_middle,
+           rows = ref$head:ref$src, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # vertical mid
+  addStyle(workbook, sheet_name, styles$a_left,
+           rows = ref$head:(ref$notes + 7), cols = 1, stack = T, gridExpand = T) # horizontal left
+  addStyle(workbook, sheet_name, styles$a_centre,
+           rows = ref$head, cols = 2:ncol(large_tot), stack = T, gridExpand = T) # horizontal middle
+  addStyle(workbook, sheet_name, styles$a_right,
+           rows = ref$src, cols = (ncol(large_tot) - 2), stack = T, gridExpand = T) # horizontal right
 
-  
   # borders
+  ## large table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = ref$head:ref$l_noout, cols = c(1, 2, ncol(large_tot), ncol(large_tot) + 1), stack = T, gridExpand = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = ref$head:ref$l_noout, cols = 3:(ncol(large_tot) - 1), stack = T, gridExpand = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$head, ref$l_noout + 1), cols = 1:ncol(large_tot), stack = T, gridExpand = T) # top bold
+  addStyle(workbook, sheet_name, styles$b_top,
+           rows = ref$l_tot, cols = 1:ncol(large_tot), stack = T, gridExpand = T) # top
+
+  ## small table
+  addStyle(workbook, sheet_name, styles$b_left_bold,
+           rows = ref$s_tot:ref$s_noout, cols = c(1, 2, ncol(large_tot), ncol(large_tot) + 1), stack = T, gridExpand = T) # left bold
+  addStyle(workbook, sheet_name, styles$b_left,
+           rows = ref$s_tot:ref$s_noout, cols = 3:(ncol(large_tot) - 1), stack = T, gridExpand = T) # left
+  addStyle(workbook, sheet_name, styles$b_top_bold,
+           rows = c(ref$s_tot, ref$s_noout + 1), cols = 1:ncol(large_tot), stack = T, gridExpand = T) # top bold
+
+  # number formats
+  addStyle(workbook, sheet_name, styles$counts,
+           rows = ref$l_tot:ref$s_noout, cols = 2:(ncol(large_tot) - 1), stack = T, gridExpand = T) # number format - 0s to '-'s
 
 }
 
-season <- "spring"
-wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_spring_TEST.xlsx"))
+
