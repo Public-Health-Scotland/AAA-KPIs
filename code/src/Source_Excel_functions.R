@@ -543,3 +543,104 @@ write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, da
            rows = ref$start_C:(ref$src_C - 1), cols = 2:(ncol(data_C) - 1), stack = T, gridExpand = T) # add C
 
 }
+
+
+
+# Vascular KPIs background ------------------------------------------------
+
+
+# Write KPI 4.1 Additional excel sheet for theme 3 workbook (sheet and headers already in template)
+write_vasc_background <- function(workbook, sheet_name, season_var, financial_years, data_outcomes, provisional_note) {
+
+  # formatting data ---------------------------------------------------------
+  data_outcomes <- data_outcomes |> 
+    mutate(result_outcome = case_when(result_outcome == "99" & result_size == "large" ~ "Total referrals ≥ 5.5cm",
+                                      result_outcome == "99" & result_size == "small" ~ paste0("Total referrals < 5.5cm", {supsc("1")}),
+                                      result_outcome == "98" ~ "Referrals with a final outcome",
+                                      result_outcome == "01" ~ "Declined vascular referral",
+                                      result_outcome == "02" ~ "Referred in error: Appointment with vascular service not required",
+                                      result_outcome == "03" ~ "DNA outpatient service: Self-discharge",
+                                      result_outcome == "04" ~ "DNA outpatient service: Died before appointment (died within 10 working days of referral)",
+                                      result_outcome == "05" ~ "DNA outpatient service: Died before appointment (died more than 10 working days from referral)",
+                                      result_outcome == "06" ~ "Referred in error: As determined by vascular service",
+                                      result_outcome == "07" ~ "Died before surgical assessment completed",
+                                      result_outcome == "08" ~ "Unfit for surgery",
+                                      result_outcome == "11" ~ "Appropriate for Surgery: Patient declined surgery",
+                                      result_outcome == "12" ~ "Appropriate for Surgery: Died before treatment",
+                                      result_outcome == "13" ~ "Appropriate for Surgery: Self-discharge",
+                                      result_outcome == "15" ~ "Appropriate for Surgery: AAA repaired and survived 30 days",
+                                      result_outcome == "16" ~ "Appropriate for Surgery: Died within 30 days of treatment",
+                                      result_outcome == "20" ~ "Other final outcome",
+                                      result_outcome == "97" ~ "Referrals with a non-final outcome",
+                                      result_outcome == "09" ~ "Refer to another specialty",
+                                      result_outcome == "10" ~ "Awaiting further AAA growth",
+                                      result_outcome == "14" ~ "Appropriate for surgery: Patient deferred surgery",
+                                      result_outcome == "17" ~ "Appropriate for surgery: Final outcome pending",
+                                      result_outcome == "18" ~ "Ongoing assessment by vascular",
+                                      result_outcome == "19" ~ "Final outcome pending",
+                                      result_outcome == "96" ~ "Referrals with no outcome recorded",
+                                      TRUE ~ "Error!!!!"
+                                      ))
+  
+  
+  data_large <- data_outcomes |> 
+    filter(result_size == "large",
+           !(!str_detect(outcome_type, "Total") & cumulative == 0)) |> # keeps "Total" rows where cumulative == 0, removes all other cumulative == 0 
+    select(-c(result_size, outcome_type))
+  
+  data_small <- data_outcomes |> 
+    filter(result_size == "small",
+           !(!str_detect(outcome_type, "Total") & cumulative == 0)) |> # keeps "Total" rows where cumulative == 0, removes all other cumulative == 0 
+    select(-c(result_size, outcome_type))
+  
+  
+  
+  # notes and styles --------------------------------------------------------
+  ## texts for writing in
+  texts <- list()
+  texts$head <- "Vascular referral outcome"
+  texts$names <- paste0("Screened in year ending 31 March ", 
+                        substr(names(data_outcomes |> select(-result_outcome)), 1, 2), 
+                        substr(names(data_outcomes |> select(-result_outcome)), 6, 7)) # produces wrong output for cumulative - corrected below
+  if(season_var == "spring") {
+    texts$names[length(texts$names) - 1] <- paste0(texts$names[length(texts$names) - 1], {supsc("p")}) # adding provisional p
+  }
+  texts$names[length(texts$names)] <- paste0("Cumulative Screened to ", substr(texts$names[length(texts$names) - 1], 25, 37)) # correcting cumulative header
+  texts$source <- "Source: Scottish AAA Call Recall System"
+  texts$notes <- c("Notes", "1. Only referrals with AAA ≥ 5.5cm are included in the vascular KPIs (3.1 to 4.2).",
+                   " ", " ", "-   Zero / Not applicable", " ", " ", "Return to Table of Contents")
+
+  
+  # source styles
+  source(here::here("code", "src", "Source_Excel_Styles.R"))
+  
+  # formatting cells --------------------------------------------------------
+  
+  # merging
+
+  
+  # col/row heights
+
+  
+  # gridlines
+
+  
+  # writing data ------------------------------------------------------------
+  
+  
+
+  
+  # adding styles -----------------------------------------------------------
+  
+  # texts styles
+
+  
+  # alignment
+
+  
+  # borders
+
+}
+
+season <- "spring"
+wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_spring_TEST.xlsx"))
