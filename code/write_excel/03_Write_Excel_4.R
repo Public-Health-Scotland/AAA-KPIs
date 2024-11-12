@@ -198,59 +198,7 @@ kpi_4_cum_mort <- theme4_4_mort |>
 vasc_refs <- select(theme4_referral, -source_ref_to_vasc)
 
 ## Vascular Referrals: Outcomes ----
-vasc_outcomes1 <- theme4_outcomes |> 
-  filter(result_size == "large" & outcome_type == "Total") |>
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sep24: 99
-
-vasc_outcomes2 <- theme4_outcomes |> 
-  filter(result_size == "large" & (outcome_type == "Total: final outcome" | 
-                                     outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb) 
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sep24: 98, 01, 03, 06, 07, 08, 11, 12, 13, 15, 16, 20
-
-vasc_outcomes3 <- theme4_outcomes |> 
-  filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | 
-                                     outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 97, 09, 10, 17, 18, 19
-
-vasc_outcomes4 <- theme4_outcomes |> 
-  filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 96
-
-vasc_outcomes5 <- theme4_outcomes |> 
-  filter(result_size == "small" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 99
-
-vasc_outcomes6 <- theme4_outcomes |> 
-  filter(result_size == "small" & (outcome_type == "Total: final outcome" | 
-                                     outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 98, 06, 15, 20
-
-vasc_outcomes7 <- theme4_outcomes |> 
-  filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | 
-                                     outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: none - need to add in zeroes
+data_vasc_outcomes <- theme4_outcomes # used in write_vasc_background function
 
 ## Vascular Referrals: AAA Repairs ----
 aaa_repairs <- theme4_repairs |> 
@@ -291,6 +239,7 @@ wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
 
 ## Source notes script
 source(here::here("code", "src", "Source_Excel_4.R"))
+source(here::here("code", "src", "Source_Excel_functions.R"))
 
 rm(list=ls(pattern = "theme4_"))
 
@@ -467,28 +416,8 @@ writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_title,
           startRow = 2, startCol = 1)
 addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_18, 
          rows = 2, cols = 1)
-if (season == "spring") {
-  writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_prov, 
-            startRow = 43)
-  addStyle(wb, sheet = "Vascular KPIs background", styles$orange_11, 
-           rows = 43, cols = 1)
-}
-# data
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes1, 
-          startRow = 5,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes2, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes3, 
-          startRow =21, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes4, 
-          startRow = 29,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes5, 
-          startRow = 31,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes6, 
-          startRow = 33, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes7, 
-          startRow = 38, startCol = 2, colNames = FALSE)
-showGridLines(wb, "Vascular KPIs background", showGridLines = FALSE)
+write_vasc_background(wb, "Vascular KPIs background", season, kpi_report_years, 
+                      data_vasc_outcomes, vasc_outcome_prov)
 
 ## KPI 4 1,3,5-year Cumulative Mortality ----
 # notes
