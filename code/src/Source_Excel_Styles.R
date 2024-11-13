@@ -15,7 +15,7 @@ library(openxlsx)
 styles <- list()
 
 # bold black size 18, no wrap
-styles$black_bold_18 <- createStyle(fontSize = 18, fontColour = "#000000",
+styles$black_bold_nowrap_18 <- createStyle(fontSize = 18, fontColour = "#000000",
                                     fontName = "Arial", textDecoration = "bold")
 
 # bold black size 14, wrapped
