@@ -31,6 +31,11 @@ extract_date <- "1 September"
 # month in which QPMG is planned
 qpmg_month <- "October"
 
+# date on which GP extract was refreshed and downloaded
+if(season == "autumn") {
+  gp_prac_extract_date <- "10 October"
+}
+
 
 ### UPDATE THESE IN THE SPRING ONLY ###
 
