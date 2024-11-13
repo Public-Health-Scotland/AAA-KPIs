@@ -24,6 +24,7 @@ library(readr)
 library(tidyr)
 library(reporter)
 library(openxlsx)
+library(janitor)
 library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
@@ -48,6 +49,12 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 # KPI 3.1 and 3.2
 theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 table(theme4_3$kpi, theme4_3$fin_year) 
+
+if(season == "spring") {
+  p_note_3.1_data <- read_rds(paste0(temp_path, "/4_provisional_note_3.1.rds")) |> 
+    pivot_wider(names_from = pending_appt, values_from = n) |> 
+    mutate(`Referral date and outpatient date` = `Total referrals` - `Referral date, no outpatient date`)
+}
 
 # KPI 4.1 and 4.2
 theme4_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
@@ -283,7 +290,7 @@ addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11,
 if (season == "spring") {
   writeData(wb, sheet = "KPI 3.1", kpi_3.1_prov, 
             startRow = 34)
-  addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
+  addStyle(wb, sheet = "KPI 3.1", style = styles$black_11, 
            rows = 34, cols = 1)
 }
 # data
