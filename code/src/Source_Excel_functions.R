@@ -460,7 +460,7 @@ write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, da
   
   # texts styles
   ## titles
-  addStyle(workbook, sheet_name, styles$black_bold_18, 
+  addStyle(workbook, sheet_name, styles$black_bold_nowrap_18, 
            rows = c(ref$head_A - 2, ref$head_B - 2, ref$head_C - 2), cols = 1, stack = T, gridExpand = T)
   # add A table
   addStyle(workbook, sheet_name, styles$black_12, 

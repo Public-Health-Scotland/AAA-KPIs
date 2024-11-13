@@ -414,7 +414,7 @@ showGridLines(wb, "7) Vascular referrals", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_title, 
           startRow = 2, startCol = 1)
-addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_18, 
+addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_nowrap_18, 
          rows = 2, cols = 1)
 write_vasc_background(wb, "Vascular KPIs background", season, kpi_report_years, 
                       data_vasc_outcomes, vasc_outcome_prov)
