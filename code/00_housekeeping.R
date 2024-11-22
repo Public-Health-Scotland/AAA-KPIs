@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 0_houskeeping.R
+# 00_houskeeping.R
 # Karen Hotopp & Aoife McCarthy
 # April 2024
 # 
@@ -11,7 +11,7 @@
 
 library(lubridate)
 
-here::i_am("code/0_housekeeping.R")
+here::i_am("code/00_housekeeping.R")
 
 ## Ubiquitous Variables~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -30,6 +30,11 @@ extract_date <- "1 September"
 
 # month in which QPMG is planned
 qpmg_month <- "October"
+
+# date on which GP extract was refreshed and downloaded
+if(season == "autumn") {
+  gp_prac_extract_date <- "10 October"
+}
 
 
 ### UPDATE THESE IN THE SPRING ONLY ###

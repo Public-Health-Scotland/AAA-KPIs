@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 3_2_kpi_1_4_surveillance.R
+# 03_2_kpi_1_4_surveillance.R
 # Gavin Clark
 # September 2023
 # Create RDS files for KPI 1.4 a, b, surveillance table 6, and DNA exclusions
@@ -32,7 +32,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code/00_housekeeping.R"))
 
 rm (output_path, simd_path, fy_tibble, qpmg_month, extract_date,
     cut_off_date, cutoff_date, end_current, end_date, start_date,
@@ -521,7 +521,7 @@ dna_excluded_table <- dna_excluded_surveillance %>%
   group_by(pat_inelig, financial_year) %>% 
   summarise(count = n()) %>% 
   mutate(pat_inelig = as.factor(case_when(pat_inelig == "02" ~ "Opted Out Surveillance",
-                                pat_inelig == "08" ~ "Non Responder Surveillance")),
+                                pat_inelig == "08" ~ "Non-responder Surveillance")),
          kpi = "DNA Exclusions") |>
   arrange(financial_year) |>
   select(kpi, fin_year = financial_year, pat_inelig, count) |> 

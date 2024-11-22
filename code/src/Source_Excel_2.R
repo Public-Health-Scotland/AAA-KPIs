@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 93_Source_Excel_2.R
+# Source_Excel_2.R
 # 
 # Aoife McCarthy
 # Apr 2024
@@ -15,7 +15,7 @@
 
 ## Styles ----
 
-source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
+source(here::here("code", "src", "Source_Excel_Styles.R"))
 
 ## General notes ----
 # current reporting year - used for additional management info

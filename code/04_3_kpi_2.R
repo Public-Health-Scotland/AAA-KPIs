@@ -1,5 +1,5 @@
 ##########################################################
-# 4_3_kpi_2.R
+# 04_3_kpi_2.R
 # Gavin Clark, Karen Hotopp & Aoife McCarthy
 # 19/10/2022
 #
@@ -30,7 +30,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code/00_housekeeping.R"))
 
 rm (exclusions_path, output_path, simd_path, fy_tibble,
     qpmg_month, cut_off_date, cutoff_date, year1_end, year1_start, year2_end, 
@@ -288,6 +288,13 @@ extract_audit <- extract %>%
          # no recall: verified by second opinion
          no_recall_sec_opin_n = case_when(audit_outcome == '05' ~ 1,
                                           is.na(audit_outcome) ~ 0, TRUE ~ 0))
+
+# below is a legacy filter based on headers in Spring Excel templates from before Autumn '23 (i.e. reported dates were 1 April - 31 Dec)
+eval_seasonal_diff(season,
+                   {extract_audit <- extract_audit |> 
+                     filter(date_screen <= dmy(paste0("31-12-"), substr(kpi_report_years[3], 1, 4)))}, # spring
+                   {"No additional filter required"} # autumn
+                   )
 
 kpi_2_2 <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%

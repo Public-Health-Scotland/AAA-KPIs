@@ -1,5 +1,5 @@
 ###############################################################################
-# 5_4_kpi_3.R
+# 05_4_kpi_3.R
 # Calum Purdie & Karen Hotopp
 # 17/01/2023
 # 
@@ -35,7 +35,7 @@ rm(list = ls())
 gc()
 
 
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code/00_housekeeping.R"))
 
 rm (exclusions_path, output_path, simd_path, fy_tibble, 
     qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
@@ -73,25 +73,25 @@ kpi_3_1 %>% count(screen_to_screen)
 kpi_3_1 %>% count(seen)
 kpi_3_1 %>% count(screen_to_screen_group)
 
-
+# KPI 3.1 provisional footnote - people referred but not yet seen
 # This section should be applied to the spring QPMG run because vascular data for
 # the year end is not complete at that stage - it should not be run when
 # producing data for the complete year end from the September extract
 # these numbers get used in the provisional note of kpi 3.1 in theme 4 excel
 if (season == "spring"){
   
-  provisional <- kpi_3_1 %>% 
+  pending <- kpi_3_1 %>% 
     filter(financial_year == kpi_report_years[3]) %>% 
-    mutate(pending_appt = 
-             case_when(!is.na(date_referral_true) & is.na(date_seen_outpatient) ~ 1, 
-                       TRUE ~ 0))
+    mutate(pending_appt = case_when(!is.na(date_referral_true) & is.na(date_seen_outpatient) ~ 1, # people referred, but not yet seen
+                       TRUE ~ 0)) |> 
+    count(pending_appt) |> 
+    mutate(pending_appt = case_when(pending_appt == 0 ~ "Total referrals",
+                                    pending_appt == 1 ~ "Referral date, no outpatient date",
+                                    TRUE ~ "error"))
   
-  pending <- provisional %>% count(pending_appt)
-  print(pending)
+  query_write_rds(pending, paste0(temp_path, "/4_provisional_note_3.1.rds"))
   
 }
-# for the provisional footnote, the total = sum of pending_appt %in% c(0, 1), 
-# then separated out into "seen" and "not seen" by these flags
 
 
 # Keep records where result_outcome is "01", "03", "04" or "05" or where

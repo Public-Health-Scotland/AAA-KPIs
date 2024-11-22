@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 95_Source_Excel_4.R
+# Source_Excel_4.R
 # 
 # Karen Hotopp & Aoife McCarthy
 # Oct 2023
@@ -27,7 +27,7 @@ year_uu <- year_xx - 3
 year_ss <- year_xx - 5
 
 # 2: Styles ----
-source(here::here("code/write_excel/99_Source_Excel_Styles.R"))
+source(here::here("code", "src", "Source_Excel_Styles.R"))
 
 # 3: Previous stats ----
 ## KPI 4.1 previous stats
@@ -88,15 +88,18 @@ screened_year_xx <- eval_seasonal_diff(
   {paste0("Screened in year ending 31 March ", year_xx)} # autumn
 )
 
-kpi_3.1_prov <- paste0("p  Provisonal. Data are for the 11-month period 1 April ",
-                       year_ww, " to ", extract_date, " ", year_xx,
-                       " and do not include data for referrrals with no outpatient ",
-                       "date recorded. In the 11-month period, there were a total ",
-                       "of {x} vascular referrals. At ", extract_date, " ",
-                       year_xx, " (date of extract), {x} of these referrals had ",
-                       "an outpatient date recorded and {x} had no outpatient ",
-                       "date recorded.")
-
+if(season == "spring") { # only possible to create in spring because the data only gets created in spring
+  kpi_3.1_prov <- paste0("p  Provisonal. Data are for the 11-month period 1 April ",
+                         year_ww, " to ", extract_date, " ", year_xx,
+                         " and do not include data for referrrals with no outpatient ",
+                         "date recorded. In the 11-month period, there were a total ",
+                         "of ", p_note_3.1_data |> pull(`Total referrals`), 
+                         " vascular referrals. At ", extract_date, " ", year_xx, 
+                         " (date of extract), ", p_note_3.1_data |> pull(`Referral date and outpatient date`), 
+                         " of these referrals had an outpatient date recorded and ",
+                         p_note_3.1_data |> pull(`Referral date, no outpatient date`), 
+                         " had no outpatient date recorded.")
+}
 
 kpi_3.1_revised <- paste0("r  Revised since published on {publication date} ",
                        year_xx, ", due to updates in the data recorded on the ",

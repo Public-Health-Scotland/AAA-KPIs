@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 96_Write_Excel_4.R
+# 03_Write_Excel_4.R
 # 
 # Karen Hotopp & Aoife McCarthy
 # Oct 2023
@@ -24,6 +24,7 @@ library(readr)
 library(tidyr)
 library(reporter)
 library(openxlsx)
+library(janitor)
 library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
 
 
@@ -32,7 +33,7 @@ gc()
 
 
 ## Values
-source(here::here("code/0_housekeeping.R"))
+source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path,
     fy_list, hb_list, fy_tibble, hb_tibble,
@@ -48,6 +49,12 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 # KPI 3.1 and 3.2
 theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 table(theme4_3$kpi, theme4_3$fin_year) 
+
+if(season == "spring") {
+  p_note_3.1_data <- read_rds(paste0(temp_path, "/4_provisional_note_3.1.rds")) |> 
+    pivot_wider(names_from = pending_appt, values_from = n) |> 
+    mutate(`Referral date and outpatient date` = `Total referrals` - `Referral date, no outpatient date`)
+}
 
 # KPI 4.1 and 4.2
 theme4_4 <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
@@ -124,50 +131,50 @@ kpi_4_2 <- theme4_4 |>
 kpi_4_2 <- tail(kpi_4_2, n = 1)
 
 ## KPI 4.1 Additional A ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_A <- theme4_4 |> 
   filter(kpi %in% c("KPI 4.1 Additional A")) |>
   pivot_wider(names_from = group, values_from = value) |> 
-  select(procedures_n, deaths)
+  select(financial_year, procedures_n, deaths) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional A ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_A <- theme4_4 |> 
   filter(kpi %in% c("KPI 4.2 Additional A")) |>
   pivot_wider(names_from = group, values_from = value) |> 
-  select(procedures_n, deaths)
+  select(financial_year, procedures_n, deaths) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.1 Additional B: Screening HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_B <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add B: Screen") |> 
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional B: Screening HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_B <- theme4_4_hb |>
   filter(kpi %in% c("KPI 4.2 Add B: Screen")) |>
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.1 Additional C: Surgery HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_1_add_C <- theme4_4_hb |>
   filter(kpi == "KPI 4.1 Add C: Surgery") |> 
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4.2 Additional C: Surgery HB ----
-#!! Row needs added in Excel template manually!!
 kpi_4_2_add_C <- theme4_4_hb |>
   filter(kpi == "KPI 4.2 Add C: Surgery") |>
-  select(-c(kpi, surg_method, financial_year)) |> 
+  select(-c(kpi, surg_method)) |> 
   # remove columns where value is all NA
-  select_if(function(col) !all(is.na(col)))
+  select_if(function(col) !all(is.na(col))) |> 
+  mutate(financial_year = paste0("Year ending 31 March ", financial_year))
 
 ## KPI 4: 1-Year Mortality Rates ----
 kpi_4_1yr <- theme4_4 |>
@@ -198,59 +205,7 @@ kpi_4_cum_mort <- theme4_4_mort |>
 vasc_refs <- select(theme4_referral, -source_ref_to_vasc)
 
 ## Vascular Referrals: Outcomes ----
-vasc_outcomes1 <- theme4_outcomes |> 
-  filter(result_size == "large" & outcome_type == "Total") |>
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sep24: 99
-
-vasc_outcomes2 <- theme4_outcomes |> 
-  filter(result_size == "large" & (outcome_type == "Total: final outcome" | 
-                                     outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb) 
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sep24: 98, 01, 03, 06, 07, 08, 11, 12, 13, 15, 16, 20
-
-vasc_outcomes3 <- theme4_outcomes |> 
-  filter(result_size == "large" & (outcome_type == "Total: non-final outcome" | 
-                                     outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 97, 09, 10, 17, 18, 19
-
-vasc_outcomes4 <- theme4_outcomes |> 
-  filter(result_size == "large" & outcome_type == "Total: no outcome recorded") |> 
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 96
-
-vasc_outcomes5 <- theme4_outcomes |> 
-  filter(result_size == "small" & outcome_type == "Total") |> 
-  select(-c(result_size, outcome_type)) %>% 
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 99
-
-vasc_outcomes6 <- theme4_outcomes |> 
-  filter(result_size == "small" & (outcome_type == "Total: final outcome" | 
-                                     outcome_type == "final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: 98, 06, 15, 20
-
-vasc_outcomes7 <- theme4_outcomes |> 
-  filter(result_size == "small" & (outcome_type == "Total: non-final outcome" | 
-                                     outcome_type == "non-final outcome")) |> 
-  select(-c(result_size, outcome_type)) %>% 
-  # remove rows where all the years have NAs (these not included in wb)
-  filter(rowSums(select_if(.,  is.numeric), na.rm = T) > 0) %>%
-  relocate(result_outcome, .after = "cumulative")
-# ResOuts Sept24: none - need to add in zeroes
+data_vasc_outcomes <- theme4_outcomes # used in write_vasc_background function
 
 ## Vascular Referrals: AAA Repairs ----
 aaa_repairs <- theme4_repairs |> 
@@ -290,7 +245,8 @@ wb <- loadWorkbook(paste0(template_path, "/4_Referral Treatment and Outcomes_",
                           season, ".xlsx"))
 
 ## Source notes script
-source(here::here(paste0("code/write_excel/95_Source_Excel_4.R")))
+source(here::here("code", "src", "Source_Excel_4.R"))
+source(here::here("code", "src", "Source_Excel_functions.R"))
 
 rm(list=ls(pattern = "theme4_"))
 
@@ -334,7 +290,7 @@ addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11,
 if (season == "spring") {
   writeData(wb, sheet = "KPI 3.1", kpi_3.1_prov, 
             startRow = 34)
-  addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
+  addStyle(wb, sheet = "KPI 3.1", style = styles$black_11, 
            rows = 34, cols = 1)
 }
 # data
@@ -431,40 +387,12 @@ addStyle(wb, sheet = "KPI 4.2", styles$black_border_centre_12,
 showGridLines(wb, "KPI 4.2", showGridLines = FALSE)
 
 ## KPI 4.1 Additional ----
-## UPDATE/CHECK LINES EACH RUN ##
-# notes
-if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_prov, 
-            startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.1 Additional", style = styles$black_11, 
-           rows = 62, cols = 1)
-}
-# data
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_A, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_B, 
-          startRow = 25, startCol = 2)
-writeData(wb, sheet = "KPI 4.1 Additional", kpi_4_1_add_C, 
-          startRow = 44, startCol = 2)
-showGridLines(wb, "KPI 4.1 Additional", showGridLines = FALSE)
+write_kpi4_add(wb, "KPI 4.1 Additional", season, kpi_report_years, 
+                 kpi_4_1_add_A, kpi_4_1_add_B, kpi_4_1_add_C, kpi_4_prov)
 
 ## KPI 4.2 Additional ----
-## UPDATE/CHECK LINES EACH RUN ##
-# notes
-if (season == "spring") {
-  writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_prov, 
-            startRow = 62, startCol = 1)
-  addStyle(wb, sheet = "KPI 4.2 Additional", style = styles$black_11, 
-           rows = 62, cols = 1)
-}
-# data
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_A, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_B, 
-          startRow = 25, startCol = 2)
-writeData(wb, sheet = "KPI 4.2 Additional", kpi_4_2_add_C, 
-          startRow = 44, startCol = 2)
-showGridLines(wb, "KPI 4.2 Additional", showGridLines = FALSE)
+write_kpi4_add(wb, "KPI 4.2 Additional", season, kpi_report_years, 
+               kpi_4_2_add_A, kpi_4_2_add_B, kpi_4_2_add_C, kpi_4_prov)
 
 ## Table 7: Vascular Referrals ----
 # notes
@@ -493,30 +421,10 @@ showGridLines(wb, "7) Vascular referrals", showGridLines = FALSE)
 # notes
 writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_title, 
           startRow = 2, startCol = 1)
-addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_18, 
+addStyle(wb, sheet = "Vascular KPIs background", styles$black_bold_nowrap_18, 
          rows = 2, cols = 1)
-if (season == "spring") {
-  writeData(wb, sheet = "Vascular KPIs background", vasc_outcome_prov, 
-            startRow = 43)
-  addStyle(wb, sheet = "Vascular KPIs background", styles$orange_11, 
-           rows = 43, cols = 1)
-}
-# data
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes1, 
-          startRow = 5,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes2, 
-          startRow = 7, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes3, 
-          startRow =21, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes4, 
-          startRow = 29,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes5, 
-          startRow = 31,  startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes6, 
-          startRow = 33, startCol = 2, colNames = FALSE)
-writeData(wb, sheet = "Vascular KPIs background", vasc_outcomes7, 
-          startRow = 38, startCol = 2, colNames = FALSE)
-showGridLines(wb, "Vascular KPIs background", showGridLines = FALSE)
+write_vasc_background(wb, "Vascular KPIs background", season, kpi_report_years, 
+                      data_vasc_outcomes, vasc_outcome_prov)
 
 ## KPI 4 1,3,5-year Cumulative Mortality ----
 # notes

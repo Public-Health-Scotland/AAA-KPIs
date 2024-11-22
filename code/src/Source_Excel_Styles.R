@@ -1,5 +1,5 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 99_Source_Excel_Styles.R
+# Source_Excel_Styles.R
 # 
 # Aoife McCarthy
 # July 2024
@@ -15,7 +15,7 @@ library(openxlsx)
 styles <- list()
 
 # bold black size 18, no wrap
-styles$black_bold_18 <- createStyle(fontSize = 18, fontColour = "#000000",
+styles$black_bold_nowrap_18 <- createStyle(fontSize = 18, fontColour = "#000000",
                                     fontName = "Arial", textDecoration = "bold")
 
 # bold black size 14, wrapped
@@ -56,6 +56,9 @@ styles$black_border_thin_centre_12 <- createStyle(fontSize = 12, fontName = "Ari
                                            fontColour = "#000000", border = "TopBottomLeftRight",
                                            wrapText = TRUE, halign = "center", valign = "center",
                                            borderStyle = "thin")
+# bold black 11, wrapped
+styles$black_bold_11 <- createStyle(fontSize = 11, fontColour = "#000000", textDecoration = "bold",
+                                    fontName = "Arial", wrapText = TRUE)
 # black 11, wrapped
 styles$black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                         fontName = "Arial", wrapText = TRUE)
@@ -83,6 +86,10 @@ styles$blue_border_underline_12 <- createStyle(fontSize = 12, fontName = "Arial"
                                                fontColour = "#0000FF", border = "TopBottomLeftRight",
                                                textDecoration = "underline", wrapText = TRUE, 
                                                 halign = "left", valign = "center")
+# blue 11 underlined, no wrap
+styles$blue_nowrap_underline_11 <- createStyle(fontSize = 11, fontName = "Arial",
+                                               fontColour = "#0000FF", textDecoration = "underline",
+                                               halign = "left", valign = "center")
     
 # summary header white font
 styles$white_centre_12 <- createStyle(fontSize = 12, fontName = "Arial", fgFill = "#462682",
@@ -104,3 +111,23 @@ styles$rolling_font <- createStyle(fontSize = 12, fontName = "Arial",
                                    textDecoration = "bold", fontColour = "#000000",
                                    wrapText = TRUE, border = c("top", "bottom", "left", "right"),
                             borderStyle = "medium", halign = "center", valign = "center")
+
+# general styles ----------------------------------------------------------
+
+### borders
+styles$b_left <- createStyle(border = "left")
+styles$b_top <- createStyle(border = "top")
+styles$b_left_bold <- createStyle(border = "left", borderStyle = "medium")
+styles$b_top_bold <- createStyle(border = "top", borderStyle = "medium")
+### aligning
+styles$a_middle <- createStyle(valign = "center")
+styles$a_right <- createStyle(halign = "right")
+styles$a_centre <- createStyle(halign = "center")
+styles$a_left <- createStyle(halign = "left")
+
+
+# number formats ----------------------------------------------------------
+
+### number formatting
+styles$counts <- createStyle(numFmt = '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)') # adds ',' to 1000s numbers, and replaces 0s with "-"
+styles$percentages <- createStyle(numFmt = '[>0]0.0;[<0]"..";0.0') # positive #s have 1 decimal place, zeroes are 0.0, and minus numbers (placeholder for NAs/NaNs) are coded as ".."
