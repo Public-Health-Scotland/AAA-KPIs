@@ -11,7 +11,7 @@
 
 ## Notes:
 # This script calls in the 3_invite_attend_yyyymm.rds file create in the
-# 2_2_kpi_1_1-1_3_uptake_coverage.R script and transforms the data to print 
+# 02_2_kpi_1_1-1_3_uptake_coverage.R script and transforms the data to print 
 # directly into the theme 2 Excel file for the QPMG.
 
 # 1: Housekeeping ----

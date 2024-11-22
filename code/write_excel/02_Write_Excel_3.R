@@ -10,11 +10,9 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the RDS file create in the 4_3_KPI_2.R script 
+# This script calls in the RDS file create in the 04_3_KPI_2.R script 
 # and transforms the data to print directly into the theme 3 Excel file for 
 # the autumn and spring QPMG.
-# 
-# Future work to be done to add spring printing out.
 
 
 # 1: Housekeeping ----

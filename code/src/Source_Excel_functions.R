@@ -325,9 +325,9 @@ write_batch_qa <- function(workbook, sheet_name, season_var, financial_years, da
 
 
 
-# KPI 4.1 Additional ------------------------------------------------------
+# KPI 4 Additional ------------------------------------------------------
 
-# Write KPI 4.1 Additional excel sheet for theme 3 workbook (sheet and headers already in template)
+# Write KPI 4 Additional excel sheet for theme 4 workbook (sheet and headers already in template)
 write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, data_A, data_B, data_C, provisional_note) {
   
   # notes and styles --------------------------------------------------------
@@ -779,9 +779,18 @@ create_aaa_gp_outputs <- function(hb_name, financial_year, coverage_data, selfre
               "2. Tested before age 66 and 3 months: ",
               "3. GP practice: "),
     content = c("", 
-                paste0("Men turning age 66 in the financial year ending 31 March ", year_xx, ". Men become eligible for screening when they reach age 65 and should be invited for screening before their 66th birthday."),
-                paste0("Men are counted as having been tested if they were screened before they reached the age of 66 and 3 months and had a screening result of positive, negative or non-visualisation. Men who attended clinics and were not screened due to technical failure are not included."),
-                paste0("Data are based on the GP practice the man was registered at on 31 March ", year_xx, " and so may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ").")))
+                paste0("Men turning age 66 in the financial year ending 31 March ", year_xx, 
+                       ". Men become eligible for screening when they reach age 65 and should be invited for screening before their 66th birthday."),
+                paste0("Men are counted as having been tested if they were screened before they ",
+                       "reached the age of 66 and 3 months and had a screening result of positive, negative or non-visualisation. ",
+                       "Men who attended clinics and were not screened due to technical failure are not included."),
+                paste0("Data are based on the GP practice the man was registered at on 31 March ", year_xx, 
+                       " and so may not always reflect the practice the man was registered with when invited or screened. ",
+                       "Men may attend a GP practice outside the NHS Board that they are resident in. ",
+                       "These men are included in the 'Practice outside NHS Board area' figures. ",
+                       "For a small number of men, GP practice of registration is unknown. ",
+                       "GP practice data has been extracted from the AAA screening business objects data universe (at ", 
+                       date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ").")))
   ### self-referrals - specific texts 
   text$sr_title <- "Self-referrals: Number of men tested by GP practice"
   text$sr_heads <- c("Practice Code", "Practice Name", paste0("Tested in year ending 31 March ", year_xx))
@@ -793,13 +802,26 @@ create_aaa_gp_outputs <- function(hb_name, financial_year, coverage_data, selfre
               "4. Multiple initial screens: "),
     content = c("",
                 "Any man over the age of 65 who has not previously been screened and who contacts their local AAA screening centre directly to request screening.",
-                "Men are counted as tested if they have an initial screening result of positive, negative or non-visualisation. Men who attended clinics and were not screened due to technical failure are not included.",
-                paste0("Data for year ending 31 March ", year_xx, " are based on the GP practice that the individual was registered at on 31 March ", year_xx, ". This means the data may not always reflect the practice the man was registered with when invited or screened. Men may attend a GP practice outside the NHS Board that they are resident in. These men are included in the 'Practice outside NHS Board area' figures. For a small number of men, GP practice of registration is unknown. GP practice data has been extracted from the AAA screening business objects data universe (at ", date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ")."),
+                paste0("Men are counted as tested if they have an initial screening result of positive, negative or non-visualisation. ",
+                       "Men who attended clinics and were not screened due to technical failure are not included."),
+                paste0("Data for year ending 31 March ", year_xx, " are based on the GP practice that the individual was registered at on 31 March ", 
+                       year_xx, ". This means the data may not always reflect the practice the man was registered with when invited or screened. ",
+                       "Men may attend a GP practice outside the NHS Board that they are resident in. ",
+                       "These men are included in the 'Practice outside NHS Board area' figures. ",
+                       "For a small number of men, GP practice of registration is unknown. ",
+                       "GP practice data has been extracted from the AAA screening business objects data universe (at ", 
+                       date_gp_extracted, " ", year_xx, ") and mapped to the PHS extract (from ", date_aaa_extracted, " ", year_xx, ")."),
                 "Self-referrals who had initial screens in more than one year are counted under the year of their most recent screening result only."))
   ### general text
   text$disclosure_text <- c("Practice-level data and disclosive cells", 
-                            "These data are released for management purposes and have not been adjusted to conform to PHS’s Statistical Disclosure Control protocol. The tables may contain disclosive cells (cells with small numbers that might enable an individual patient or member of staff to be identified, perhaps with the aid of further knowledge of the topic) and should not be published without further consideration of the contents in light of the guidance (link below). Please contact phs.aaascreenstats@phs.scot if you have any queries regarding this.")
-  text$disclosure_link <- format_excel_hyperlink("PHS Statistical Disclosure Control", "https://publichealthscotland.scot/publications/public-health-scotland-statistical-disclosure-protocol/public-health-scotland-statistical-disclosure-protocol-version-22/")
+                            paste0("These data are released for management purposes and have not been adjusted to conform to ",
+                                   "PHS’s Statistical Disclosure Control protocol. The tables may contain disclosive cells ",
+                                   "(cells with small numbers that might enable an individual patient or member of staff to be identified, ",
+                                   "perhaps with the aid of further knowledge of the topic) and should not be published without further ",
+                                   "consideration of the contents in light of the guidance (link below). Please contact phs.aaascreenstats@phs.scot ",
+                                   "if you have any queries regarding this."))
+  text$disclosure_link <- format_excel_hyperlink("PHS Statistical Disclosure Control", 
+                                                 "https://publichealthscotland.scot/publications/public-health-scotland-statistical-disclosure-protocol/public-health-scotland-statistical-disclosure-protocol-version-22/")
   text$legend <- c("-   Zero", "..   Not applicable")
   
   ## styles
