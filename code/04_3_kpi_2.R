@@ -120,24 +120,6 @@ kpi_2_1a <- extract2 %>%
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
-### KPI 2.1a device comparison (dc) ----
-# includes additional grouping by "new" or "old" device
-
-kpi_2_1a_dc <- extract2 %>%
-  group_by(financial_year, hb_screen, device) %>% 
-  summarise(non_vis_n = sum(non_vis_n),
-            screen_n = sum(screened_n)) %>%
-  ungroup() |>
-  group_by(financial_year, device) |>
-  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |> 
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n*100, 1),
-         kpi = "KPI 2.1a dc") %>%
-  select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
-  arrange(hb_screen, device) |> 
-  pivot_longer(!hb_screen:device, 
-               names_to = "group", values_to = "value")
 
 #### KPI 2.1b ----
 # Percentage of MEN screened where aorta could not be visualised
@@ -224,33 +206,7 @@ kpi_2_1b_simd$value[is.nan(kpi_2_1b_simd$value)] <- NA
 
 rm(kpi_2_1b_hb_simd, kpi_2_1b_scotland_simd)
 
-
-#### KPI 2.1b device comparison (dc) ----
-# includes additional grouping by "new" or "old" device
-
-kpi_2_1b_hb_dc <- extract2_dedup_hb %>%
-  group_by(financial_year, hb_screen, device) %>%
-  summarise(non_vis_n = sum(non_vis_n),
-            screen_n = sum(screened_n)) %>%
-  ungroup()
-
-kpi_2_1b_scotland_dc <- extract2_dedup_scotland %>%
-  mutate(hb_screen = "Scotland") %>%
-  group_by(financial_year, hb_screen, device) %>% 
-  summarise(non_vis_n = sum(non_vis_n),
-            screen_n = sum(screened_n)) %>%
-  ungroup()
-
-kpi_2_1b_dc <- bind_rows(kpi_2_1b_scotland_dc, kpi_2_1b_hb_dc) %>%
-  mutate(hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         non_vis_p = round_half_up(non_vis_n/screen_n * 100, 1),
-         kpi = "KPI 2.1b dc") |> 
-  arrange(hb_screen, device) |> 
-  select(hb_screen, kpi, financial_year, device, screen_n, non_vis_n, non_vis_p) |> 
-  pivot_longer(!hb_screen:device, 
-               names_to = "group", values_to = "value")
-
-rm(extract2_dedup_hb, extract2_dedup_scotland, kpi_2_1b_hb_dc, kpi_2_1b_scotland_dc)
+rm(extract2_dedup_hb, extract2_dedup_scotland)
 
 
 ### KPI 2.2 ----
@@ -310,24 +266,6 @@ kpi_2_2 <- extract_audit %>%
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
-### KPI 2.2 device comparison (dc) ----
-# includes additional grouping by "new" or "old" device
-
-kpi_2_2_dc <- extract_audit %>%
-  group_by(financial_year, hb_screen, device) %>%
-  summarise(audit_n = sum(audit_n),
-            recall_n = sum(recall_n, na.rm = T)) %>% # removing NAs because of the orkney issue
-  ungroup() |> 
-  group_by(financial_year, device) |> 
-  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |>
-  mutate(recall_p = round_half_up(recall_n/audit_n*100, 1),
-         hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-         kpi = "KPI 2.2 dc") |> 
-  arrange(hb_screen, device) %>%
-  select(hb_screen, kpi, financial_year, device, audit_n, recall_n, recall_p) |> 
-  pivot_longer(!hb_screen:device, 
-               names_to = "group", values_to = "value")
 
 ### KPI 2.2 Additional A ----
 ## Number of screens selected for the QA audit by audit result
@@ -356,33 +294,6 @@ kpi_2_2_add_a <- kpi_2_2_add_a %>%
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
 
-### KPI 2.2 Additional A device comparison (dc)----
-# includes additional grouping by "new" or "old" device
-kpi_2_2_add_a_dc <- extract_audit %>%
-  group_by(financial_year, hb_screen, device) %>% # summarising cols
-  summarise(
-    audit_n = sum(audit_n),
-    no_audit_result_n = sum(no_audit_result_n),
-    audit_n2 = sum(audit_n),
-    standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
-    standard_not_met_n = sum(standard_not_met_n, na.rm = T) # removing NAs because of the orkney issue
-  ) %>% 
-  ungroup() |> 
-  group_by(financial_year, device) |> # adding scotland totals
-  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |>
-  mutate(
-    no_audit_result_p = round_half_up(no_audit_result_n/audit_n*100, 1),
-    standard_met_p = round_half_up(standard_met_n/audit_n*100, 1),
-    standard_not_met_p = round_half_up(standard_not_met_n/audit_n*100, 1),
-    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-    kpi = "KPI 2.2 Additional A dc") %>%
-  arrange(financial_year, hb_screen, device) %>%
-  select(hb_screen, kpi, financial_year, device, audit_n, no_audit_result_n,
-         no_audit_result_p, audit_n2, standard_met_n, standard_met_p, 
-         standard_not_met_n, standard_not_met_p) |> 
-  pivot_longer(!hb_screen:device, 
-               names_to = "group", values_to = "value")
 
 ### KPI 2.2 Additional B ----
 ## Number of screens that did not meet the QA audit standard by audit outcome
@@ -449,47 +360,6 @@ kpi_2_2_add_b <- kpi_2_2_add_b %>%
          no_audit_result_n, no_audit_result_p) |> 
   pivot_longer(!hb_screen:financial_year, 
                names_to = "group", values_to = "value")
-
-### KPI 2.2 Additional B device comparison (dc) ----
-# includes additional grouping by "new" or "old" device
-
-kpi_2_2_add_b_dc <- extract_audit %>%
-  group_by(financial_year, hb_screen, device) %>%
-  summarise(
-    audit_n = sum(audit_n),
-    standard_met_n = sum(standard_met_n, na.rm = T), # removing NAs because of the orkney issue
-    standard_not_met_n = sum(standard_not_met_n),
-    imm_recall_n = sum(imm_recall_n),
-    recall_cc_n = sum(recall_cc_n),
-    no_recall_sat_interim_n = sum(no_recall_sat_interim_n),
-    no_recall_refer_vasc_n = sum(no_recall_refer_vasc_n),
-    no_recall_sec_opin_n = sum(no_recall_sec_opin_n),
-    no_audit_result_n = sum(no_audit_result_n)
-  ) %>%
-  ungroup() |> 
-  group_by(financial_year, device) |> 
-  group_modify(~adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |>
-  mutate(
-    imm_recall_p = round_half_up(imm_recall_n/standard_not_met_n*100, 1),
-    recall_cc_p = round_half_up(recall_cc_n/standard_not_met_n*100, 1),
-    no_recall_sat_interim_p = round_half_up(no_recall_sat_interim_n/standard_not_met_n*100, 1),
-    no_recall_refer_vasc_p = round_half_up(no_recall_refer_vasc_n/standard_not_met_n*100, 1),
-    no_recall_sec_opin_p = round_half_up(no_recall_sec_opin_n/standard_not_met_n*100, 1),
-    no_audit_result_p = round_half_up(no_audit_result_n/standard_not_met_n*100, 1),
-    hb_screen = fct_relevel(as.factor(hb_screen), "Scotland"),
-    kpi = "KPI 2.2 Additional B dc") %>%
-  arrange(financial_year, hb_screen, device) %>%
-  select(hb_screen, kpi, financial_year, device, standard_not_met_n, imm_recall_n, 
-         imm_recall_p, recall_cc_n, recall_cc_p, recall_cc_n, recall_cc_p, 
-         no_recall_sat_interim_n, no_recall_sat_interim_p, no_recall_refer_vasc_n, 
-         no_recall_refer_vasc_p, no_recall_sec_opin_n, no_recall_sec_opin_p,
-         no_audit_result_n, no_audit_result_p) |> 
-  pivot_longer(!hb_screen:device, 
-               names_to = "group", values_to = "value")
-
-# Change NaNs to NAs
-kpi_2_2_add_b_dc$value[is.nan(kpi_2_2_add_b_dc$value)] <- NA
 
 rm(extract_audit)
     
@@ -1025,15 +895,10 @@ kpi_2 <- bind_rows(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a,
 # mutate(value = ifelse((is.na(value) & substr(group, nchar(group), nchar(group)) == "n"),
 #     replace_na(value, 0), value))
 
-kpi_2_dc <- bind_rows(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc) |> 
-  rename(fin_year = financial_year,
-         hbres = hb_screen)
 
 # tidy env
 rm(kpi_2_1a, kpi_2_1b, kpi_2_1b_simd, kpi_2_2, kpi_2_2_add_a, kpi_2_2_add_b, 
    qa_batch_list, qa_batch_scot, qa_batch_hb, qa_recall_list, qa_batch_recall)
-
-rm(kpi_2_1a_dc, kpi_2_1b_dc, kpi_2_2_dc, kpi_2_2_add_a_dc, kpi_2_2_add_b_dc)
 
 # create current kpi table - only most recent year of data
 current_kpi <- kpi_2 |> 
@@ -1095,6 +960,4 @@ viz_kpi_finyear(kpi_2_full)
 
 query_write_rds(kpi_2_full, paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 
-## Save data block - device comparison
-query_write_rds(kpi_2_dc, paste0(temp_path, "/3_2_kpi_2_dc_", yymm, ".rds"))
 
