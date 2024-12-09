@@ -172,9 +172,6 @@ kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage,
                             substr(year_ww, 3,4), ") and {x}% (", year_ww, "/",
                             substr(year_xx, 3,4), ").")
 
-## KPI 1.1 SIMD Notes ----
-# none
-
 ## KPI 1.2a Notes ----
 ### table headers ----
 kpi_1.2a_head_mgmt <- paste0("Tested before ", extract_date, " ", year_xx,
