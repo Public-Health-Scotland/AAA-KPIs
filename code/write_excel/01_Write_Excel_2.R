@@ -265,7 +265,9 @@ t6_surveill <- theme2_t6 |>
   mutate(FY_kpi_group = paste(fin_year, kpi, surveillance_interval, sep = "_")) |>
   select(hbres, FY_kpi_group, value) |>
   # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  mutate(hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(hbres)
 
 ## DNA Exclusions ----
 ## Data for all years

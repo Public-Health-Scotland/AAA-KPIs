@@ -36,7 +36,7 @@ gc()
 source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path,
-    fy_list, hb_list, fy_tibble, hb_tibble,
+    fy_list, fy_tibble, hb_tibble,
      cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
    
@@ -218,7 +218,9 @@ aaa_repairs <- theme4_repairs |>
 unfit_surgery <- theme4_unfit |> 
   pivot_wider(names_from = financial_year, values_from = c(cohort_n:unfit_p)) |> 
   select(hbres, ends_with(kpi_report_years[1]), ends_with(kpi_report_years[2]), 
-         ends_with(kpi_report_years[3]), ends_with("Cumulative"))
+         ends_with(kpi_report_years[3]), ends_with("Cumulative")) |> 
+  mutate(hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(hbres)
 
 ## Unfit for Surgery Follow-up ----
 unfit_followup <- theme4_unfit_followup 
