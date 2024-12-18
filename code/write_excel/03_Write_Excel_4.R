@@ -15,9 +15,6 @@
 # and transforms the data to print directly into the theme 4 Excel file for 
 # both the spring and autumn MEGs.
 
-##!! Need to add in spring to sources file! This should mostly be notes about
-## provisional data and information on title tab.
-
 # 1: Housekeeping ----
 library(dplyr)
 library(readr)
@@ -106,7 +103,8 @@ kpi_3_2_res <- kpi_3_2_res |>
 
 ## KPI 3.2 HB of Surgery ----
 kpi_3_2_surg <- theme4_3 |> 
-  filter(kpi %in% c("KPI 3.2 Surgery")) |> 
+  filter(kpi %in% c("KPI 3.2 Surgery"),
+         !hbres == "Dumfries & Galloway") |> 
   mutate(FY_kpi_group = paste(fin_year, kpi, group, sep = "_")) |> 
   select(hbres, FY_kpi_group, value)
 
