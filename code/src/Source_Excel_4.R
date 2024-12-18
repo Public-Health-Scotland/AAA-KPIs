@@ -164,6 +164,7 @@ kpi_4_2_note <- paste0("1. Due to small numbers, data are reported for five-year
 ## KPI 4.2 additional ----
 
 ## Table 7) Vascular referrals ----
+screened_year_vv <- paste0("Screened in year ending 31 March ", year_vv)
 screened_year_ww <- paste0("Screened in year ending 31 March ", year_ww)
 
 screened_cum <- eval_seasonal_diff(

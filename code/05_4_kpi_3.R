@@ -201,9 +201,6 @@ rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
 kpi_3_2 <- aaa_extract %>% 
   filter(result_outcome %in% c("11", "12", "13", "14", "15", "16", "17") | 
            (result_outcome == "20" & surg_method == "03" & !is.na(date_surgery))) %>% 
-  # AMC new: december 31 filter because of follow-up time (mentioned in footnotes of excel)
-  ## AMc note: should this not be ONLY in the spring extract as opposed to the autumn?
-  filter(date_screen <= dmy(paste("31-12-", substr(start_date, 1, 4)))) %>% 
   mutate(screen_to_surgery = time_length(date_screen %--% date_surgery, 
                                          "days"), 
          surgery = case_when(screen_to_surgery <= 56 ~ 1, 
@@ -216,6 +213,12 @@ kpi_3_2 <- aaa_extract %>%
                      screen_to_surgery >= 225 & screen_to_surgery <= 365 ~ 5, # 1 year
                      screen_to_surgery >= 366 ~ 6), # >1 year
          financial_year = droplevels(financial_year)) 
+
+if(season == "spring") {
+  # december 31 filter because of required follow-up time [8 wks] (mentioned in footnotes of excel)
+  kpi_3_2 <- kpi_3_2 |> 
+    filter(date_screen <= dmy(paste("31-12-", substr(start_date, 1, 4))))
+}
 
 # Check variables
 # Do these add value? Do we need them?
@@ -358,6 +361,7 @@ rm(no_surg)
 
 # Health Boards
 kpi_3_2_hb <- kpi_3_2_surg %>% 
+  filter(!hb_surgery == "Cumbria") |> 
   group_by(hb_surgery, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |> 
@@ -366,6 +370,7 @@ kpi_3_2_hb <- kpi_3_2_surg %>%
 
 # Scotland
 kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records??
+  filter(!hb_surgery == "Cumbria") |> 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
