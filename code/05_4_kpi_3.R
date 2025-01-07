@@ -196,6 +196,7 @@ rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
 # 20 - 'Other final outcome' 
 # surg_method:
 # 03 - Procedure abandoned
+
 # Calculate surgery variable and flag as 1 where screen_to_surgery is less than 
 # or equal to 56 days (8 weeks)
 kpi_3_2 <- aaa_extract %>% 
@@ -346,11 +347,33 @@ kpi_3_2_surg <- kpi_3_2 |>
 
 table(kpi_3_2_surg$hb_surgery, useNA = "ifany")
 
+## Investigate HBs where there should not be any surgeries 
 ##
 cumbria <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Cumbria",]
 table(cumbria$date_screen, useNA = "ifany")
 # all records from (date_screen) 2015-2019
 rm(cumbria)
+##
+
+##
+borders <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Borders",]
+table(borders$date_screen, useNA = "ifany")
+# modern records; re-code as Lothian
+rm(borders)
+##
+
+##
+dag <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Dumfries & Galloway",]
+table(dag$date_screen, useNA = "ifany")
+# old record; ignore
+rm(dag)
+##
+
+##
+fv <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Forth Valley",]
+table(fv$date_screen, useNA = "ifany")
+# most records from 2018 or before; re-code new dates as GGC
+rm(fv)
 ##
 
 ##
@@ -361,16 +384,21 @@ rm(no_surg)
 
 # Health Boards
 kpi_3_2_hb <- kpi_3_2_surg %>% 
-  filter(!hb_surgery == "Cumbria") |> 
-  group_by(hb_surgery, financial_year) %>% 
+  filter(!hb_surgery == "Cumbria") |>
+  filter(!hb_surgery == "Dumfries & Galloway") |> # can't make it work to combine with above!
+  mutate(hb_surgery = case_when(hb_surgery == "Borders" ~ "Lothian",
+                                hb_surgery == "Forth Valley" ~ "Greater Glasgow & Clyde",
+                                TRUE ~ hb_surgery)) |> 
+group_by(hb_surgery, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |> 
   ungroup() |> 
   complete(hb_surgery, financial_year)
 
 # Scotland
-kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records??
+kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records?? Yes, since excluded above
   filter(!hb_surgery == "Cumbria") |> 
+  filter(!hb_surgery == "Dumfries & Galloway") |> 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
@@ -388,36 +416,7 @@ kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
   mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery) |>
   ungroup()
 
-# #### This next chunk of code adds in FY where missing (produces NAs), but is 
-# ## it better to store without the extra (NA) data produced, as the missing FYs 
-# ## are automatically created when the data is pivoted to match Excel output?
-# ## Doesn't really work w hb_surgery...
-# # Ensure every HB is represented every financial year
-# kpi_3_2_surg <- kpi_3_2_surg |>
-#   pivot_longer(!hb_surgery:financial_year, names_to = "group", values_to = "value") |> 
-#   mutate(financial_year_group = paste(financial_year, group, sep = "_")) |> 
-#   select(hb_surgery, kpi, financial_year_group, value) |> 
-#   pivot_wider(names_from = financial_year_group, values_from = value)
-# 
-# kpi_3_2_surg <- hb_list |> left_join(kpi_3_2_surg, c(by = "hb" = "hb_surgery")
-# 
-# kpi_3_2_surg <- kpi_3_2_surg |>
-#   pivot_longer(!hb_surgery:kpi, names_to = "group", values_to = "value") |>
-#   mutate(financial_year = group, .after = kpi) |>
-#   mutate(financial_year = stringr::str_remove(financial_year, "_cohort_n"),
-#          financial_year = stringr::str_remove(financial_year, "_surgery_n"),
-#          financial_year = stringr::str_remove(financial_year, "_cover_p"),
-#          group = case_when(stringr::str_detect(group, "cohort") ~ "cohort_n",
-#                            stringr::str_detect(group, "surgery") ~ "surgery_n",
-#                            stringr::str_detect(group, "cover") ~ "cover_p")) |>
-#   rename(health_board = hb_surgery)
-# 
-# table(kpi_3_2_surg$hb_surgery, kpi_3_2_surg$financial_year) # all hbres/FY are 3
-# # Current run NOT saved with this transformation, but to decide how to best store
-#### 
 
-# Run the below code if it is decided that above code (creates HB records w NAs)
-# should NOT used (this uses less data storage than above)
 kpi_3_2_surg <- kpi_3_2_surg |>
   pivot_longer(!hb_surgery:financial_year, names_to = "group", 
                values_to = "value") |> 
@@ -451,6 +450,19 @@ rm(check, check_2)
 
 # Tidy environment
 rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot)
+
+
+### ------
+## Temporary fix for 202501 publication, but this will need to be incorporated
+## into historical data block
+## Changed Borders, D&G, and FV HBs, as they should not be entries in hb_surgery field
+
+table(kpi_3_2_surg$health_board)
+
+write_rds(kpi_3_2_surg, paste0(temp_path, "/4_1_kpi_3_2_surg_remake", yymm, ".rds"))
+
+### ------
+
 
 
 ### Step 5: Write outputs ----
