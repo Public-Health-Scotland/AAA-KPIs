@@ -20,7 +20,7 @@
 # to HB of residence) as management information.
 
 
-### 1: Housekeeping ----
+# 1: Housekeeping ----
 # Load packages
 library(dplyr)
 library(readr)
@@ -42,7 +42,7 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
     year1, year2, extract_date)
 
 
-#### 2: Data Manipulation ----
+# 2: Data Manipulation ----
 # Keep records where date_referral_true is populated and largest measure is 
 # greater than or equal to 5.5, where result_outcome is not "02" and 
 # date_screen is less than or equal to cut_off_date
@@ -52,7 +52,7 @@ aaa_extract <- read_rds(extract_path) %>%
          date_screen <= cut_off_date)
 
 
-#### 3: KPI 3.1 ----
+# 3: KPI 3.1 ----
 # Calculate time between date seen in outpatients to date of screening
 kpi_3_1 <- aaa_extract %>% 
   mutate(screen_to_seen = time_length(date_screen %--% date_seen_outpatient, 
@@ -95,7 +95,7 @@ kpi_3_1 <- kpi_3_1 %>%
   mutate(financial_year = droplevels(financial_year))
 
 
-### Health Board of Residence ----
+## Health Board of Residence ----
 # Health Boards
 kpi_3_1_hb <- kpi_3_1 %>% 
   group_by(hbres, financial_year) %>% 
@@ -136,7 +136,7 @@ table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
 rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
 
 
-#### 4: KPI 3.2 ----
+# 4: KPI 3.2 ----
 # Keep records where result_outcome is in specified list or result_outcome is
 # "20" and date_surgery is populated
 # result_outcome:
@@ -203,7 +203,7 @@ if (season == "spring"){
 }
 
 
-### Health Board of Residence ----
+## Health Board of Residence ----
 # Health Boards
 kpi_3_2_hb <- kpi_3_2 %>% 
   group_by(hbres, financial_year) %>% 
@@ -277,7 +277,7 @@ kpi_3_2_res <- kpi_3_2_res |>
 # change NaNs to NAs
 kpi_3_2_res$value[is.nan(kpi_3_2_res$value)] <- NA
 
-### Health Board of Surgery ----
+## Health Board of Surgery ----
 # First, remove records where HB of surgery is NA & note any non-Scot HBs
 table(kpi_3_2$hb_surgery, useNA = "ifany")
 
@@ -405,8 +405,8 @@ rm(check, check_2)
 # Tidy environment
 rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot)
 
-
-### ------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### 202501 fix ------
 ## Temporary fix for 202501 publication, but this will need to be incorporated
 ## into historical data block
 ## Changed Borders, D&G, and FV HBs, as they should not be entries in hb_surgery field
@@ -415,11 +415,11 @@ table(kpi_3_2_surg$health_board)
 
 write_rds(kpi_3_2_surg, paste0(temp_path, "/4_1_kpi_3_2_surg_remake", yymm, ".rds"))
 
-### ------
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
-### Step 5: Write outputs ----
+# Step 5: Write outputs ----
 # Combine KPI 3 subsets
 kpi_3 <- bind_rows(kpi_3_1_res, kpi_3_2_res, kpi_3_2_surg)
 table(kpi_3$kpi) 
