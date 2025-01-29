@@ -23,7 +23,6 @@ library(stringr)
 library(tidylog)
 library(tidyr)
 library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
-library(svDialogs)
 
 
 rm(list = ls())
@@ -571,7 +570,6 @@ qa_standard_totals <- qa_standard_sum %>%
   mutate(audit_fail_reason_text = "standard not met")
 
 qa_reason <- bind_rows(qa_standard_totals, qa_standard_sum) %>%
-  # GC - move to KH code? ##!! Which part? Can move fct_relevel for hb_screen
   mutate(hb_screen = fct_relevel(hb_screen, "Scotland"),
          audit_fail_reason_text = fct_relevel(audit_fail_reason_text, 
                                               "standard not met",
