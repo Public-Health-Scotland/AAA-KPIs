@@ -1,4 +1,4 @@
-###############################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 05_4_kpi_3.R
 # Calum Purdie & Karen Hotopp
 # 17/01/2023
@@ -9,7 +9,7 @@
 #
 # Written/run on R Studio Server, R version 3.6.1
 # Revised on Posit WB, R Version 4.1.2
-###############################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes: 
 ## For KPI 3.2, numbers from published data may have minor revisions due 
@@ -29,7 +29,7 @@ library(janitor)
 library(tidylog)
 library(tidyr)
 library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
-
+library(forcats)
 
 rm(list = ls())
 gc()
@@ -58,8 +58,6 @@ kpi_3_1 <- aaa_extract %>%
   mutate(screen_to_seen = time_length(date_screen %--% date_seen_outpatient, 
                                         "days"), 
          seen = case_when(screen_to_seen <= 14 ~ 1, 
-                          # new var - seen within 4 weeks - audit for Spring KPIs 2025
-                          screen_to_seen > 14 & screen_to_seen <= 28 ~ 2,
                           TRUE ~ 0))
 
 # Check variables
@@ -104,7 +102,7 @@ kpi_3_1_hb <- kpi_3_1 %>%
   summarise(cohort_n = n(), 
             seen_n = sum(seen)) |> 
   ungroup() |> 
-  complete(hbres, financial_year) |> # completing table
+  complete(hbres, financial_year) |> # completing table - all HBs for each FY
   mutate_at(vars(cohort_n:seen_n), ~ifelse(is.na(.), 0, .))
   
 # Scotland
@@ -118,59 +116,21 @@ kpi_3_1_scot <- kpi_3_1 %>%
 # Combine
 kpi_3_1_res <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>% 
   group_by(hbres) %>% 
-  mutate(#cum_referrals = sum(cohort), 
-         #cum_seen = sum(seen), 
-         #pc_cum_seen = round_half_up(cum_seen * 100 / cum_referrals, 1),  
-         cover_p = round_half_up(seen_n * 100 / cohort_n, 1)) |> 
+  mutate(cover_p = round_half_up(seen_n * 100 / cohort_n, 1)) |> 
   mutate(kpi = "KPI 3.1 Residence", .after = hbres) |>
   ungroup()
 
-
-#### This next chunk of code adds in FY where missing (produces NAs), but is 
-## it better to store without the extra (NA) data produced, as the missing FYs 
-## are automatically created when the data is pivoted to match Excel output?
-## This method creates larger files to be stored each year.
-# Ensure every HB is represented every financial year
+# arrange into longer format and order vars
 kpi_3_1_res <- kpi_3_1_res |>
   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |> 
-  mutate(financial_year_group = paste(financial_year, group, sep = "_")) |> 
-  select(hbres, kpi, financial_year_group, value) |> 
-  pivot_wider(names_from = financial_year_group, values_from = value)
-
-kpi_3_1_res <- hb_tibble |> left_join(kpi_3_1_res, by = "hbres") 
-
-kpi_3_1_res <- kpi_3_1_res |> 
-  pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
-  mutate(financial_year = group, .after = kpi) |> 
-  mutate(financial_year = stringr::str_remove(financial_year, "_cohort_n"),
-         financial_year = stringr::str_remove(financial_year, "_seen_n"),
-         financial_year = stringr::str_remove(financial_year, "_cover_p"),
-         group = case_when(stringr::str_detect(group, "cohort") ~ "cohort_n",
-                           stringr::str_detect(group, "seen") ~ "seen_n",
-                           stringr::str_detect(group, "cover") ~ "cover_p")) |> 
+  mutate(group = fct_relevel(group, c("cohort_n", "seen_n", "cover_p"))) |> 
+  arrange(hbres, financial_year, group) |> 
   rename(health_board = hbres)
 
 # change NaNs to NAs
 kpi_3_1_res$value[is.nan(kpi_3_1_res$value)] <- NA
 
 table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
-# Current run IS saved with this transformation, but to decide how to best store
-#### 
-
-## Run the below code if it is decided that above code (creates HB records w NAs) 
-## should NOT used (this uses less data storage than above)
-## But will need to relevel hbres factors to put Scotland on top.
-# kpi_3_1_res <- kpi_3_1_res |>
-#   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |>
-#   rename(health_board = hbres)
-# 
-# table(kpi_3_1_res$hbres, droplevels(kpi_3_1_res$financial_year)) # NOT all hbres/FY are 3
-
-kpi_3_1_res <- kpi_3_1_res |> 
-  # remove NAs for numerical counts and replace w 0
-  # not sure if this needs to be done? AMc: believe this should be fine now but keeping in instead
-  mutate(value = case_when((group == "cohort_n" | group == "seen_n") & 
-                             is.na(value) ~ 0, TRUE ~ value))
 
 # Tidy environment
 rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
