@@ -75,7 +75,6 @@ make_gp_vars <- function(df, gp_lookup) {
   # flag for if an individual is registered inside/outside their hb of residence
   dat <- df %>%
     mutate(in_hb = case_when(
-      gp_join == 3139 ~ 1,
       hbres == "Ayrshire & Arran" & between(gp_join, 8000, 8399) ~ 1,
       hbres == "Borders" & between(gp_join, 1600, 1799) ~ 1,
       hbres == "Fife" & between(gp_join, 2000, 2499) ~ 1,
