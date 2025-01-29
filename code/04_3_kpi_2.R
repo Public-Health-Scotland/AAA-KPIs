@@ -77,8 +77,6 @@ qa_recall_list <- tibble(recall_advice = c("Immediate recall",
                                            "No recall: Verified by 2nd opinion",
                                            "Total"))
 
-# date screener devices replaced
-device_swap_date <- "2023-09-30"
 
 #### Step 2: Read in data ----
 extract <- read_rds(extract_path)
