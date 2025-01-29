@@ -55,23 +55,17 @@ aaa_extract <- read_rds(extract_path) %>%
 #### 3: KPI 3.1 ----
 # Calculate time between date seen in outpatients to date of screening
 kpi_3_1 <- aaa_extract %>% 
-  mutate(screen_to_screen = time_length(date_screen %--% date_seen_outpatient, 
+  mutate(screen_to_seen = time_length(date_screen %--% date_seen_outpatient, 
                                         "days"), 
-         seen = case_when(screen_to_screen <= 14 ~ 1, 
-                          TRUE ~ 0), 
-         screen_to_screen_group = 
-           case_when(screen_to_screen >= 0 & screen_to_screen <= 7 ~ 1, 
-                     screen_to_screen >= 8 & screen_to_screen <= 14 ~ 2, 
-                     screen_to_screen >= 15 & screen_to_screen <= 21 ~ 3, 
-                     screen_to_screen >= 22 & screen_to_screen <= 28 ~ 4, 
-                     screen_to_screen >= 29 & screen_to_screen <= 42 ~ 5, 
-                     screen_to_screen >= 43 ~ 6))
+         seen = case_when(screen_to_seen <= 14 ~ 1, 
+                          # new var - seen within 4 weeks - audit for Spring KPIs 2025
+                          screen_to_seen > 14 & screen_to_seen <= 28 ~ 2,
+                          TRUE ~ 0))
 
 # Check variables
 # Do these add value? Do we need them?
-kpi_3_1 %>% count(screen_to_screen)
+kpi_3_1 %>% count(screen_to_seen)
 kpi_3_1 %>% count(seen)
-kpi_3_1 %>% count(screen_to_screen_group)
 
 # KPI 3.1 provisional footnote - people referred but not yet seen
 # This section should be applied to the spring QPMG run because vascular data for
@@ -95,11 +89,11 @@ if (season == "spring"){
 
 
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
-# date_seen_outpatient is populated and screen_to_screen is greater than or equal 
+# date_seen_outpatient is populated and screen_to_seen is greater than or equal 
 # to zero
 kpi_3_1 <- kpi_3_1 %>% 
   filter(result_outcome %in% c("01", "03", "04", "05") | 
-           !is.na(date_seen_outpatient) & screen_to_screen >= 0) |> 
+           !is.na(date_seen_outpatient) & screen_to_seen >= 0) |> 
   mutate(financial_year = droplevels(financial_year))
 
 
