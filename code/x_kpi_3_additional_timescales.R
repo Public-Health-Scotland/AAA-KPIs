@@ -25,6 +25,7 @@ library(tidylog)
 library(tidyr)
 library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 library(forcats)
+library(openxlsx)
 
 rm(list = ls())
 gc()
@@ -32,7 +33,7 @@ gc()
 
 source(here::here("code/00_housekeeping.R"))
 
-rm (exclusions_path, output_path, simd_path, fy_tibble, 
+rm (exclusions_path, simd_path, fy_tibble, 
     qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
     year1, year2, extract_date)
 
@@ -119,7 +120,8 @@ kpi_3_1 <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>%
   mutate(kpi = "KPI 3.1 Residence", .after = hbres) |>
   # arrange into longer format and order vars
   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |> 
-  mutate(group = fct_relevel(group, c("cohort_n", "seen_2wks_n", "cover_2wks_p", "seen_4wks_n", "cover_4wks_p"))) |> 
+  mutate(hbres = fct_relevel(hbres, hb_list),
+         group = fct_relevel(group, c("cohort_n", "seen_2wks_n", "cover_2wks_p", "seen_4wks_n", "cover_4wks_p"))) |> 
   arrange(hbres, financial_year, group) |> 
   rename(health_board = hbres)
 
@@ -409,14 +411,62 @@ kpi_3_new_timescales <- bind_rows(kpi_3_1, kpi_3_2_res, kpi_3_2_surg)
 
 query_write_rds(kpi_3_new_timescales, paste0(temp_path, "/4_1_kpi_3_", yymm, "_new_timescales.rds"))
 
+rm(aaa_extract, kpi_3_1, kpi_3_2_base, kpi_3_2_res, kpi_3_2_surg, kpi_3_2_surg_base) # tidy
 
-# 6: Write to Excel -------------------------------------------------------
+# 6: Prep Excel data ------------------------------------------------------
 
+# function to combine fy and group cols and pivot wider
+## AMc note: this could go into a package for sure
+pivot_fy_grp_wide <- function(data, fy_col, grp_col, value_col) {
+  data |> 
+    unite("fy_group", {{ fy_col }}, {{ grp_col }}, sep= "_") |> 
+    pivot_wider(names_from = fy_group, values_from = {{ value_col }})
+}
+
+# 3.1
+excel_3_1 <- kpi_3_new_timescales |> 
+  filter(kpi == "KPI 3.1 Residence",
+         financial_year %in% kpi_report_years) |> 
+  select(-kpi) |> 
+  pivot_fy_grp_wide(financial_year, group, value)
+
+# 3.2 Res
+excel_3_2_res_top <- kpi_3_new_timescales |> 
+  filter(kpi == "KPI 3.2 Residence",
+         financial_year %in% kpi_report_years[1:2]) |> 
+  select(-kpi) |> 
+  pivot_fy_grp_wide(financial_year, group, value)
+
+excel_3_2_res_bottom <- kpi_3_new_timescales |> 
+  filter(kpi == "KPI 3.2 Residence",
+         financial_year %in% kpi_report_years[3]) |> 
+  select(-kpi) |> 
+  pivot_fy_grp_wide(financial_year, group, value)
+
+# 3.2 Surg  
+excel_3_2_surg_top <- kpi_3_new_timescales |> 
+  filter(kpi == "KPI 3.2 Surgery",
+         financial_year %in% kpi_report_years[1:2]) |> 
+  select(-kpi) |> 
+  pivot_fy_grp_wide(financial_year, group, value)
+
+excel_3_2_surg_bottom <- kpi_3_new_timescales |> 
+  filter(kpi == "KPI 3.2 Surgery",
+         financial_year %in% kpi_report_years[3]) |> 
+  select(-kpi) |> 
+  pivot_fy_grp_wide(financial_year, group, value)
+
+
+# 7: Write to Excel -------------------------------------------------------
 
 source(here::here("code", "src", "Source_Excel_Styles.R"))
 
+wb <- createWorkbook()
 
+addWorksheet(wb, "3.1")
+writeData(wb, "3.1", excel_3_1, startRow = 6, startCol = 1, colNames = T)
 
+query_saveWorkbook(wb, paste0(output_path, "/x_test_kpi3_extended_timescales.xlsx"))
 
 
 
