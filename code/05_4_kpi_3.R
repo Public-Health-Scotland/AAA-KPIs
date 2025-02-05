@@ -48,31 +48,26 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
 # date_screen is less than or equal to cut_off_date
 aaa_extract <- read_rds(extract_path) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
-         result_outcome != "02", 
+         result_outcome != "02", ## AMc note: this removes NAs too
          date_screen <= cut_off_date)
 
 
 # 3: KPI 3.1 ----
 # Calculate time between date seen in outpatients to date of screening
-kpi_3_1 <- aaa_extract %>% 
+kpi_3_1_base <- aaa_extract %>% 
   mutate(screen_to_seen = time_length(date_screen %--% date_seen_outpatient, 
                                         "days"), 
          seen = case_when(screen_to_seen <= 14 ~ 1, 
                           TRUE ~ 0))
 
-# Check variables
-# Do these add value? Do we need them?
-kpi_3_1 %>% count(screen_to_seen)
-kpi_3_1 %>% count(seen)
 
 # KPI 3.1 provisional footnote - people referred but not yet seen
 # This section should be applied to the spring QPMG run because vascular data for
-# the year end is not complete at that stage - it should not be run when
-# producing data for the complete year end from the September extract
+# the year end is not complete at that stage - autumn run should be complete 
 # these numbers get used in the provisional note of kpi 3.1 in theme 4 excel
 if (season == "spring"){
   
-  pending <- kpi_3_1 %>% 
+  pending <- kpi_3_1_base %>% 
     filter(financial_year == kpi_report_years[3]) %>% 
     mutate(pending_appt = case_when(!is.na(date_referral_true) & is.na(date_seen_outpatient) ~ 1, # people referred, but not yet seen
                        TRUE ~ 0)) |> 
@@ -89,15 +84,15 @@ if (season == "spring"){
 # Keep records where result_outcome is "01", "03", "04" or "05" or where
 # date_seen_outpatient is populated and screen_to_seen is greater than or equal 
 # to zero
-kpi_3_1 <- kpi_3_1 %>% 
-  filter(result_outcome %in% c("01", "03", "04", "05") | 
-           !is.na(date_seen_outpatient) & screen_to_seen >= 0) |> 
+kpi_3_1_base <- kpi_3_1_base %>% 
+  filter(result_outcome %in% c("01", "03", "04", "05") | # reason for not attending
+           !is.na(date_seen_outpatient) & screen_to_seen >= 0) |> # evidence of attending
   mutate(financial_year = droplevels(financial_year))
 
 
 ## Health Board of Residence ----
 # Health Boards
-kpi_3_1_hb <- kpi_3_1 %>% 
+kpi_3_1_hb <- kpi_3_1_base %>% 
   group_by(hbres, financial_year) %>% 
   summarise(cohort_n = n(), 
             seen_n = sum(seen)) |> 
@@ -106,7 +101,7 @@ kpi_3_1_hb <- kpi_3_1 %>%
   mutate_at(vars(cohort_n:seen_n), ~ifelse(is.na(.), 0, .))
   
 # Scotland
-kpi_3_1_scot <- kpi_3_1 %>% 
+kpi_3_1_scot <- kpi_3_1_base %>% 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             seen_n = sum(seen)) %>% 
@@ -115,25 +110,22 @@ kpi_3_1_scot <- kpi_3_1 %>%
 
 # Combine
 kpi_3_1_res <- bind_rows(kpi_3_1_scot, kpi_3_1_hb) %>% 
-  group_by(hbres) %>% 
+  # calculate coverage percentage
   mutate(cover_p = round_half_up(seen_n * 100 / cohort_n, 1)) |> 
   mutate(kpi = "KPI 3.1 Residence", .after = hbres) |>
-  ungroup()
-
-# arrange into longer format and order vars
-kpi_3_1_res <- kpi_3_1_res |>
+  # arrange into longer format and order vars
   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |> 
   mutate(group = fct_relevel(group, c("cohort_n", "seen_n", "cover_p"))) |> 
   arrange(hbres, financial_year, group) |> 
   rename(health_board = hbres)
 
 # change NaNs to NAs
-kpi_3_1_res$value[is.nan(kpi_3_1_res$value)] <- NA
+kpi_3_1_res$value[is.nan(kpi_3_1_res$value)] <- NA ## AMc note: not sure this is needed?
 
+# check
 table(kpi_3_1_res$health_board, kpi_3_1_res$financial_year) # all hbres/FY are 3
 
-# Tidy environment
-rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
+rm(kpi_3_1_base, kpi_3_1_hb, kpi_3_1_scot) # tidy
 
 
 # 4: KPI 3.2 ----
@@ -153,38 +145,25 @@ rm(kpi_3_1, kpi_3_1_hb, kpi_3_1_scot)
 
 # Calculate surgery variable and flag as 1 where screen_to_surgery is less than 
 # or equal to 56 days (8 weeks)
-kpi_3_2 <- aaa_extract %>% 
+kpi_3_2_base <- aaa_extract %>% 
   filter(result_outcome %in% c("11", "12", "13", "14", "15", "16", "17") | 
            (result_outcome == "20" & surg_method == "03" & !is.na(date_surgery))) %>% 
-  mutate(screen_to_surgery = time_length(date_screen %--% date_surgery, 
-                                         "days"), 
+  mutate(screen_to_surgery = time_length(date_screen %--% date_surgery, "days"), 
          surgery = case_when(screen_to_surgery <= 56 ~ 1, 
                              TRUE ~ 0),
-         screen_to_surgery_group = 
-           case_when(screen_to_surgery >= 0 & screen_to_surgery <= 14 ~ 1, # 2 weeks
-                     screen_to_surgery >= 15 & screen_to_surgery <= 56 ~ 2, # 8 weeks
-                     screen_to_surgery >= 57 & screen_to_surgery <= 112 ~ 3, # 16 weeks
-                     screen_to_surgery >= 113 & screen_to_surgery <= 224 ~ 4, # 32 weeks
-                     screen_to_surgery >= 225 & screen_to_surgery <= 365 ~ 5, # 1 year
-                     screen_to_surgery >= 366 ~ 6), # >1 year
          financial_year = droplevels(financial_year)) 
 
 if(season == "spring") {
   # december 31 filter because of required follow-up time [8 wks] (mentioned in footnotes of excel)
-  kpi_3_2 <- kpi_3_2 |> 
+  kpi_3_2_base <- kpi_3_2_base |> 
     filter(date_screen <= dmy(paste("31-12-", substr(start_date, 1, 4))))
 }
 
-# Check variables
-# Do these add value? Do we need them?
-kpi_3_2 %>% count(screen_to_surgery)
-kpi_3_2 %>% count(surgery)
-kpi_3_2 %>% count(screen_to_surgery_group)
+# Check result_outcome for records where date_surgery is blank ## AMc note: is this needed??
+kpi_3_2_base %>% filter(is.na(date_surgery)) %>% count(result_outcome)
 
-# Check result_outcome for records where date_surgery is blank
-kpi_3_2 %>% filter(is.na(date_surgery)) %>% count(result_outcome)
-
-kpi_3_2 <- kpi_3_2 %>% 
+# only records where surgery happened after related screening encounter are valid
+kpi_3_2_base <- kpi_3_2_base %>% 
   filter(screen_to_surgery >= 0 | is.na(screen_to_surgery))
 
 # This section should be applied to the spring QPMG run because vascular data for
@@ -193,19 +172,19 @@ kpi_3_2 <- kpi_3_2 %>%
 ##!! How/Where is this used??
 if (season == "spring"){
   
-  kpi_3_2 <- kpi_3_2 %>% 
+  kpi_3_2_base <- kpi_3_2_base %>% 
     mutate(pending_surgery = 
              case_when(result_outcome == "17" & is.na(date_surgery) ~ 1, 
                        TRUE ~ 0))
   
-  kpi_3_2 %>% count(pending_surgery)
+  kpi_3_2_base %>% count(pending_surgery)
   
 }
 
 
 ## Health Board of Residence ----
 # Health Boards
-kpi_3_2_hb <- kpi_3_2 %>% 
+kpi_3_2_hb <- kpi_3_2_base %>% 
   group_by(hbres, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |>
@@ -213,7 +192,7 @@ kpi_3_2_hb <- kpi_3_2 %>%
   complete(hbres, financial_year)
 
 # Scotland
-kpi_3_2_scot <- kpi_3_2 %>% 
+kpi_3_2_scot <- kpi_3_2_base %>% 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
@@ -223,65 +202,28 @@ kpi_3_2_scot <- kpi_3_2 %>%
 # Combine
 kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
   mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% # AMc note: this is a good way to get rid of NAs!!
-  group_by(hbres) %>% 
-  mutate(#cum_approp = sum(cohort), 
-         #cum_surgery = sum(surgery),
-         #pc_cum_surgery = round_half_up(cum_surgery * 100 / cum_approp, 1), 
-         cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
-  mutate(kpi = "KPI 3.2 Residence", .after = hbres) |>
-  ungroup()
-
-#### This next chunk of code adds in FY where missing (produces NAs), but is 
-## it better to store without the extra (NA) data produced, as the missing FYs 
-## are automatically created when the data is pivoted to match Excel output?
-## This method creates larger files to be stored each year.
-# Ensure every HB is represented every financial year
-kpi_3_2_res <- kpi_3_2_res |>
+  # calculate coverage
+  mutate(cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
+  mutate(kpi = "KPI 3.2 Residence", .after = hbres) |> 
+  # arrange into longer format and order vars
   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |> 
-  mutate(financial_year_group = paste(financial_year, group, sep = "_")) |> 
-  select(hbres, kpi, financial_year_group, value) |> 
-  pivot_wider(names_from = financial_year_group, values_from = value)
-
-kpi_3_2_res <- hb_tibble |> left_join(kpi_3_2_res, by = "hbres") 
-
-
-kpi_3_2_res <- kpi_3_2_res |> 
-  pivot_longer(!hbres:kpi, names_to = "group", values_to = "value") |> 
-  mutate(financial_year = group, .after = kpi) |> 
-  mutate(financial_year = stringr::str_remove(financial_year, "_cohort_n"),
-         financial_year = stringr::str_remove(financial_year, "_surgery_n"),
-         financial_year = stringr::str_remove(financial_year, "_cover_p"),
-         group = case_when(stringr::str_detect(group, "cohort") ~ "cohort_n",
-                           stringr::str_detect(group, "surgery") ~ "surgery_n",
-                           stringr::str_detect(group, "cover") ~ "cover_p")) |> 
+  mutate(group = forcats::fct_relevel(group, c("cohort_n", "surgery_n", "cover_p"))) |> 
+  arrange(hbres, financial_year, group) |> 
   rename(health_board = hbres)
 
+# check all HBs present for each FY
 table(kpi_3_2_res$health_board, kpi_3_2_res$financial_year) # all hbres/FY are 3
-# Current run IS saved with this transformation, but to decide how to best store
-#### 
 
-# ## Run the below code if it is decided that above code (creates HB records w NAs) 
-# ## should NOT used (this uses less data storage than above)
-# ## But will need to relevel hbres factors to put Scotland on top.
-# kpi_3_2_res <- kpi_3_2_res |>
-#   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |>
-#   rename(health_board = hbres)
-# 
-# table(kpi_3_2_res$hbres, droplevels(kpi_3_2_res$financial_year)) # NOT all hbres/FY are 3
-
-kpi_3_2_res <- kpi_3_2_res |> 
-  # remove NAs for numerical counts and replace w 0
-  # leaves _p var as NA, which helps when creating Excel wbs
-  mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
-                             is.na(value) ~ 0, TRUE ~ value))
 # change NaNs to NAs
 kpi_3_2_res$value[is.nan(kpi_3_2_res$value)] <- NA
 
+
+
 ## Health Board of Surgery ----
 # First, remove records where HB of surgery is NA & note any non-Scot HBs
-table(kpi_3_2$hb_surgery, useNA = "ifany")
+table(kpi_3_2_base$hb_surgery, useNA = "ifany")
 
-kpi_3_2_surg <- kpi_3_2 |> 
+kpi_3_2_surg_base <- kpi_3_2_base |> 
   filter(!is.na(hb_surgery)) |> 
   mutate(hb_surgery = case_when(hb_surgery == "A" ~ "Ayrshire & Arran",
                                 hb_surgery == "B" ~ "Borders",
@@ -291,103 +233,106 @@ kpi_3_2_surg <- kpi_3_2 |>
                                 hb_surgery == "H" ~ "Highland",
                                 hb_surgery == "L" ~ "Lanarkshire",
                                 hb_surgery == "N" ~ "Grampian",
-                                hb_surgery == "R" ~ "Orkney", # Needed?
+                                hb_surgery == "R" ~ "Orkney",
                                 hb_surgery == "S" ~ "Lothian",
                                 hb_surgery == "T" ~ "Tayside",
                                 hb_surgery == "V" ~ "Forth Valley",
-                                hb_surgery == "W" ~ "Western Isles", # Needed?
+                                hb_surgery == "W" ~ "Western Isles",
                                 hb_surgery == "Y" ~ "Dumfries & Galloway",
-                                hb_surgery == "Z" ~ "Shetland")) # Needed?
+                                hb_surgery == "Z" ~ "Shetland"))
 
-table(kpi_3_2_surg$hb_surgery, useNA = "ifany")
+table(kpi_3_2_surg_base$hb_surgery, useNA = "ifany")
 
-## Investigate HBs where there should not be any surgeries 
-##
-cumbria <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Cumbria",]
+## Coding Health Board of Surgery note:
+# HB of surgery can sometimes be coded to a HB that doesn't actually perform them
+# in these instances, PHS will recode the HB Surgery to that in which the surgery
+# most likely happened - the HB responsible for surgeries for that area
+# Below are the groupings for this (at Spring 2025):
+
+## Grampian group
+# Grampian, Orkney, Shetland
+
+## Greater Glasgow & Clyde group
+# Greater Glasgow & Clyde, Forth Valley, Western Isles
+
+## Highland group
+# Highland
+
+## Lanarkshire group
+# Lanarkshire, Ayrshire & Arran, Dumfries & Galloway
+
+## Lothian group
+# Lothian, Borders
+
+## Tayside group
+# Tayside, Fife
+
+
+## Investigate anomalies - HB of surgery not in Scotland or not assigned
+
+cumbria <- kpi_3_2_surg_base[kpi_3_2_surg_base$hb_surgery == "Cumbria",]
 table(cumbria$date_screen, useNA = "ifany")
 # all records from (date_screen) 2015-2019
 rm(cumbria)
-##
 
-##
-borders <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Borders",]
-table(borders$date_screen, useNA = "ifany")
-# modern records; re-code as Lothian
-rm(borders)
-##
-
-##
-dag <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Dumfries & Galloway",]
-table(dag$date_screen, useNA = "ifany")
-# old record; ignore
-rm(dag)
-##
-
-##
-fv <- kpi_3_2_surg[kpi_3_2_surg$hb_surgery == "Forth Valley",]
-table(fv$date_screen, useNA = "ifany")
-# most records from 2018 or before; re-code new dates as GGC
-rm(fv)
-##
-
-##
-no_surg <- filter(kpi_3_2, is.na(hb_surgery))
+no_surg <- filter(kpi_3_2_base, is.na(hb_surgery))
 table(no_surg$date_surgery, no_surg$hbres) # 1 record from FV in 2018 (follow-up??)
 rm(no_surg)
-##
 
+# recode surgery to new hb_surgery_grp variable
+kpi_3_2_surg_base <- kpi_3_2_surg_base |> 
+  # remove cumbria records
+  filter(!hb_surgery == "Cumbria") |> 
+  # assign groups
+  mutate(hb_surgery_grp = case_when(
+    hb_surgery %in% c("Ayrshire & Arran", "Dumfries & Galloway", "Lanarkshire") ~ "Lanarkshire", 
+    hb_surgery %in% c("Borders", "Lothian") ~ "Lothian", 
+    hb_surgery %in% c("Fife", "Tayside") ~ "Tayside", 
+    hb_surgery %in% c("Forth Valley", "Western Isles", "Greater Glasgow & Clyde") ~ "Greater Glasgow & Clyde", 
+    hb_surgery %in% c("Orkney", "Shetland", "Grampian") ~ "Grampian", 
+    hb_surgery == "Highland" ~ "Highland", 
+    .default = NA))
+  
+
+
+## Calculating kpi
 # Health Boards
-kpi_3_2_hb <- kpi_3_2_surg %>% 
-  filter(!hb_surgery == "Cumbria") |>
-  filter(!hb_surgery == "Dumfries & Galloway") |> # can't make it work to combine with above!
-  mutate(hb_surgery = case_when(hb_surgery == "Borders" ~ "Lothian",
-                                hb_surgery == "Forth Valley" ~ "Greater Glasgow & Clyde",
-                                TRUE ~ hb_surgery)) |> 
-group_by(hb_surgery, financial_year) %>% 
+kpi_3_2_hb <- kpi_3_2_surg_base %>% 
+  group_by(hb_surgery_grp, financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) |> 
   ungroup() |> 
-  complete(hb_surgery, financial_year)
+  complete(hb_surgery_grp, financial_year)
 
 # Scotland
-kpi_3_2_scot <- kpi_3_2_surg %>% # Should these exclude the Cumbria records?? Yes, since excluded above
-  filter(!hb_surgery == "Cumbria") |> 
-  filter(!hb_surgery == "Dumfries & Galloway") |> 
+kpi_3_2_scot <- kpi_3_2_surg_base %>% 
   group_by(financial_year) %>% 
   summarise(cohort_n = n(), 
             surgery_n = sum(surgery)) %>% 
-  mutate(hb_surgery = "Scotland", .before = financial_year) |>
+  mutate(hb_surgery_grp = "Scotland", .before = financial_year) |>
   ungroup()
 
 # Combine
 kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>% 
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>% 
-  group_by(hb_surgery) %>% 
-  mutate(#cum_referrals = sum(cohort), 
-    #cum_seen = sum(seen), 
-    #pc_cum_seen = round_half_up(cum_seen * 100 / cum_referrals, 1),  
-    cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
-  mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery) |>
-  ungroup()
-
-
-kpi_3_2_surg <- kpi_3_2_surg |>
-  pivot_longer(!hb_surgery:financial_year, names_to = "group", 
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), 0, .))) %>%
+  # calculate coverage percentage
+  mutate(cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
+  mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery_grp) |> 
+  # arrange into longer format and order vars
+  pivot_longer(!hb_surgery_grp:financial_year, names_to = "group", 
                values_to = "value") |> 
-  rename(health_board = hb_surgery)
+  rename(health_board = hb_surgery_grp)
 
-table(kpi_3_2_surg$health_board, droplevels(kpi_3_2_surg$financial_year)) # NOT all hbres/FY are 3
+# check all HBs represented in all FYs
+table(kpi_3_2_surg$health_board, droplevels(kpi_3_2_surg$financial_year)) # all hbres/FY are 3
 
-kpi_3_2_surg <- kpi_3_2_surg |> 
-  # remove NAs for numerical counts and replace w 0
-  # not sure if this needs to be done?
-  mutate(value = case_when((group == "cohort_n" | group == "surgery_n") & 
-                             is.na(value) ~ 0, TRUE ~ value))
+# change NaNs to NAs
+kpi_3_2_res$value[is.nan(kpi_3_2_res$value)] <- NA
 
 
 ###
 # Check differences between hbres and hb_surgery
-check <- kpi_3_2[kpi_3_2$financial_year %in% c(kpi_report_years),]
+check <- kpi_3_2_base[kpi_3_2_base$financial_year %in% c(kpi_report_years),]
 check <- droplevels(check)
 table(check$financial_year) # total records by FY
 table(check$hbres, check$financial_year) # hbres groups
@@ -395,28 +340,15 @@ table(check$hb_surgery, check$financial_year) # hb_surgery groups
 table(check$hb_surgery, useNA = "ifany") # are there any NAs?
 
 # Look into NAs and determine result_outcome
+# if outcome is one of the reasons for not having surgery listed above, that's ok
+# otherwise follow-up with health board?
 check_2 <- check[is.na(check$hb_surgery),]
 table(check_2$result_outcome, check_2$financial_year)
 
 rm(check, check_2)
 ###
 
-
-# Tidy environment
-rm(kpi_3_2, kpi_3_2_hb, kpi_3_2_scot)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-### 202501 fix ------
-## Temporary fix for 202501 publication, but this will need to be incorporated
-## into historical data block
-## Changed Borders, D&G, and FV HBs, as they should not be entries in hb_surgery field
-
-table(kpi_3_2_surg$health_board)
-
-write_rds(kpi_3_2_surg, paste0(temp_path, "/4_1_kpi_3_2_surg_remake", yymm, ".rds"))
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+rm(kpi_3_2_base, kpi_3_2_hb, kpi_3_2_scot, kpi_3_2_surg_base) # tidy
 
 
 # Step 5: Write outputs ----
