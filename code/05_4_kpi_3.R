@@ -207,7 +207,7 @@ kpi_3_2_res <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
   mutate(kpi = "KPI 3.2 Residence", .after = hbres) |> 
   # arrange into longer format and order vars
   pivot_longer(!hbres:financial_year, names_to = "group", values_to = "value") |> 
-  mutate(group = forcats::fct_relevel(group, c("cohort_n", "surgery_n", "cover_p"))) |> 
+  mutate(group = fct_relevel(group, c("cohort_n", "surgery_n", "cover_p"))) |> 
   arrange(hbres, financial_year, group) |> 
   rename(health_board = hbres)
 
@@ -319,8 +319,13 @@ kpi_3_2_surg <- bind_rows(kpi_3_2_scot, kpi_3_2_hb) %>%
   mutate(cover_p = round_half_up(surgery_n * 100 / cohort_n, 1)) |> 
   mutate(kpi = "KPI 3.2 Surgery", .after = hb_surgery_grp) |> 
   # arrange into longer format and order vars
-  pivot_longer(!hb_surgery_grp:financial_year, names_to = "group", 
-               values_to = "value") |> 
+  pivot_longer(!hb_surgery_grp:financial_year, names_to = "group", values_to = "value") |> 
+  mutate(hb_surgery_grp = fct_relevel(hb_surgery_grp, c("Scotland", "Grampian", 
+                                                        "Greater Glasgow & Clyde",
+                                                        "Highland", "Lanarkshire",
+                                                        "Lothian", "Tayside")),
+         group = fct_relevel(group, c("cohort_n", "surgery_n", "cover_p"))) |> 
+  arrange(hb_surgery_grp, financial_year, group) |> 
   rename(health_board = hb_surgery_grp)
 
 # check all HBs represented in all FYs
