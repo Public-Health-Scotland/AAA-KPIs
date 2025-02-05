@@ -26,6 +26,8 @@ library(tidyr)
 library(phsaaa) # to install: devtools::install_github("Public-Health-Scotland/phsaaa")
 library(forcats)
 library(openxlsx)
+library(stringr)
+library(common)
 
 rm(list = ls())
 gc()
@@ -33,10 +35,11 @@ gc()
 
 source(here::here("code/00_housekeeping.R"))
 
-rm (exclusions_path, simd_path, fy_tibble, 
-    qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start, 
-    year1, year2, extract_date)
+rm (exclusions_path, simd_path, fy_tibble, year1, year2,
+    qpmg_month, cutoff_date, year1_end, year1_start, year2_end, year2_start)
 
+
+template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 
 # 2: Data Manipulation ----
 # Keep records where date_referral_true is populated and largest measure is 
@@ -459,16 +462,181 @@ excel_3_2_surg_bottom <- kpi_3_new_timescales |>
 
 # 7: Write to Excel -------------------------------------------------------
 
+## housekeeping ----
+
+# Define reporting years
+year_xx <- year(cut_off_date)
+year_ww <- year_xx - 1
+year_vv <- year_xx - 2
+year_yy <- year_xx + 1
+year_uu <- year_xx - 3
+year_ss <- year_xx - 5
+
+# styles
 source(here::here("code", "src", "Source_Excel_Styles.R"))
 
-wb <- createWorkbook()
+## notes etc ----
 
-addWorksheet(wb, "3.1")
-writeData(wb, "3.1", excel_3_1, startRow = 6, startCol = 1, colNames = T)
+### KPI 3.1
+screened_year_vvr <- paste0("Screened in year ending 31 March ", year_vv, {supsc('r')})
+screened_year_wwr <- paste0("Screened in year ending 31 March ", year_ww, {supsc('r')})
+screened_year_xx <- eval_seasonal_diff(
+  season,
+  {paste0("Screened in year ending 31 March ", year_xx, {supsc('p')},
+          '\n', "(Data not complete)")}, # spring
+  {paste0("Screened in year ending 31 March ", year_xx)} # autumn
+)
+
+# provisional note import and creating
+if(season == "spring") { # only possible to create in spring because the data only gets created in spring
+  
+  p_note_3.1_data <- read_rds(paste0(temp_path, "/4_provisional_note_3.1.rds")) |> 
+    pivot_wider(names_from = pending_appt, values_from = n) |> 
+    mutate(`Referral date and outpatient date` = `Total referrals` - `Referral date, no outpatient date`)
+  
+  kpi_3.1_prov <- paste0("p  Provisonal. Data are for the 11-month period 1 April ",
+                         year_ww, " to ", extract_date, " ", year_xx,
+                         " and do not include data for referrrals with no outpatient ",
+                         "date recorded. In the 11-month period, there were a total ",
+                         "of ", p_note_3.1_data |> pull(`Total referrals`), 
+                         " vascular referrals. At ", extract_date, " ", year_xx, 
+                         " (date of extract), ", p_note_3.1_data |> pull(`Referral date and outpatient date`), 
+                         " of these referrals had an outpatient date recorded and ",
+                         p_note_3.1_data |> pull(`Referral date, no outpatient date`), 
+                         " had no outpatient date recorded.")
+}
+
+# revised note
+kpi_3.1_revised <- paste0("r  Revised since published on {publication date} ",
+                          year_xx, ", due to updates in the data recorded on the ",
+                          "Scottish AAA Call Recall System. The Scotland rate for ",
+                          "the year ending 31 March ", year_ww, " was previously ",
+                          "{x, taken from previous autumn report}%. Figures for all ",
+                          "time periods in this table are based on data recorded on ",
+                          "the Scottish AAA Call Recall System at ", extract_date,
+                          " ", year_xx, " (date of data extraction).")
+
+### KPI 3.2 Res and Surg
+
+kpi_3.2_revised <- paste0("r  Revised since published on {publication date year_xx} ",
+                          year_xx, " due to updates of the data recorded on the ",
+                          "Scottish AAA Call Recall System (Scotland figure was ",
+                          "{Scotland % ", year_ww, " taken from previous autumn ",
+                          "report}%). The revisions are mainly due to updates in ",
+                          "the outcome of men who had a non-final outcome such as '",
+                          "referred to other specialty' or 'ongoing assessment by ",
+                          "vascular' at the time of the last publication. Some of ",
+                          "these men have since been classified as 'appropriate ",
+                          "for surgery' or have had surgery and are therefore ",
+                          "included in the figures. Figures for all time-periods ",
+                          "in this table are based on data recorded on Scottish ",
+                          "AAA Call Recall System at ", extract_date, " ", year_xx,
+                          " (date of data extraction).")
+
+kpi_3.2_prov <- paste0("p  Provisional. Data are for men screened from 1 April ",
+                       year_ww, " to 31 December ", year_ww, " only to allow ",
+                       "for the 8 week target timescale plus a data recording ",
+                       "lag. A number of men screened in this period have a ",
+                       "non-final outcome or no outcome recorded; therefore, ",
+                       "the figures will change when the data becomes more ",
+                       "complete. The denominator includes men with a non-final ",
+                       "outcome of 'Appropriate for surgery: final outcome pending' ",
+                       "with no surgery date recorded.")
+
+## writing data and styles ----
+
+# wb <- loadWorkbook(paste0(template_path, "/kpi_3_audit_new_timescales_",
+#                           season, ".xlsx"))
+# temp version
+wb <- loadWorkbook(paste0(template_path, "/kpi_3_audit_new_timescales_spring.xlsx"))
+
+
+### KPI 3.1
+# notes
+writeData(wb, sheet = "KPI 3.1", screened_year_vvr, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 3.1", screened_year_wwr, 
+          startRow = 4, startCol = 7)
+writeData(wb, sheet = "KPI 3.1", screened_year_xx, 
+          startRow = 4, startCol = 12)
+addStyle(wb, sheet = "KPI 3.1", styles$black_border_centre_12,
+         rows = 4, cols = 2:16, gridExpand = T)
+writeData(wb, sheet = "KPI 3.1", kpi_3.1_revised, 
+          startRow = 32)
+addStyle(wb, sheet = "KPI 3.1", style = styles$orange_11, 
+         rows = 32, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.1", kpi_3.1_prov, 
+            startRow = 34)
+  addStyle(wb, sheet = "KPI 3.1", style = styles$black_11, 
+           rows = 34, cols = 1)
+}
+# data
+writeData(wb, sheet = "KPI 3.1", excel_3_1, 
+          startRow = 7, colNames = FALSE)
+showGridLines(wb, "KPI 3.1", showGridLines = FALSE)
+
+### KPI 3.2 Res
+# notes
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_vvr, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_wwr, 
+          startRow = 4, startCol = 13)
+addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$black_border_centre_12,
+         rows = 4, cols = 2:23, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Residence", screened_year_xx, 
+          startRow = 25, startCol = 2)
+addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$black_border_centre_12,
+         rows = 25, cols = 2:12, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_revised, 
+          startRow = 55)
+addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$orange_11, 
+         rows = 55, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.2 HB Residence", kpi_3.2_prov, 
+            startRow = 57)
+  addStyle(wb, sheet = "KPI 3.2 HB Residence", styles$orange_11, 
+           rows = 57, cols = 1)
+}
+# data
+writeData(wb, sheet = "KPI 3.2 HB Residence", excel_3_2_res_top, 
+          startRow = 7, colNames = F)
+writeData(wb, sheet = "KPI 3.2 HB Residence", excel_3_2_res_bottom, 
+          startRow = 28, colNames = F)
+showGridLines(wb, "KPI 3.2 HB Residence", showGridLines = FALSE)
+
+
+### KPI 3.2 Surg
+# notes
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_vvr, 
+          startRow = 4, startCol = 2)
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_wwr, 
+          startRow = 4, startCol = 13)
+addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$black_border_centre_12,
+         rows = 4, cols = 2:23, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_xx, 
+          startRow = 17, startCol = 2)
+addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$black_border_centre_12,
+         rows = 17, cols = 2:12, gridExpand = T)
+writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_revised, 
+          startRow = 39)
+addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$orange_11, 
+         rows = 39, cols = 1)
+if (season == "spring") {
+  writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_prov, 
+            startRow = 41)
+  addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$orange_11, 
+           rows = 41, cols = 1)
+}
+# data
+writeData(wb, sheet = "KPI 3.2 HB Surgery", excel_3_2_surg_top, 
+          startRow = 7, colNames = F)
+writeData(wb, sheet = "KPI 3.2 HB Surgery", excel_3_2_surg_bottom, 
+          startRow = 20, colNames = F)
+showGridLines(wb, "KPI 3.2 HB Surgery", showGridLines = FALSE)
+
+
+## save output ----
 
 query_saveWorkbook(wb, paste0(output_path, "/x_test_kpi3_extended_timescales.xlsx"))
-
-
-
-
 
