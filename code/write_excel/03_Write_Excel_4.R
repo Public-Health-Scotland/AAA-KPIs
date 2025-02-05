@@ -334,14 +334,14 @@ writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_xx,
 addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$black_border_centre_12,
          rows = 4, cols = 2:10, gridExpand = T)
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_revised, 
-          startRow = 26)
+          startRow = 25)
 addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
-         rows = 26, cols = 1)
+         rows = 25, cols = 1)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_prov, 
-            startRow = 28)
+            startRow = 27)
   addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
-           rows = 28, cols = 1)
+           rows = 27, cols = 1)
 }
 # data
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3_2_surg, 
