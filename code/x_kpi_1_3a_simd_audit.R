@@ -4,7 +4,7 @@
 # Adapted by Aoife McCarthy
 # 08/01/2025
 #
-# Produces KPI 1.3a by SIMD - audit for Spring 2025
+# Produces range for KPI 1.3a by SIMD - audit for Spring 2025
 #
 # Written/run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
