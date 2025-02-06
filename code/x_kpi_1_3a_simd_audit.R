@@ -1,9 +1,10 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # x_kpi_1_3a_simd_audit.R
 # Angus Morton
+# Adapted by Aoife McCarthy
 # 08/01/2025
 #
-# Produce KPIs 1.1, 1.2a, 1.2b, 1.3a, 1.3a HB-level, 1.3b and 1.3b HB-level
+# Produces KPI 1.3a by SIMD - audit for Spring 2025
 #
 # Written/run on Posit PWB (R version 4.1.2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
