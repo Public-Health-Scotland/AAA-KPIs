@@ -10,10 +10,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the multiple RDS files create in the 8_4_KPI_3.R, 
-# 9_4_kpi_4.R, 91_4_vascular_referrals.R, and 96_4_unfit_for_surgery.R scripts 
+# This script calls in the multiple RDS files create in the 05_4_kpi_3.R, 
+# 06_4_kpi_4.R, 07_4_vascular_referrals.R, and 08_4_unfit_for_surgery.R scripts 
 # and transforms the data to print directly into the theme 4 Excel file for 
-# both the spring and autumn MEGs.
+# both the spring and autumn QPMGs.
 
 # 1: Housekeeping ----
 library(dplyr)
@@ -33,7 +33,7 @@ gc()
 source(here::here("code", "00_housekeeping.R"))
 
 rm (exclusions_path, extract_path, hist_path, simd_path,
-    fy_list, hb_list, fy_tibble, hb_tibble,
+    fy_list, fy_tibble, hb_tibble,
      cutoff_date, end_current, end_date, start_date,
     year1_end, year1_start, year2_end, year2_start, year1, year2)
    
@@ -223,7 +223,9 @@ aaa_repairs <- theme4_repairs |>
 unfit_surgery <- theme4_unfit |> 
   pivot_wider(names_from = financial_year, values_from = c(cohort_n:unfit_p)) |> 
   select(hbres, ends_with(kpi_report_years[1]), ends_with(kpi_report_years[2]), 
-         ends_with(kpi_report_years[3]), ends_with("Cumulative"))
+         ends_with(kpi_report_years[3]), ends_with("Cumulative")) |> 
+  mutate(hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(hbres)
 
 ## Unfit for Surgery Follow-up ----
 unfit_followup <- theme4_unfit_followup 
@@ -339,14 +341,14 @@ writeData(wb, sheet = "KPI 3.2 HB Surgery", screened_year_xx,
 addStyle(wb, sheet = "KPI 3.2 HB Surgery", styles$black_border_centre_12,
          rows = 4, cols = 2:10, gridExpand = T)
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_revised, 
-          startRow = 26)
+          startRow = 25)
 addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
-         rows = 26, cols = 1)
+         rows = 25, cols = 1)
 if (season == "spring") {
   writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3.2_prov, 
-            startRow = 28)
+            startRow = 27)
   addStyle(wb,sheet =  "KPI 3.2 HB Surgery", style = styles$orange_11, 
-           rows = 28, cols = 1)
+           rows = 27, cols = 1)
 }
 # data
 writeData(wb, sheet = "KPI 3.2 HB Surgery", kpi_3_2_surg, 

@@ -57,8 +57,66 @@ rm (exclusions_path, extract_path, output_path, fy_tibble, qpmg_month,
 # SIMD levels
 simd_level <- tibble(simd = c("Total", "1","2","3", "4", "5", "Unknown"))
 
+# Functions
+
+## summarises based on specified grouping vars, then appends a total row
+### group_vars = vector of unquoted col names to group by
+### total_row_name = a quoted character variable to call the "total" row - for HB-only, it's usually "Scotland", for simd, it's "Total"
+### cols_to_sum = columns to summarise, specified in tidy selection manner (e.g. c(a, b, c) or just a:c)
+summarise_and_total <- function(df, group_vars, total_row_name, cols_to_sum) {
+  df |> 
+    group_by(across(c({{ group_vars }}))) |> 
+    summarise(across(c({{ cols_to_sum }}), \(x) sum(x, na.rm = TRUE))) |> 
+    group_modify(~ janitor::adorn_totals(.x, where = "row", name = total_row_name)) |>  
+    ungroup()
+}
+
+## reformats data to match historical - long form, with cols: hbres, kpi, fin_year, simd, group, value
+### data_cols = tidy selection of cols with numerical data in them (everything but hbres/simd)
+### kpis_var = a quoted character variable containing KPI names - for KPIs with additional info, the "additional" KPI should be in the 2nd position
+### fy1 and fy2 = character vars of the financial years to add - defaults are the housekeeping vars year1 and year2
+match_historical <- function(df, data_cols, kpis_var, fy1 = year1, fy2 = year2) {
+  
+  # create FY and group columns and assign correct values based on "raw_names"
+  fy_groups <- df |> 
+    pivot_longer({{ data_cols }}, names_to = "raw_names", values_to = "value") |> 
+    mutate(fin_year = raw_names, .after = raw_names) |> # new col to assign finyear to
+    mutate(group = raw_names, .after = fin_year) |> # new col to assign group to
+    mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ fy1,
+                                str_detect(fin_year, "_year2") ~ fy2), # assign fin years
+           group = case_when(str_detect(group, "cohort") ~ "cohort_n",
+                             str_detect(group, "offer") ~ "offer_n",
+                             str_detect(group, "test") ~ "test_n",
+                             str_detect(group, "coverage") ~ "coverage_p",
+                             str_detect(group, "uptake") ~ "uptake_p")) # assign group names
+  
+  # assigning KPIs to the dataframes - accounts for KPIs with "add" columns
+  if(length({{ kpis_var }}) > 1) {
+    kpis <- fy_groups |> 
+      mutate(kpi = if_else(str_detect(raw_names, "_add_"), 
+                           kpis_var[[2]], kpis_var[[1]]), .after = hbres)
+  } else if(length({{ kpis_var }}) == 1) {
+    kpis <- fy_groups |> 
+      mutate(kpi = kpis_var, .after = hbres) }
+  
+  # remove "raw_names"
+  kpis <- kpis |> 
+    select(-raw_names)
+  
+  # if simd is not a column, gets created (KPIs 1.1 & 1.2), otherwise gets relocated (KPI 1.3)
+  if(is.null(kpis$simd) == TRUE) {
+    simd <- kpis |>
+      mutate(simd = NA, .after = fin_year) }
+  else if(is.null(kpis$simd) == FALSE) {
+    simd <- kpis |>
+      relocate(simd, .after = fin_year) }
+  
+  return(simd) 
+}
+
+
 ### Step 2: Import data ----
-invite_uptake <- read_rds(paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
+invite_uptake_raw <- read_rds(paste0(temp_path, "/1_1_invite_uptake_initial.rds"))
 
 pc_simd <- read_rds(simd_path) |>
   select(pc8, simd2020v2_hb2019_quintile)
@@ -68,7 +126,7 @@ pc_simd <- read_rds(simd_path) |>
 ## KPI 1.1 ----
 ## Percentage of eligible population who are sent an initial offer to 
 ## screening before age 66
-invite_uptake <- invite_uptake %>%
+invite_uptake <- invite_uptake_raw %>%
   # calculate age at screening (in months as 66 and 3 months is the key age)
   mutate(age_screen = age_calculate(dob, screen_date, units = "months")) %>%
   # calculate age at offer (in years as 66 is the key age)
@@ -226,10 +284,7 @@ kpi_1_1 <- invite_uptake  |>
   # keeps data for eligible cohorts for men turning age 66 from 2014/15
   filter(dob >= dmy("01-04-1948")) |> 
   select(hbres, cohort_year1:offer_add_year2) |> 
-  group_by(hbres) |> 
-  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) %>%
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) %>% 
-  ungroup() |> 
+  summarise_and_total(hbres, "Scotland", cohort_year1:offer_add_year2) |> 
   glimpse() # offer_not_assigned what does this tell us? Why included??
 
 kpi_1_1<- kpi_1_1 |> 
@@ -243,82 +298,15 @@ kpi_1_1<- kpi_1_1 |>
 
 # Reformat to match historical data
 kpi_1_1 <- kpi_1_1 |> 
-  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
-                       "KPI 1.1 Sept coverage", "KPI 1.1"), .after = hbres) |> 
-  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
-                              str_detect(fin_year, "_year2") ~ year2),
-         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
-                           str_detect(group, "offer") ~ "offer_n",
-                           str_detect(group, "coverage") ~ "coverage_p")) |> 
-  mutate(simd = NA, .after = fin_year) |> 
+  match_historical(!hbres, c("KPI 1.1", "KPI 1.1 Sept coverage")) |> 
   glimpse()
 
 kpi_1_1 <- hb_tibble |> left_join(kpi_1_1, by = "hbres")
 
-## KPI 1.1 Scotland SIMD ----
-# KPI 1.1: individuals offered screen before 66 (+ additional COVID info)
-# grouped by Scotland-level SIMD quintiles
-kpi_1_1_simd <- invite_uptake  |> 
-  select(hbres, simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
-  group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
-  glimpse() # _not_assigned: what do these rows do??
-
-# Scotland
-kpi_1_1_simd_scot <- invite_uptake  |> 
-  select(simd2020v2_sc_quintile, cohort_year1:offer_add_year2) |> 
-  group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:offer_add_year2, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
-  mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
-  glimpse()
-
-# Combine & order by SIMD
-kpi_1_1_simd <- bind_rows(kpi_1_1_simd_scot, kpi_1_1_simd) |> 
-  mutate(simd2020v2_sc_quintile = if_else(is.na(simd2020v2_sc_quintile), 
-                                          "Unknown", simd2020v2_sc_quintile))
-kpi_1_1_simd <- simd_level |> left_join(kpi_1_1_simd, 
-                                        by = c("simd" = "simd2020v2_sc_quintile"))
-
-rm(kpi_1_1_simd_scot) # tidy environment
-
-kpi_1_1_simd <- kpi_1_1_simd  |> 
-  mutate(coverage_year1 = (offer_year1/cohort_year1)*100,
-         coverage_year2 = (offer_year2/cohort_year2)*100,
-         coverage_add_year1 = (offer_add_year1/cohort_year1)*100,
-         coverage_add_year2 = (offer_add_year2/cohort_year2)*100) |> 
-  select(hbres, simd, cohort_year1, offer_year1, coverage_year1, offer_add_year1,
-         coverage_add_year1, cohort_year2, offer_year2, coverage_year2,
-         offer_add_year2, coverage_add_year2) # these last 2 only used in fall QPMG
-
-# Reformat to match historical data
-kpi_1_1_simd <- kpi_1_1_simd |> 
-  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = if_else(str_detect(fin_year, "_add_"), "KPI 1.1 Scotland SIMD Sept coverage", 
-                       "KPI 1.1 Scotland SIMD"), .after = hbres) |> 
-  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
-                              str_detect(fin_year, "_year2") ~ year2),
-         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
-                           str_detect(group, "offer") ~ "offer_n",
-                           str_detect(group, "coverage") ~ "coverage_p")) |> 
-  relocate(simd, .after = fin_year) |>
-  glimpse()
-
-kpi_1_1_simd <- hb_tibble |> left_join(kpi_1_1_simd, by = "hbres")
-
 ## KPI 1.2a ----
 kpi_1_2a <- invite_uptake  |> 
   select(hbres, cohort_year1, cohort_year2, test_a_year1:test_a_add_not_assigned) |> 
-  group_by(hbres) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |> 
+  summarise_and_total(hbres, "Scotland", cohort_year1:test_a_add_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
 
 kpi_1_2a <- kpi_1_2a  |> 
@@ -332,16 +320,7 @@ kpi_1_2a <- kpi_1_2a  |>
 
 # Reformat to match historical data
 kpi_1_2a <- kpi_1_2a |> 
-  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = if_else(str_detect(fin_year, "_add_"), 
-                       "KPI 1.2a Sept coverage", "KPI 1.2a"), .after = hbres) |> 
-  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
-                              str_detect(fin_year, "_year2") ~ year2),
-         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "coverage") ~ "coverage_p")) |> 
-  mutate(simd = NA, .after = fin_year) |> 
+  match_historical(!hbres, c("KPI 1.2a", "KPI 1.2a Sept coverage")) |> 
   glimpse()
 
 kpi_1_2a <- hb_tibble |> left_join(kpi_1_2a, by = "hbres")
@@ -350,10 +329,7 @@ kpi_1_2a <- hb_tibble |> left_join(kpi_1_2a, by = "hbres")
 ## KPI 1.2b ----
 kpi_1_2b <- invite_uptake |> 
   select(hbres, offer_year1, offer_year2, test_b_year1:test_b_not_assigned) |> 
-  group_by(hbres) |> 
-  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Scotland")) |>  
-  ungroup() |> 
+  summarise_and_total(hbres, "Scotland", offer_year1:test_b_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
 
 kpi_1_2b <- kpi_1_2b |> 
@@ -364,15 +340,7 @@ kpi_1_2b <- kpi_1_2b |>
 
 # Reformat to match historical data
 kpi_1_2b <- kpi_1_2b |> 
-  pivot_longer(!hbres, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = "KPI 1.2b", .after = hbres) |> 
-  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
-                              str_detect(fin_year, "_year2") ~ year2),
-         group = case_when(str_detect(group, "offer") ~ "offer_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "uptake") ~ "uptake_p")) |> 
-  mutate(simd = NA, .after = fin_year) |> 
+  match_historical(!hbres, "KPI 1.2b") |> 
   glimpse()
 
 kpi_1_2b <- hb_tibble |> left_join(kpi_1_2b, by = "hbres")
@@ -384,20 +352,14 @@ kpi_1_2b <- hb_tibble |> left_join(kpi_1_2b, by = "hbres")
 kpi_1_3a <- invite_uptake  |> 
   select(hbres, simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
-  group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(c(hbres, simd2020v2_sc_quintile), "Total", cohort_year1:test_a_add_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
 
 # Scotland
 kpi_1_3a_scot <- invite_uptake  |> 
   select(simd2020v2_sc_quintile, cohort_year1, cohort_year2, 
          test_a_year1:test_a_add_not_assigned) |> 
-  group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(cohort_year1:test_a_add_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(simd2020v2_sc_quintile, "Total", cohort_year1:test_a_add_not_assigned) |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
   glimpse() # _not_assigned: what do these rows do??
 
@@ -419,16 +381,7 @@ kpi_1_3a <- kpi_1_3a  |>
 
 # Reformat to match historical data
 kpi_1_3a <- kpi_1_3a |> 
-  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = if_else(str_detect(fin_year, "_add_"), "KPI 1.3a Sept coverage", 
-                       "KPI 1.3a Scotland SIMD"), .after = hbres) |> 
-  mutate(fin_year = case_when(str_detect(fin_year, "_year1") ~ year1,
-                              str_detect(fin_year, "_year2") ~ year2),
-         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "coverage") ~ "coverage_p")) |> 
-  relocate(simd, .after = fin_year) |>
+  match_historical(!hbres:simd, c("KPI 1.3a Scotland SIMD", "KPI 1.3a Sept coverage")) |> 
   glimpse()
 
 kpi_1_3a <- hb_tibble |> left_join(kpi_1_3a, by = "hbres")
@@ -441,12 +394,9 @@ kpi_1_3a <- hb_tibble |> left_join(kpi_1_3a, by = "hbres")
 kpi_1_3a_hb <- invite_uptake  |> 
   select(hbres, simd2020v2_hb2019_quintile, cohort_year1, test_a_year1, 
          test_a_not_assigned) |> 
-  group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(cohort_year1:test_a_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(c(hbres, simd2020v2_hb2019_quintile), "Total", cohort_year1:test_a_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
-
+  
 # Order by SIMD
 kpi_1_3a_hb <- kpi_1_3a_hb |> 
   mutate(simd2020v2_hb2019_quintile = if_else(is.na(simd2020v2_hb2019_quintile), 
@@ -460,14 +410,7 @@ kpi_1_3a_hb <- kpi_1_3a_hb |>
 
 # Reformat to match historical data
 kpi_1_3a_hb <- kpi_1_3a_hb |> 
-  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = "KPI 1.3a HB SIMD", .after = hbres) |> 
-  mutate(fin_year = year1,
-         group = case_when(str_detect(group, "cohort") ~ "cohort_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "coverage") ~ "coverage_p")) |> 
-  relocate(simd, .after = fin_year) |>
+  match_historical(!hbres:simd, "KPI 1.3a HB SIMD") |> 
   glimpse()
 
 kpi_1_3a_hb <- hb_tibble |> left_join(kpi_1_3a_hb, by = "hbres") |> 
@@ -480,20 +423,14 @@ kpi_1_3a_hb <- hb_tibble |> left_join(kpi_1_3a_hb, by = "hbres") |>
 kpi_1_3b <- invite_uptake  |> 
   select(hbres, simd2020v2_sc_quintile, offer_year1, test_b_year1,  
          test_b_not_assigned) |> 
-  group_by(hbres, simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(c(hbres, simd2020v2_sc_quintile), "Total", offer_year1:test_b_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
 
 # Scotland
 kpi_1_3b_scot <- invite_uptake  |> 
   select(simd2020v2_sc_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
-  group_by(simd2020v2_sc_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(simd2020v2_sc_quintile, "Total", offer_year1:test_b_not_assigned) |> 
   mutate(hbres = "Scotland", .before = simd2020v2_sc_quintile) |> 
   glimpse() # _not_assigned: what do these rows do??
 
@@ -510,14 +447,7 @@ kpi_1_3b <- kpi_1_3b  |>
 
 # Reformat to match historical data
 kpi_1_3b <- kpi_1_3b |> 
-  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = "KPI 1.3b Scotland SIMD", .after = hbres) |> 
-  mutate(fin_year = year1,
-         group = case_when(str_detect(group, "offer") ~ "offer_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "uptake") ~ "uptake_p")) |> 
-  relocate(simd, .after = fin_year) |>
+  match_historical(!hbres:simd, "KPI 1.3b Scotland SIMD") |> 
   glimpse()
 
 kpi_1_3b <- hb_tibble |> left_join(kpi_1_3b, by = "hbres")
@@ -530,10 +460,7 @@ kpi_1_3b <- hb_tibble |> left_join(kpi_1_3b, by = "hbres")
 kpi_1_3b_hb <- invite_uptake  |> 
   select(hbres, simd2020v2_hb2019_quintile, offer_year1, test_b_year1, 
          test_b_not_assigned) |> 
-  group_by(hbres, simd2020v2_hb2019_quintile) |> 
-  summarise(across(offer_year1:test_b_not_assigned, \(x) sum(x, na.rm = TRUE))) |> 
-  group_modify(~ janitor::adorn_totals(.x, where = "row", name = "Total")) |>  
-  ungroup() |> 
+  summarise_and_total(c(hbres, simd2020v2_hb2019_quintile), "Total", offer_year1:test_b_not_assigned) |> 
   glimpse() # _not_assigned: what do these rows do??
 
 # Order by SIMD
@@ -549,14 +476,7 @@ kpi_1_3b_hb <- kpi_1_3b_hb  |>
 
 # Reformat to match historical data
 kpi_1_3b_hb <- kpi_1_3b_hb |> 
-  pivot_longer(!hbres:simd, names_to = "fin_year", values_to = "value") |> 
-  mutate(group = fin_year, .after = fin_year) |> 
-  mutate(kpi = "KPI 1.3b HB SIMD", .after = hbres) |> 
-  mutate(fin_year = year1,
-         group = case_when(str_detect(group, "offer") ~ "offer_n",
-                           str_detect(group, "test") ~ "test_n",
-                           str_detect(group, "uptake") ~ "uptake_p")) |> 
-  relocate(simd, .after = fin_year) |>
+  match_historical(!hbres:simd, "KPI 1.3b HB SIMD") |> 
   glimpse()
 
 kpi_1_3b_hb <- hb_tibble |> left_join(kpi_1_3b_hb, by = "hbres") |> 
@@ -566,7 +486,7 @@ rm(kpi_1_3a_scot, kpi_1_3b_scot, hb_tibble, simd_level)
 
 
 ## Join summaries ----
-kpi_summary <- rbind(kpi_1_1, kpi_1_1_simd, kpi_1_2a, kpi_1_2b, kpi_1_3a,  
+kpi_summary <- rbind(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a,  
                      kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb) |> 
   mutate(value = janitor::round_half_up(value, 1))
 
@@ -575,7 +495,7 @@ table(kpi_summary$kpi, kpi_summary$fin_year)
 # Change NaNs to NAs
 kpi_summary$value[is.nan(kpi_summary$value)] <- NA
 
-rm(kpi_1_1, kpi_1_1_simd, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
+rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 
 
 ### Step 6: Add historical data ----

@@ -78,13 +78,13 @@ tab_1.1_add_desc <- paste0("Percentage of eligible population who are sent an ",
                            "initial offer to screening before age 66: work-in-progress ",
                            "position for men reaching age 66 in year ending 31 March ", 
                            year_yy)
-line_no_tab_1.2a_add <- eval_seasonal_diff(season, {15}, {16})
+line_no_tab_1.2a_add <- eval_seasonal_diff(season, {14}, {15})
 tab_1.2a_add <- paste0("1.2a Additional (", year2, ")")
 tab_1.2_add_desc <- paste0("Percentage of eligible population who are tested ",
                            "before age 66 and 3 months: work-in-progress ",
                            "position for men reaching age 66 in year ending ",
                            "31 March ", year_yy)
-line_no_tab_1.2b_add <- eval_seasonal_diff(season, {17}, {18})
+line_no_tab_1.2b_add <- eval_seasonal_diff(season, {16}, {17})
 tab_1.2b_add <- paste0("1.2b (uptake) Additional (", year2, ")")
 tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 ",
                             "who are tested before age 66 and 3 months: ",
@@ -92,7 +92,7 @@ tab_1.2b_add_desc <- paste0("Percentage of men offered screening before age 66 "
                             "in year ending 31 March ", year_yy)
 
 ### footnotes ----
-line_no_note_toc <- eval_seasonal_diff(season, {26},{30})
+line_no_note_toc <- eval_seasonal_diff(season, {25},{29})
 note_toc_data <- eval_seasonal_diff(
   season,
   {"The provisional/partial "}, # spring version,
@@ -171,9 +171,6 @@ kpi_1.1_add_note1 <- paste0("1. For the previous eligible cohorts at this stage,
                             "before age 66 were {x}% (", year_vv, "/", 
                             substr(year_ww, 3,4), ") and {x}% (", year_ww, "/",
                             substr(year_xx, 3,4), ").")
-
-## KPI 1.1 SIMD Notes ----
-# none
 
 ## KPI 1.2a Notes ----
 ### table headers ----

@@ -265,7 +265,9 @@ t6_surveill <- theme2_t6 |>
   mutate(FY_kpi_group = paste(fin_year, kpi, surveillance_interval, sep = "_")) |>
   select(hbres, FY_kpi_group, value) |>
   # match Excel output
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
+  mutate(hbres = forcats::fct_relevel(hbres, hb_list)) |> 
+  arrange(hbres)
 
 ## DNA Exclusions ----
 ## Data for all years
@@ -391,34 +393,6 @@ writeData(wb, sheet = "KPI 1.1 Additional (20XX-YY)", kpi_1.1_y2,
 names_pos <- which("KPI 1.1 Additional (20XX-YY)" == names(wb))[[1]] # finds index position for this name
 names(wb)[[names_pos]] <- paste0("KPI 1.1 Additional (", year2, ")")
 
-## KPI 1.1 SIMD ----
-# notes
-writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_vv, 
-          startRow = 4, startCol = 3)
-writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_ww, 
-          startRow = 4, startCol = 6)
-writeData(wb, sheet = "KPI 1.1 SIMD", turn66_year_xx, 
-          startRow = 4, startCol = 9)
-addStyle(wb, "KPI 1.1 SIMD", styles$black_border_centre_12,
-         rows = 4, cols = 3:13, gridExpand = TRUE)
-writeData(wb, sheet =  "KPI 1.1 SIMD", kpi_1.1_head_mgmt,
-          startRow = 5, startCol = 12)
-addStyle(wb, "KPI 1.1 SIMD", styles$blue_border_centre_12, 
-         rows = 5, cols = 12)
-if (season == "spring") {
-  writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_notep, 
-            startRow = 119)
-  addStyle(wb, "KPI 1.1 SIMD", styles$black_11,
-           rows = 119, cols = 1)
-}
-writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_note2, 
-          startRow = 121)
-addStyle(wb, "KPI 1.1 SIMD", styles$black_11,
-         rows = 121, cols = 1)
-showGridLines(wb, "KPI 1.1 SIMD", showGridLines = FALSE)
-# data
-writeData(wb, sheet = "KPI 1.1 SIMD", kpi_1.1_simd, 
-          startRow = 7, colNames = FALSE)
 
 ## KPI 1.2a ----
 # notes

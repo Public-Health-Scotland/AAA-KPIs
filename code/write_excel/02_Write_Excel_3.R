@@ -52,13 +52,6 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 theme_3 <- read_rds(paste0(temp_path, "/3_1_kpi_2_", yymm, ".rds"))
 table(theme_3$kpi, theme_3$fin_year) 
 
-#KPI 2.1a, 2.1b, + 2.2 device comparison (new for 202409)
-kpi_2_dc <- read_rds(paste0(temp_path, "/3_2_kpi_2_dc_", yymm, ".rds"))
-kpi_2_dc <- kpi_2_dc |> 
-  droplevels() |> 
-  mutate(fin_year = as.character(fin_year))
-table(kpi_2_dc$kpi, kpi_2_dc$fin_year)
-
 # 3: Format data ----
 ## KPI 2.1a ----
 kpi_2_1a <- theme_3 |> 
@@ -265,89 +258,6 @@ qa_recall <- qa_recall %>%
   #! Do not change the last pipe to |> or next line of code will not work!!
   replace(is.na(.), 0)
 
-## KPI 2.1a device comparison (new for 202409) ----
-kpi_2_1a_dc <- kpi_2_dc |> 
-  filter(kpi == "KPI 2.1a dc") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-## KPI 2.1b device comparison (new for 202409) ----
-kpi_2_1b_dc <- kpi_2_dc |> 
-  filter(kpi == "KPI 2.1b dc") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-## KPI 2.2 device comparison (new for 202409) ----
-kpi_2_2_dc <- kpi_2_dc |> 
-  filter(kpi == "KPI 2.2 dc") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
-
-## KPI 2.2 Additional A device comparison (new for 202409) ----
-kpi_2_2_add_a_dc <- kpi_2_dc |> 
-  filter(kpi == "KPI 2.2 Additional A dc") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(hbres,
-         `2023/24_KPI 2.2 Additional A dc_audit_n_old`,
-         `2023/24_KPI 2.2 Additional A dc_no_audit_result_n_old`,
-         `2023/24_KPI 2.2 Additional A dc_no_audit_result_p_old`,
-         `2023/24_KPI 2.2 Additional A dc_audit_n2_old`,
-         `2023/24_KPI 2.2 Additional A dc_standard_met_n_old`,
-         `2023/24_KPI 2.2 Additional A dc_standard_met_p_old`,
-         `2023/24_KPI 2.2 Additional A dc_standard_not_met_n_old`,
-         `2023/24_KPI 2.2 Additional A dc_standard_not_met_p_old`,
-         `2023/24_KPI 2.2 Additional A dc_audit_n_new`,
-         `2023/24_KPI 2.2 Additional A dc_no_audit_result_n_new`,
-         `2023/24_KPI 2.2 Additional A dc_no_audit_result_p_new`,
-         `2023/24_KPI 2.2 Additional A dc_audit_n2_new`,
-         `2023/24_KPI 2.2 Additional A dc_standard_met_n_new`,
-         `2023/24_KPI 2.2 Additional A dc_standard_met_p_new`,
-         `2023/24_KPI 2.2 Additional A dc_standard_not_met_n_new`,
-         `2023/24_KPI 2.2 Additional A dc_standard_not_met_p_new`)
-
-## KPI 2.2 Additional B device comparison (new for 202409) ----
-kpi_2_2_add_b_dc <- kpi_2_dc |> 
-  filter(kpi == "KPI 2.2 Additional B dc") |> 
-  mutate(FY_kpi_group = paste(fin_year, kpi, group, device, sep = "_")) |> 
-  select(hbres, FY_kpi_group, value) |> 
-  # match Excel tables
-  pivot_wider(names_from = FY_kpi_group, values_from = value) |> 
-  select(hbres,
-         `2023/24_KPI 2.2 Additional B dc_standard_not_met_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_imm_recall_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_imm_recall_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_recall_cc_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_recall_cc_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_audit_result_n_old`,
-         `2023/24_KPI 2.2 Additional B dc_no_audit_result_p_old`,
-         `2023/24_KPI 2.2 Additional B dc_standard_not_met_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_imm_recall_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_imm_recall_p_new`,
-         `2023/24_KPI 2.2 Additional B dc_recall_cc_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_recall_cc_p_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sat_interim_p_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_refer_vasc_p_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_recall_sec_opin_p_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_audit_result_n_new`,
-         `2023/24_KPI 2.2 Additional B dc_no_audit_result_p_new`)
  
 # 4: Write to Excel ----
 ## Setup workbook ----
@@ -496,9 +406,9 @@ writeData(wb, "Table of Contents", today,
 addStyle(wb, "Table of Contents", styles$black_nowrap_12, 
          rows = 6, cols = 1)
 writeData(wb, "Table of Contents", note_toc, 
-          startRow = 29)
+          startRow = 24)
 addStyle(wb, "Table of Contents", styles$red_bold_12, 
-         rows = 29, cols = 1)
+         rows = 24, cols = 1)
 
 showGridLines(wb, "Table of Contents", showGridLines = FALSE)
 
@@ -733,41 +643,6 @@ showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 ## Batch QA standard not met ----
 write_batch_qa(wb, "Batch QA standard not met", season, kpi_report_years,
                qa_batch_scot, qa_batch_hb, qa_recall, kpi_2.2_notep)
-
-## KPI 2.1a device comparison ----
-# notes
-# data
-writeData(wb, sheet = "KPI 2.1a device", kpi_2_1a_dc,
-          startRow = 8, colNames = F)
-showGridLines(wb, "KPI 2.1a device", showGridLines = FALSE)
-
-## KPI 2.1b device comparison ----
-# notes
-# data
-writeData(wb, sheet = "KPI 2.1b device", kpi_2_1b_dc,
-          startRow = 8, colNames = F)
-showGridLines(wb, "KPI 2.1b device", showGridLines = FALSE)
-
-## KPI 2.2 device comparison ----
-# notes
-# data
-writeData(wb, sheet = "KPI 2.2 device", kpi_2_2_dc,
-          startRow = 8, colNames = F)
-showGridLines(wb, "KPI 2.2 device", showGridLines = FALSE)
-
-## KPI 2.2 Additional (A) device comparison ----
-# notes
-# data
-writeData(wb, sheet = "KPI 2.2 Add (A) device", kpi_2_2_add_a_dc,
-          startRow = 9, colNames = F)
-showGridLines(wb, "KPI 2.2 Add (A) device", showGridLines = FALSE)
-
-## KPI 2.2 Additional (B) device comparison ----
-# notes
-# data
-writeData(wb, sheet = "KPI 2.2 Add (B) device", kpi_2_2_add_b_dc,
-          startRow = 9, colNames = F)
-showGridLines(wb, "KPI 2.2 Add (B) device", showGridLines = FALSE)
 
 # 5: Save output ----
 query_saveWorkbook(wb, paste0(output_path, "/3_Quality Assurance_", yymm, ".xlsx"))

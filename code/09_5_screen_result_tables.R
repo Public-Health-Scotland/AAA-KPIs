@@ -354,7 +354,9 @@ table_5 <- bind_rows(individual_years, all_years) |>
   mutate(simd2020v2_sc_quintile = NA, .after = table) |> 
   complete(hbres, table, simd2020v2_sc_quintile, year_screen, group) |> 
   mutate(value = case_when(group %in% c("tested", "positive") & is.na(value) ~ 0,
-                           TRUE ~ value))
+                           TRUE ~ value)) |> 
+  mutate(group = forcats::fct_relevel(group, c("tested", "positive", "rate"))) |> 
+  arrange(hbres, year_screen, group)
 
 
 ### 9 Combine and Save ----
