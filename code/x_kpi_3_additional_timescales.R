@@ -181,7 +181,6 @@ if(season == "spring") {
 }
 
 # Check variables
-# Do these add value? Do we need them?
 kpi_3_2_base %>% count(screen_to_surgery)
 kpi_3_2_base %>% count(surgery_8wks)
 
@@ -194,7 +193,6 @@ kpi_3_2_base <- kpi_3_2_base %>%
 # This section should be applied to the spring QPMG run because vascular data for
 # the year end is not complete at that stage - it should not be run when
 # producing data for the complete year end from the September extract
-##!! How/Where is this used??
 if (season == "spring"){
   
   kpi_3_2_base <- kpi_3_2_base %>% 

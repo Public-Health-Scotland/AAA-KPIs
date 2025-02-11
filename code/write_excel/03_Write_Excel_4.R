@@ -10,10 +10,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Notes:
-# This script calls in the multiple RDS files create in the 8_4_KPI_3.R, 
-# 9_4_kpi_4.R, 91_4_vascular_referrals.R, and 96_4_unfit_for_surgery.R scripts 
+# This script calls in the multiple RDS files create in the 05_4_kpi_3.R, 
+# 06_4_kpi_4.R, 07_4_vascular_referrals.R, and 08_4_unfit_for_surgery.R scripts 
 # and transforms the data to print directly into the theme 4 Excel file for 
-# both the spring and autumn MEGs.
+# both the spring and autumn QPMGs.
 
 # 1: Housekeeping ----
 library(dplyr)

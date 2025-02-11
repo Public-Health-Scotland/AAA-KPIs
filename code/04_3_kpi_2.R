@@ -93,9 +93,6 @@ extract2 <- extract %>%
          screened_n = if_else(screen_result %in% c('01','02','04'), 1, 0),
          # year when patient turned 66
          fin_year_66 = extract_fin_year(dob + years(66)),
-         # flags screens performed with new devices
-         device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"),
-                         levels = c("old", "new")),
          financial_year = droplevels(financial_year),
          simd2020v2_sc_quintile = replace_na(as.character(simd2020v2_sc_quintile), "Unknown"))
 

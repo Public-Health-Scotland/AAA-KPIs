@@ -346,7 +346,7 @@ table(check$hb_surgery, useNA = "ifany") # are there any NAs?
 
 # Look into NAs and determine result_outcome
 # if outcome is one of the reasons for not having surgery listed above, that's ok
-# otherwise follow-up with health board?
+# otherwise follow-up with health board
 check_2 <- check[is.na(check$hb_surgery),]
 table(check_2$result_outcome, check_2$financial_year)
 

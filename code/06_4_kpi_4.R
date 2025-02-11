@@ -217,7 +217,7 @@ kpi_4_2 <- kpi_4_2_addA %>%
 # Surgery deaths by financial year and health board by SCREENING 
 kpi_4_2_addB <- create_kpi4_addBC(kpi_4_2_base, hb_screen) |> 
   mutate(kpi = "KPI 4.2 Add B: Screen", .before = financial_year) |> 
-  mutate(surg_method = "Open", .before = financial_year)
+  mutate(surg_method = "EVAR", .before = financial_year)
 
 
 ## KPI 4.2 Additional C (hb_surgery) ----
@@ -225,7 +225,7 @@ kpi_4_2_addB <- create_kpi4_addBC(kpi_4_2_base, hb_screen) |>
 
 kpi_4_2_addC <- create_kpi4_addBC(kpi_4_2_base, hb_surgery_grp) |> 
   mutate(kpi = "KPI 4.2 Add C: Surgery", .before = financial_year) |> 
-  mutate(surg_method = "Open", .before = financial_year)
+  mutate(surg_method = "EVAR", .before = financial_year)
 
 rm(fy_tibble, kpi_4_1_base, kpi_4_2_base) # tidy env
 
