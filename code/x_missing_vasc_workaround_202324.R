@@ -72,27 +72,62 @@ output_vasc_updated_extract_path <- substr(extract_path, 1, 53)
 aaa_extract_original <- read_rds(extract_path) |> 
   mutate(row_index = row_number())
 
-# HB data - Borders, FV, Lothian, Lan
+# HB data - Borders, FV, GGC, Lan, Lothian
 ## Borders
 borders_vasc <- read_excel(paste0(missing_vasc_templates_path,
-                                  "/updated_vasc_data_NHSBorders_202324.xlsx"))
+                                  "/updated_vasc_data_NHS_Borders_202324.xlsx"), skip = 4)
 
-## Forth Valley
-fv_vasc <- read_excel(paste0(missing_vasc_templates_path,
-                             "/updated_vasc_data_NHSForth Valley_202324.xlsx"))
+## Forth Valley 2022/23
+fv_vasc_23 <- read_excel(paste0(missing_vasc_templates_path,
+                             "/updated_vasc_data_NHS_Forth Valley_202223.xlsx"), skip = 4)
 
-## Lanarkshire
-lan_vasc <- read_excel(paste0(missing_vasc_templates_path,
-                              "/updated_vasc_data_NHSLanarkshire_202324.xlsx"))
+## Forth Valley 2023/24
+fv_vasc_34 <- read_excel(paste0(missing_vasc_templates_path,
+                             "/updated_vasc_data_NHS_Forth Valley_202324.xlsx"), skip = 4) |> 
+  mutate(`Result outcome` = as.character(`Result outcome`))
+
+## GG&C
+ggc_vasc <- read_excel(paste0(missing_vasc_templates_path,
+                              "/updated_vasc_data_NHS_Greater Glasgow & Clyde_202324.xlsx"), skip = 4) |> 
+  select(1:12)
+
+## Lanarkshire 2022/23
+lan_vasc_23 <- read_excel(paste0(missing_vasc_templates_path,
+                                 "/updated_vasc_data_NHS_Lanarkshire_202223.xlsx"), skip = 4)
+
+## Lanarkshire 2023/24
+lan_vasc_34 <- read_excel(paste0(missing_vasc_templates_path,
+                                 "/updated_vasc_data_NHS_Lanarkshire_202324.xlsx"), skip = 4)
 
 ## Lothian
 lothian_vasc <- read_excel(paste0(missing_vasc_templates_path,
-                                  "/updated_vasc_data_NHSLothian_202324.xlsx"))
+                                  "/updated_vasc_data_NHS_Lothian_202324.xlsx"), skip = 4)
+
+names <- names(lan_vasc_23) # want to keep these names
 
 ## All HB data
-hb_updated_vasc_data <- bind_rows(borders_vasc, fv_vasc, lan_vasc, lothian_vasc)
+hb_updated_vasc_data <- bind_rows(borders_vasc, fv_vasc_34, ggc_vasc, 
+                                  lan_vasc_34, lothian_vasc) 
+names(hb_updated_vasc_data) <- names
 
-rm(borders_vasc, fv_vasc, lan_vasc, lothian_vasc) # tidy
+
+hb_updated_vasc_data <- bind_rows(hb_updated_vasc_data, fv_vasc_23, lan_vasc_23) |> 
+  mutate(hb_surgery = case_when(hb_surgery == "GGC" ~ "G",
+                                hb_surgery == "NHS Borders" ~ "B",
+                                hb_surgery == "NHS Lothian" ~ "S",
+                                hb_surgery == "NHSL" ~ "L",
+                                TRUE ~ hb_surgery),
+         surg_method = case_when(surg_method == "Open" ~ "02",
+                                 surg_method == "open" ~ "02",
+                                 surg_method == "EVAR" ~ "01",
+                                 surg_method == "FEVAR" ~ "01",
+                                 TRUE ~ surg_method))
+
+table(hb_updated_vasc_data$hb_surgery, useNA = "ifany")
+table(hb_updated_vasc_data$surg_method, useNA = "ifany")
+
+rm(borders_vasc, fv_vasc_23, fv_vasc_34, ggc_vasc, 
+   lan_vasc_23, lan_vasc_34, lothian_vasc) # tidy
 
 
 ### TEST - only use to test the script
@@ -114,7 +149,6 @@ rm(borders_vasc, fv_vasc, lan_vasc, lothian_vasc) # tidy
 check1 <- hb_updated_vasc_data |> 
   inner_join(aaa_extract_original, 
              by = c("chi", "hbres", "date_screen", "largest_measure", "date_referral_true"))
-
 
 check2 <- hb_updated_vasc_data |> 
   left_join(aaa_extract_original, 
@@ -173,12 +207,12 @@ summary(comparedf(aaa_extract_original, new_extract))
 
 # remove row_index from new extract for saving
 new_extract <- new_extract |> 
-  select(-row_index)
+  select(-row_index, -surname, -forename)
 
 # 5: Save out new extract -------------------------------------------------
 
 query_write_rds(new_extract, paste0(output_vasc_updated_extract_path, 
-                                    "/aaa_extract_202409_updated_vasc_data.rds"))
+                                    "/aaa_extract_202409_updated_vasc.rds"))
 
 
 

@@ -46,14 +46,14 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
 
 # 202409 vascular data update workaround
 if(yymm == 202409) {
-  extract_path <- "/PHI_conf/AAA/Topics/Screening/extracts/202409/output/aaa_extract_202409_updated_vasc_data.rds"
+  extract_path <- "/PHI_conf/AAA/Topics/Screening/extracts/202409/output/aaa_extract_202409_updated_vasc.rds"
 }
 
 
 # Keep records where date_referral_true is populated and largest measure is 
 # greater than or equal to 5.5, where result_outcome is not "02" and 
 # date_screen is less than or equal to cut_off_date
-aaa_extract <- read_rds(extract_path) %>% 
+aaa_extract <- read_rds(extract_path) #%>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
          result_outcome != "02", ## AMc note: this removes NAs too
          date_screen <= cut_off_date)
