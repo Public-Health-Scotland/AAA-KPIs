@@ -82,12 +82,6 @@ create_kpi4_addBC <- function(base_data, hb_grp_var, fy_tibble_name = fy_tibble)
 
 # 2: Import AAA Data ----
 
-# 202409 vascular data update workaround
-if(yymm == 202409) {
-  extract_path <- "/PHI_conf/AAA/Topics/Screening/extracts/202409/output/aaa_extract_202409_updated_vasc.rds"
-}
-
-
 # result_outcome:
 # 15 - 'Appropriate for Surgery: AAA repaired and survived 30 days' 
 # 16 - 'Appropriate for Surgery: Died within 30 days of treatment' 
@@ -461,27 +455,10 @@ kpi_4_mortality <- bind_rows(mortality_hb_res, mortality_hb_surg) |>
 
 table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
-# saving outputs
-
-# query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
-# query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-# query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
-
-
 ## Save report file
-if(!yymm == 202409) {
-  query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
-  query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-  query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
-} else if(yymm == 202409) {
-  query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, "_updated_vasc_data.rds"))
-  query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, "_updated_vasc_data.rds"))
-  query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, "_updated_vasc_data.rds"))
-}
-
-
-
-
+query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
+query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
+query_write_rds(kpi_4_mortality,paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
 
 
 
