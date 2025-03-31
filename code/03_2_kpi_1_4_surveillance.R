@@ -55,6 +55,7 @@ aaa_exclusions %>% nrow()
 # 153,558 rows 2023/09
 # 164,471 rows 2024/03
 # 175,119 rows 2024/09
+# 186,536 rows 2025/03
 
 # organize data
 aaa_exclusions %<>%
@@ -94,6 +95,7 @@ aaa_extract %<>%
 # 579,917 rows 2023/09
 # 609,774 rows 2024/03
 # 638,936 rows 2024/09
+# 668,107 rows 2025/03
 
 ### 2.4: Create cohort of all of the screenings ----
 screened_cohort <- aaa_extract %>% 
@@ -134,7 +136,7 @@ check_dups <- annual_surveillance_cohort %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
-# 32, mixture of date ranges, though most are close together
+# 42, mixture of date ranges, though most are close together
 # KH: what columns are we actually checking here?
 
 # Remove those where the appointment is within less than six months
@@ -153,7 +155,7 @@ check_dups <- annual_surveillance_cohort %>%
   mutate(n = n()) %>%
   ungroup() %>%
   filter(n > 1)
-# 2, look more reasonable
+# 6, look more reasonable
 # KH: not clear 
 
 # for Spring run, introduce date filter to allow enough follow-up time 
@@ -439,6 +441,7 @@ dna_excluded_surveillance <- aaa_exclusions %>%
 # 97 rows 2023/09
 # 100 rows 2024/03
 # 109 rows 2024/09
+# 118 rows 2025/03
 
 ## Step 7: Create KPI output ----
 ## KPI 1.4a

@@ -149,6 +149,7 @@ table(vasc$screen_result)
 # 01 - 978, 02 - 01, Sep 2023
 # 01 - 1067, 02 - 01 Mar 2024
 # 01 - 1101, 02 - 01 Sep 2024
+# 01 - 1166, 02 - 01 Mar 2025
 
 ## Who has negative screen_result?
 neg <- vasc[vasc$screen_result == "02",]
@@ -161,6 +162,7 @@ table(vasc$result_size)
 # 01 - 973, 02 - 6, Sep 2023
 # large - 1062, small - 6, Mar 2024
 # large - 1096, small - 6, Sep 2024
+# large - 1159, small - 8, Mar 2025
 
 table(vasc$result_outcome, vasc$result_size)
 
@@ -333,6 +335,7 @@ table(extract$surg_method, useNA = "ifany")
 # 328 EVAR (01), 372 open (02), Sep 2023
 # 369 EVAR (01), 401 open (02), Mar 2024
 # 377 EVAR (01), 410 open (02), Sep 2024
+# 407 EVAR (01), 430 open (02), 2 abandoned (03) Mar 2025
 
 ###
 check <- extract[extract$surg_method == "03",]
@@ -351,15 +354,17 @@ extract <- extract |>
 ## 16 (approp for surgery and died within 30 days)
 table(extract$result_outcome, extract$surg_method)
 
-#   Feb 2023  Sep 2023    Mar 2024   Sep 2024
-#     01  02    01  02    01  02      01  02
-# 15 294 328   326 364    366 391    375  400
-# 16   1   7     1   8    1  10        1  10
-# 17                      1   0       
-# 20   1   0     1   0    1   0        1   0
+#   Feb 2023  Sep 2023    Mar 2024   Sep 2024  Mar 2025
+#     01  02    01  02    01  02      01  02    01  02
+# 12                                             0   1
+# 15 294 328   326 364    366 391    375  400  400 418
+# 16   1   7     1   8    1  10        1  10     1  10
+# 17                      1   0                  5   1
+# 20   1   0     1   0    1   0        1   0     1   0
 
 ## One record has result_outcome == 20 (other final outcome)
 check <- extract[extract$result_outcome == "20",]
+
 # View(check)
 ## FY 2016/17
 ## Lothian resident who was eventually operated on in GG&C. 
@@ -367,6 +372,7 @@ check <- extract[extract$result_outcome == "20",]
 ## asking board to change result outcome to 15 or 16 (and data will be 
 ## collated by board of surgery rather than board of residence so it will be 
 ## counted under GG&C)
+
 rm(check)
 ####
 
@@ -377,6 +383,8 @@ extract <- extract |>
 table(extract$surg_method)
 # 327 EVAR (01), 372 open (02), Sep 2023
 # 367 EVAR (01), 401 open (02), Mar 2024
+# 401 EVAR (01), 428 open (02), Mar 2025
+
 ## Check this against the total number of operations as identified in
 ## KPI 4.1/4.2 Additional A
 check <- read_rds(paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds")) |> 

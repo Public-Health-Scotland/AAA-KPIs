@@ -224,8 +224,8 @@ external_only <- aaa_extract %>%
   distinct(upi, screen_result)
 
 table(external_only$screen_result)
-# 05: 137
-# 06: 628
+# 05: 139
+# 06: 650
 
 external_only <- select(external_only, upi)
 
@@ -247,8 +247,8 @@ deceased <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(deceased$pat_inelig)
-# 15: 5500
-# 16: 1224
+# 15: 5733
+# 16: 1300
 
 deceased <- deceased %>% select(upi) %>% arrange(upi)
 
@@ -269,7 +269,7 @@ prior_scr <- aaa_exclusions %>%
   distinct(upi, pat_inelig)
 
 table(prior_scr$pat_inelig)
-# 21: 916
+# 21: 944
 
 prior_scr <- prior_scr %>% select(upi) %>% arrange(upi)
 
@@ -295,7 +295,7 @@ optout <- optout %>%
   distinct(upi, pat_inelig)
 
 table(optout$pat_inelig)
-# 01: 2367
+# 01: 2433
 
 optout <- optout %>% select(upi) %>% arrange(upi)
 
@@ -321,7 +321,7 @@ repaired <- repaired %>%
   distinct(upi, pat_inelig)
 
 table(repaired$pat_inelig)
-# 04: 234
+# 04: 243
 
 repaired <- repaired %>% select(upi) %>% arrange(upi)
 
@@ -347,7 +347,7 @@ vasc_sur <- vasc_sur %>%
   distinct(upi, pat_inelig)
 
 table(vasc_sur$pat_inelig)
-# 06: 599
+# 06: 617
 
 vasc_sur <- vasc_sur %>% select(upi) %>% arrange(upi)
 
@@ -373,7 +373,7 @@ referred <- referred %>%
   distinct(upi, pat_inelig)
 
 table(referred$pat_inelig)
-# 19: 13
+# 19: 14
 
 referred <- referred %>% select(upi) %>% arrange(upi)
 
@@ -399,7 +399,7 @@ unfit <- unfit %>%
   distinct(upi, pat_inelig)
 
 table(unfit$pat_inelig)
-# 18: 475
+# 18: 500
 
 unfit <- unfit %>% select(upi) %>% arrange(upi)
 
@@ -440,7 +440,7 @@ other <- other %>%
 
 table(other$pat_inelig)
 #   11   12   17 
-# 1153 1262 1469 
+# 1192 1301 1543 
 
 other <- other %>% distinct(upi) %>% arrange(upi)
 
@@ -453,8 +453,8 @@ temp_gana <- aaa_exclusions %>%
   mutate(exlength = date_end - date_start)
 
 table(temp_gana$pat_inelig)
-# 25: 2121
-# 26: 557
+# 25: 3119
+# 26: 610
 
 temp_gana <- temp_gana %>% distinct(upi) %>% arrange(upi)
 

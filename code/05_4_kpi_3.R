@@ -382,7 +382,10 @@ report_db <- kpi_3 |>
 # 202409 workaround - doesn't need history building? or at least not yet...
 ## AMc note: have already built history for this round, may need to replace once
 ## we have published data/discussed this?
-if(!yymm == 202409) {
+
+# PM March 2025 - Unclear what this is doing or whether the change I have made to date is correct
+
+if(!yymm == 202503) {
   # create historical backup + new file with this year's data
   build_history(df_hist = hist_db, 
                 df_new = report_db, 
@@ -408,11 +411,13 @@ table(hist_db$fin_year, hist_db$kpi)
 # 2020/21                45                45              24
 # 2021/22                45                45              24
 # 2022/23                45                45              24
+# 2023/24                45                45              21
 
 ## Save report file
-if(!yymm == 202409) {
+# PM March 2025 is this change in date correct? 
+if(!yymm == 202503) {
   query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
-} else if(yymm == 202409) {
+} else if(yymm == 202503) {
   query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, "_updated_vasc_data.rds"))
 }
 

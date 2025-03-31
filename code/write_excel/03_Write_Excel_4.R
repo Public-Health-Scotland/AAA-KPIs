@@ -566,10 +566,13 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 # 5: Save output ----
-if (!yymm == 202409) {
+
+# PM March 2025 is the change to the date correct?
+
+if (!yymm == 202503) {
   query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
                                 yymm, ".xlsx"))
-} else if (yymm == 202409) {
+} else if (yymm == 202503) {
   query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
                                 yymm, "_updated_vasc_data.xlsx"))
 }
