@@ -381,21 +381,18 @@ report_db <- kpi_3 |>
          hbres = health_board)|> 
   mutate_all(~replace(., is.nan(.), NA))
 
-# 202409 workaround - doesn't need history building? or at least not yet...
-## AMc note: have already built history for this round, may need to replace once
-## we have published data/discussed this?
-if(!yymm == 202409) {
-  # create historical backup + new file with this year's data
-  build_history(df_hist = hist_db, 
-                df_new = report_db, 
-                kpi_number = "3",
-                season_var = season,
-                fys_in_report = kpi_report_years,
-                list_of_fys = fy_list,
-                list_of_hbs = hb_list,
-                historical_path = hist_path)
-}
 
+# create historical backup + new file with this year's data
+build_history(
+  df_hist = hist_db,
+  df_new = report_db,
+  kpi_number = "3",
+  season_var = season,
+  fys_in_report = kpi_report_years,
+  list_of_fys = fy_list,
+  list_of_hbs = hb_list,
+  historical_path = hist_path
+)
 
 table(hist_db$fin_year, hist_db$kpi)
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
@@ -412,10 +409,8 @@ table(hist_db$fin_year, hist_db$kpi)
 # 2022/23                45                45              24
 
 ## Save report file
-if(!yymm == 202409) {
-  query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
-} else if(yymm == 202409) {
-  query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, "_updated_vasc_data.rds"))
-}
+
+query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+
 
 

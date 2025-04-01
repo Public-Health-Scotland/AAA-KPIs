@@ -46,12 +46,6 @@ template_path <- paste0("/PHI_conf/AAA/Topics/Screening/templates")
 # KPI 3.1 and 3.2
 theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
 
-# missing vascular workaround
-if(yymm == 202409) {
-  theme4_3 <- read_rds(paste0(temp_path, "/4_1_kpi_3_", yymm, "_updated_vasc_data.rds"))
-}
-
-
 table(theme4_3$kpi, theme4_3$fin_year) 
 
 if(season == "spring") {
@@ -566,12 +560,8 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 # 5: Save output ----
-if (!yymm == 202409) {
-  query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
-                                yymm, ".xlsx"))
-} else if (yymm == 202409) {
-  query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
-                                yymm, "_updated_vasc_data.xlsx"))
-}
+query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
+                              yymm, ".xlsx"))
+
 
 
