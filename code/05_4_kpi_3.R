@@ -46,7 +46,7 @@ rm (exclusions_path, output_path, simd_path, fy_tibble,
 
 # 202409 vascular data update workaround
 if(yymm == 202409) {
-  extract_path <- "/PHI_conf/AAA/Topics/Screening/extracts/202409/output/aaa_extract_202409_updated_vasc_data.rds"
+  extract_path <- "/PHI_conf/AAA/Topics/Screening/extracts/202409/output/aaa_extract_202409_updated_vasc.rds"
 }
 
 
@@ -55,7 +55,7 @@ if(yymm == 202409) {
 # date_screen is less than or equal to cut_off_date
 aaa_extract <- read_rds(extract_path) %>% 
   filter(!is.na(date_referral_true) & largest_measure >= 5.5, 
-         result_outcome != "02", ## AMc note: this removes NAs too
+         result_outcome != "02" | is.na(result_outcome), ## KH update: this keeps NAs
          date_screen <= cut_off_date)
 
 
@@ -300,6 +300,7 @@ kpi_3_2_surg_base <- kpi_3_2_surg_base |>
     hb_surgery == "Highland" ~ "Highland", 
     .default = NA))
   
+table(kpi_3_2_surg_base$hb_surgery_grp, useNA = "ifany")
 
 
 ## Calculating kpi
@@ -348,7 +349,7 @@ check <- kpi_3_2_base[kpi_3_2_base$financial_year %in% c(kpi_report_years),]
 check <- droplevels(check)
 table(check$financial_year) # total records by FY
 table(check$hbres, check$financial_year) # hbres groups
-table(check$hb_surgery, check$financial_year) # hb_surgery groups
+table(check$hb_surgery, check$financial_year) # hb_surgery groups (KH: not groups)
 table(check$hb_surgery, useNA = "ifany") # are there any NAs?
 
 # Look into NAs and determine result_outcome
@@ -367,6 +368,7 @@ rm(kpi_3_2_base, kpi_3_2_hb, kpi_3_2_scot, kpi_3_2_surg_base) # tidy
 # Combine KPI 3 subsets
 kpi_3 <- bind_rows(kpi_3_1_res, kpi_3_2_res, kpi_3_2_surg)
 table(kpi_3$kpi) 
+table(kpi_3$kpi, kpi_3$financial_year)
 
 ## Historical file
 # Create backup of last year's file
@@ -379,24 +381,19 @@ report_db <- kpi_3 |>
          hbres = health_board)|> 
   mutate_all(~replace(., is.nan(.), NA))
 
-# 202409 workaround - doesn't need history building? or at least not yet...
-## AMc note: have already built history for this round, may need to replace once
-## we have published data/discussed this?
 
-# PM March 2025 - Unclear what this is doing or whether the change I have made to date is correct
 
-if(!yymm == 202503) {
-  # create historical backup + new file with this year's data
-  build_history(df_hist = hist_db, 
-                df_new = report_db, 
-                kpi_number = "3",
-                season_var = season,
-                fys_in_report = kpi_report_years,
-                list_of_fys = fy_list,
-                list_of_hbs = hb_list,
-                historical_path = hist_path)
-}
-
+# create historical backup + new file with this year's data
+build_history(
+  df_hist = hist_db,
+  df_new = report_db,
+  kpi_number = "3",
+  season_var = season,
+  fys_in_report = kpi_report_years,
+  list_of_fys = fy_list,
+  list_of_hbs = hb_list,
+  historical_path = hist_path
+)
 
 table(hist_db$fin_year, hist_db$kpi)
 #         KPI 3.1 Residence KPI 3.2 Residence KPI 3.2 Surgery
@@ -414,11 +411,10 @@ table(hist_db$fin_year, hist_db$kpi)
 # 2023/24                45                45              21
 
 ## Save report file
-# PM March 2025 is this change in date correct? 
-if(!yymm == 202503) {
-  query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
-} else if(yymm == 202503) {
-  query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, "_updated_vasc_data.rds"))
-}
+
+
+query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+
+
 
 

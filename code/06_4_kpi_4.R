@@ -81,6 +81,7 @@ create_kpi4_addBC <- function(base_data, hb_grp_var, fy_tibble_name = fy_tibble)
 }
 
 # 2: Import AAA Data ----
+
 # result_outcome:
 # 15 - 'Appropriate for Surgery: AAA repaired and survived 30 days' 
 # 16 - 'Appropriate for Surgery: Died within 30 days of treatment' 
@@ -124,7 +125,8 @@ aaa_extract <- read_rds(extract_path) %>%
                                         "Tayside", "Scotland"))) 
 
 table(aaa_extract$hb_surgery, useNA = "ifany")
-# should be 1 NA for hbres FV in 2018
+table(aaa_extract$hb_surgery_grp, useNA = "ifany")
+# should be 1 NA for hbres FV in 2018 (+ 8 Cumbrian)
 
 # Check: number of days to death should be consistent with result outcomes
 # (where result_outcome = 15, surgery_to_death should be > 30 (or NA) and  
@@ -453,9 +455,10 @@ kpi_4_mortality <- bind_rows(mortality_hb_res, mortality_hb_surg) |>
 
 table(kpi_4_mortality$kpi, kpi_4_mortality$surg_method)
 
-# saving outputs
-
+## Save report file
 query_write_rds(kpi_4, paste0(temp_path, "/4_2_kpi_4_", yymm, ".rds"))
 query_write_rds(kpi_4_hb, paste0(temp_path, "/4_3_kpi_4_HB_", yymm, ".rds"))
-query_write_rds(kpi_4_mortality, paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+query_write_rds(kpi_4_mortality,paste0(temp_path, "/4_4_kpi_4_mortality_", yymm, ".rds"))
+
+
 
