@@ -560,8 +560,10 @@ writeData(wb, sheet = "Unfit follow-up deaths by cause", unfit_deaths3,
 showGridLines(wb, "Unfit follow-up deaths by cause", showGridLines = FALSE)
 
 # 5: Save output ----
+
 query_saveWorkbook(wb, paste0(output_path, "/4_Referral Treatment and Outcomes_",
                               yymm, ".xlsx"))
+
 
 
 

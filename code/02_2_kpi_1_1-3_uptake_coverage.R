@@ -509,6 +509,8 @@ hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
 
+#uses build_history from phsaaa
+
 build_history(df_hist = hist_db, 
               df_new = kpi_summary, 
               kpi_number = "1.1-1.3",
@@ -539,6 +541,9 @@ report_db <- add_new_rows(hist_db, kpi_summary, fin_year, kpi)
 ## Check for duplication
 viz_kpi_finyear(report_db) # current year (year1) should match 
 # previous years, plus 30 records for KPI 1.1 Sept coverage; ignore year2 & KPI 1.4
+#
+# PM March 2025 - 2023/24 KPI 1.1 Scotland SIMD 315, KPI 1.1 Scotland SIMD Sept coverage 210 
+# - is there something odd happening here?
 
 report_db <- report_db |> 
   filter(fin_year %in% c(kpi_report_years, year2))

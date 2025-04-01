@@ -733,6 +733,9 @@ showGridLines(wb, "6) Surveillance", showGridLines = FALSE)
 
 
 ## DNA Exclusions ----
+
+# PM march 2025 - this is giving an error
+
 write_dna_exclusions(wb, "DNA Exclusions", season,
                      data = dna_exclude, provisional_note = dna_note1)
 

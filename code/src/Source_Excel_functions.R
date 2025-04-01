@@ -399,7 +399,7 @@ write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, da
   setColWidths(workbook, sheet_name, cols = 2:ncol(data_B), widths = 17.8)
   setRowHeights(workbook, sheet_name, rows = c((ref$head_A - 2), (ref$head_B - 2), (ref$head_C - 2)), heights = 23) # titles
   setRowHeights(workbook, sheet_name, rows = c(ref$head_A, ref$head_B, ref$head_C), heights = 19.3) # heads
-  setRowHeights(workbook, sheet_name, rows = c((ref$head_A + 1), (ref$head_B + 1), (ref$head_C + 1)), heights = 31.5, wrap = F) # subheads
+  setRowHeights(workbook, sheet_name, rows = c((ref$head_A + 1), (ref$head_B + 1), (ref$head_C + 1)), heights = 31.5) # subheads
   setRowHeights(workbook, sheet_name, rows = ref$head_A + 2, heights = 16) # subhead 2 add A
   setRowHeights(workbook, sheet_name, 
                 rows = c((ref$start_A:ref$src_A), (ref$start_B:ref$src_B), (ref$start_C:ref$src_C), (ref$notes_start:(ref$notes_start + 7))), 

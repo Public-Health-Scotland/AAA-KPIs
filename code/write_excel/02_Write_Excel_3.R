@@ -640,6 +640,9 @@ writeData(wb, sheet = "QA standard not met detail", qa_detail,
           startRow = 9, startCol = 2, colNames = FALSE)
 showGridLines(wb, "QA standard not met detail", showGridLines = FALSE)
 
+
+source(here::here("code", "src", "Source_Excel_functions.R"))
+
 ## Batch QA standard not met ----
 write_batch_qa(wb, "Batch QA standard not met", season, kpi_report_years,
                qa_batch_scot, qa_batch_hb, qa_recall, kpi_2.2_notep)
