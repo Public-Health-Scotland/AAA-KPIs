@@ -282,7 +282,7 @@ aaa_extract <- aaa_extract %>%
 aaa_extract %>% count(date_death == date_of_death)
 ##
 # AMc note: where date_death & date_of_death are both populated, date matches
-# most of discrepancy comes from 129 cases where date_of_death is populated but
+# most of discrepancy comes from 157 cases where date_of_death is populated but
 # date_death is NA
 
 # 6: Cumulative Mortality by Surgery Type ----

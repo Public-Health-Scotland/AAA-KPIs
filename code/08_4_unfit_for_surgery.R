@@ -114,7 +114,7 @@ table(unfit_surgery$unfit)
 # 128 patients unfit  Sep 2022
 # 143 patients unfit  Mar 2023
 # 151 patients unfit  Sep 2023
-
+# 181 patients unfit  Mar 2025
 
 ## Patients unfit for surgery by financial year ---
 unfit_fy <- unfit_surgery %>% 

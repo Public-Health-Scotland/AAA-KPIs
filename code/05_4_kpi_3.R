@@ -382,6 +382,7 @@ report_db <- kpi_3 |>
   mutate_all(~replace(., is.nan(.), NA))
 
 
+
 # create historical backup + new file with this year's data
 build_history(
   df_hist = hist_db,
@@ -407,10 +408,13 @@ table(hist_db$fin_year, hist_db$kpi)
 # 2020/21                45                45              24
 # 2021/22                45                45              24
 # 2022/23                45                45              24
+# 2023/24                45                45              21
 
 ## Save report file
 
+
 query_write_rds(report_db, paste0(temp_path, "/4_1_kpi_3_", yymm, ".rds"))
+
 
 
 
