@@ -29,7 +29,7 @@ season <- "spring" # options are "spring" or "autumn"
 extract_date <- "1 March"
 
 # month in which QPMG is planned
-qpmg_month <- "March"
+qpmg_month <- "May"
 
 # date on which GP extract was refreshed and downloaded
 if(season == "autumn") {

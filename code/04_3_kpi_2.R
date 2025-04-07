@@ -214,10 +214,7 @@ extract_audit <- extract %>%
   filter(between(date_screen, as.Date(start_date), as.Date(end_date)),
          # keep records sampled for QA audit
          audit_flag == '01') %>%
-  mutate(# flags screens performed with new devices
-       #  device = factor(if_else(date_screen > ymd(device_swap_date), "new", "old"), 
-       #                 levels = c("old", "new")),
-         audit_n = if_else(audit_flag == '01', 1, 0),
+  mutate(audit_n = if_else(audit_flag == '01', 1, 0),
          # failed audit and immediate recall
          recall_n = if_else(audit_result == '02' & 
                               audit_outcome == '01', 1, 0),
@@ -244,13 +241,14 @@ extract_audit <- extract %>%
                                           is.na(audit_outcome) ~ 0, TRUE ~ 0))
 
 # below is a legacy filter based on headers in Spring Excel templates from before Autumn '23 (i.e. reported dates were 1 April - 31 Dec)
-#  PM March 2025 - it is unclear what I am supposed to do here
+# to allow 3 months of follow-up time for filling in QA information, date_screen filter applied in spring process.
+# Autumn data already has >3 months follow-up from end of FY to extract at 1 Sept.
 
-eval_seasonal_diff(season,
-                   {extract_audit <- extract_audit |> 
-                     filter(date_screen <= dmy(paste0("31-12-"), substr(kpi_report_years[3], 1, 4)))}, # spring
-                   {"No additional filter required"} # autumn
-                   )
+eval_seasonal_diff(season, 
+                   {extract_audit <- extract_audit |>
+                     filter(date_screen <= dmy(paste0("31-12-", substr(kpi_report_years[3], 1, 4))))}, # spring 
+                   {"No additional filter required"} # autumn 
+                  )
 
 kpi_2_2 <- extract_audit %>%
   group_by(financial_year, hb_screen) %>%

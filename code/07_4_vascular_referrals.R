@@ -331,10 +331,10 @@ extract <- read_rds(extract_path) %>%
          !is.na(date_referral_true) & aaa_size >= 5.5) 
 
 table(extract$surg_method, useNA = "ifany")
-# 296 EVAR (01), 335 open (02), Mar 2023
-# 328 EVAR (01), 372 open (02), Sep 2023
-# 369 EVAR (01), 401 open (02), Mar 2024
-# 377 EVAR (01), 410 open (02), Sep 2024
+# 296 EVAR (01), 335 open (02), 2 abandoned (03) Mar 2023
+# 328 EVAR (01), 372 open (02), 2 abandoned (03) Sep 2023
+# 369 EVAR (01), 401 open (02), 2 abandoned (03) Mar 2024
+# 377 EVAR (01), 410 open (02), 2 abandoned (03) Sep 2024
 # 407 EVAR (01), 430 open (02), 2 abandoned (03) Mar 2025
 
 ###
