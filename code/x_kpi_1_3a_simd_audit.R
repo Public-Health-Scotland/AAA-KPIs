@@ -168,6 +168,8 @@ cond_form$green_cond <- createStyle(fontSize = 12, fontName = "Arial", fontColou
 year_xx <- year(cut_off_date)
 year_ww <- year_xx - 1
 year_vv <- year_xx - 2
+year_uu <- year_xx - 3
+year_yy <- year_xx + 1
 
 turn66_year_vv <- paste0("Turned 66 in year ending 31 March ", year_vv, '\n',
                          "(became eligible in year ending 31 March ", year_uu, ")")

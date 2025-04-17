@@ -37,7 +37,7 @@ gc()
 source(here::here("code/00_housekeeping.R"))
 
 rm (exclusions_path, hist_path, simd_path, hb_list, gp_prac_extract_date,
-    cutoff_date, end_current, end_date, start_date, qpmg_month, extract_date,
+    cutoff_date, end_current, end_date, start_date, qpmg_month, 
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 
