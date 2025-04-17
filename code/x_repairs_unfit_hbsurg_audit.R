@@ -474,5 +474,5 @@ showGridLines(wb, "Unfit for surgery HB of Surgery", showGridLines = FALSE)
 
 ## Save output ----
 
-query_saveWorkbook(wb, paste0(output_path, "/AAA_repairs_unfit_by_hbsurg_audit_",
+query_saveWorkbook(wb, paste0(output_path, "/audit_AAA_repairs_unfit_by_hbsurg_",
                               yymm, ".xlsx"))

@@ -636,5 +636,5 @@ showGridLines(wb, "KPI 3.2 HB Surgery", showGridLines = FALSE)
 
 ## save output ----
 
-query_saveWorkbook(wb, paste0(output_path, "/x_test_kpi3_extended_timescales.xlsx"))
+query_saveWorkbook(wb, paste0(output_path, "/audit_kpi3_extended_timescales.xlsx"))
 
