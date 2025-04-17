@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# x_kpi_3_additional_timescales.R
+# kpi_3_additional_timescales.R
 # Calum Purdie & Karen Hotopp
 # Adapted by Aoife McCarthy
 # 29/01/2025
