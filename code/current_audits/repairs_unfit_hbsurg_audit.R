@@ -1,5 +1,5 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# x_repairs_unfit_hbsurg_audit.R
+# repairs_unfit_hbsurg_audit.R
 # Aoife McCarthy
 # Adapted from 07_4_vascular_referrals.R and 08_4_unfit_for_surgery.R
 # February 2025
@@ -37,7 +37,7 @@ gc()
 source(here::here("code/00_housekeeping.R"))
 
 rm (exclusions_path, hist_path, simd_path, hb_list, gp_prac_extract_date,
-    cutoff_date, end_current, end_date, start_date, qpmg_month, extract_date,
+    cutoff_date, end_current, end_date, start_date, qpmg_month, 
     year1_end, year1_start, year2_end, year2_start, year1, year2)
 
 
@@ -474,5 +474,5 @@ showGridLines(wb, "Unfit for surgery HB of Surgery", showGridLines = FALSE)
 
 ## Save output ----
 
-query_saveWorkbook(wb, paste0(output_path, "/AAA_repairs_unfit_by_hbsurg_audit_",
+query_saveWorkbook(wb, paste0(output_path, "/audit_AAA_repairs_unfit_by_hbsurg_",
                               yymm, ".xlsx"))
