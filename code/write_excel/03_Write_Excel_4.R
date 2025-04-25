@@ -482,7 +482,7 @@ addStyle(wb, sheet = "AAA Repairs", styles$black_border_centre_12,
 if (season == "spring") {
   writeData(wb, sheet = "AAA Repairs", kpi_4_prov, 
             startRow = 26, startCol = 1)
-  addStyle(wb, sheet = "AAA Repairs", styles$orange_11,
+  addStyle(wb, sheet = "AAA Repairs", styles$black_11,
            rows = 26, cols = 1)
 }
 # data
@@ -505,7 +505,7 @@ addStyle(wb, sheet = "Unfit for surgery", styles$black_border_centre_12,
 if (season == "spring") {
   writeData(wb, sheet = "Unfit for surgery", unfit_prov, 
             startRow = 27, startCol = 1)
-  addStyle(wb, sheet = "Unfit for surgery", styles$orange_11,
+  addStyle(wb, sheet = "Unfit for surgery", styles$black_11,
            rows = 27, cols = 1)
 }
 # data
