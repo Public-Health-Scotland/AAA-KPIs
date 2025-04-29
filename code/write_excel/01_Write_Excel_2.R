@@ -721,7 +721,7 @@ addStyle(wb, "6) Surveillance", styles$black_border_centre_12,
          rows = 6, cols = 2:7, gridExpand = TRUE)
 
 if (season == "spring") {
-  writeData(wb, sheet = "KPI 1.4b", prov_data_note, 
+  writeData(wb, sheet = "6) Surveillance", prov_data_note, 
             startRow = 25, colNames = FALSE)
   addStyle(wb, "6) Surveillance", styles$black_11,
            rows = 25, cols = 1)
