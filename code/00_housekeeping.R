@@ -20,20 +20,20 @@ here::i_am("code/00_housekeeping.R")
 
 # year (YYYY) and month (MM) at time of running
 # e.g. autumn (usually september) YYYY09, spring (usually march) YYYY03
-yymm <- 202503
+yymm <- 202509
 
-season <- "spring" # options are "spring" or "autumn"
+season <- "autumn" # options are "spring" or "autumn"
 
 # date that most recent extract was downloaded
 # format: date + month e.g. 1 September
-extract_date <- "1 March"
+extract_date <- "1 September"
 
 # month in which QPMG is planned
-qpmg_month <- "May"
+qpmg_month <- "October"
 
 # date on which GP extract was refreshed and downloaded
 if(season == "autumn") {
-  gp_prac_extract_date <- "10 October"
+  gp_prac_extract_date <- "9 September"
 }
 
 
