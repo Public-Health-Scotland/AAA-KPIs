@@ -90,7 +90,9 @@ kpi_3_1 <- theme4_3 |>
 
 # Match Excel tables
 kpi_3_1 <- kpi_3_1 |> 
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |>
+  mutate(hbres = fct_relevel(as.factor(hbres), "Scotland") ) |>
+  arrange(hbres)
 
 ## KPI 3.2 HB of Residence ----
 kpi_3_2_res <- theme4_3 |> 
@@ -100,7 +102,9 @@ kpi_3_2_res <- theme4_3 |>
 
 # Match Excel tables
 kpi_3_2_res <- kpi_3_2_res |> 
-  pivot_wider(names_from = FY_kpi_group, values_from = value)
+  pivot_wider(names_from = FY_kpi_group, values_from = value) |>
+  mutate(hbres = fct_relevel(as.factor(hbres), "Scotland") ) |>
+  arrange(hbres)
 
 ## KPI 3.2 HB of Surgery ----
 kpi_3_2_surg <- theme4_3 |> 
