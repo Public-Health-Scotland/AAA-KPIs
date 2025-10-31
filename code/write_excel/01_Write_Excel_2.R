@@ -22,8 +22,8 @@ library(stringr)
 library(openxlsx)
 library(lubridate)
 library(forcats)
+library(ggplot2)
 library(phsaaa) # devtools::install_github("Public-Health-Scotland/phsaaa")
-
 rm(list=ls())
 gc()
 
@@ -202,7 +202,7 @@ kpi_1.3a_hb_chart <- kpi_1.3a_hb %>%
   ) %>% 
   mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`)
 
-#kpi 1.3b simd comparisson data 
+#kpi 1.3b simd comparison data 
 kpi_1.3b_hb_chart <- kpi_1.3b_hb %>% 
   select(hbres, simd, `2024/25_KPI 1.3b HB SIMD_uptake_p`) %>% 
   filter(!simd %in% c("Unknown", "Total")) %>%
@@ -211,7 +211,133 @@ kpi_1.3b_hb_chart <- kpi_1.3b_hb %>%
     values_from = `2024/25_KPI 1.3b HB SIMD_uptake_p`
   ) %>% 
   mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`)
-           
+
+#plot 1.3a
+
+
+# Pivot to long for plotting
+kpi_long_1.3a <- kpi_1.3a_hb_chart %>%
+  pivot_longer(
+    cols = c(`1 (most deprived)`, `2`, `3`, `4`, `5 (least deprived)`),
+    names_to = "SIMD_quintile",
+    values_to = "coverage"
+  ) %>%
+  mutate(SIMD_quintile = factor(SIMD_quintile,
+                                levels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)")))
+
+# Custom colors
+simd_colors <- c(
+  "1 (most deprived)" = "#12436D",  # Dark blue
+  "2" = "#28A197",                  # Turquoise
+  "3" = "#801650",                  # Pink
+  "4" = "#F46A25",                  # Orange
+  "5 (least deprived)" = "#3F085C"  # Dark purple
+)
+
+#bar chart
+p <- ggplot(kpi_long_1.3a, aes(x = hbres, y = coverage, fill = SIMD_quintile)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  scale_fill_manual(values = simd_colors) +
+  scale_x_discrete(expand = expansion(add = 0.5)) +
+  labs(title = "Eligible Population Tested Before 66y3m by SIMD",
+       x = "Health Board", y = "Percentage (%)", fill = "SIMD Quintile") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))  # center title
+
+# Bracket with ticks and text
+p + 
+  # Horizontal bracket line
+  geom_segment(data = kpi_1.3a_hb_chart,
+               aes(x = as.numeric(factor(hbres)) - 0.45,
+                   xend = as.numeric(factor(hbres)) + 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 5),
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Left tick
+  geom_segment(data = kpi_1.3a_hb_chart,
+               aes(x = as.numeric(factor(hbres)) - 0.45,
+                   xend = as.numeric(factor(hbres)) - 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 3),  # tick goes down
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Right tick
+  geom_segment(data = kpi_1.3a_hb_chart,
+               aes(x = as.numeric(factor(hbres)) + 0.45,
+                   xend = as.numeric(factor(hbres)) + 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 3),
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Text above bracket
+  geom_text(data = kpi_1.3a_hb_chart,
+            aes(x = hbres,
+                y = `5 (least deprived)` + 8,  # move text higher
+                label = round(SIMD_5_minus_1, 1)),
+            inherit.aes = FALSE, color = "black", fontface = "bold", size = 4)
+``
+
+#plot 1.3b
+# Pivot to long for plotting
+kpi_long_1.3b <- kpi_1.3b_hb_chart %>%
+  pivot_longer(
+    cols = c(`1 (most deprived)`, `2`, `3`, `4`, `5 (least deprived)`),
+    names_to = "SIMD_quintile",
+    values_to = "coverage"
+  ) %>%
+  mutate(SIMD_quintile = factor(SIMD_quintile,
+                                levels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)")))
+
+# Custom colors
+simd_colors <- c(
+  "1 (most deprived)" = "#12436D",  # Dark blue
+  "2" = "#28A197",                  # Turquoise
+  "3" = "#801650",                  # Pink
+  "4" = "#F46A25",                  # Orange
+  "5 (least deprived)" = "#3F085C"  # Dark purple
+)
+
+# Bar chart
+p <- ggplot(kpi_long_1.3b, aes(x = hbres, y = coverage, fill = SIMD_quintile)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  scale_fill_manual(values = simd_colors) +
+  scale_x_discrete(expand = expansion(add = 0.5)) +
+  labs(title = "Eligible Population Tested Before 66y3m by SIMD",
+       x = "Health Board", y = "Percentage (%)", fill = "SIMD Quintile") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))  # center title
+
+# Bracket with ticks and text
+p + 
+  # Horizontal bracket line
+  geom_segment(data = kpi_1.3b_hb_chart,
+               aes(x = as.numeric(factor(hbres)) - 0.45,
+                   xend = as.numeric(factor(hbres)) + 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 5),
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Left tick
+  geom_segment(data = kpi_1.3b_hb_chart,
+               aes(x = as.numeric(factor(hbres)) - 0.45,
+                   xend = as.numeric(factor(hbres)) - 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 3),  # tick goes down
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Right tick
+  geom_segment(data = kpi_1.3b_hb_chart,
+               aes(x = as.numeric(factor(hbres)) + 0.45,
+                   xend = as.numeric(factor(hbres)) + 0.45,
+                   y = `5 (least deprived)` + 5,
+                   yend = `5 (least deprived)` + 3),
+               inherit.aes = FALSE, color = "black", size = 1) +
+  # Text above bracket
+  geom_text(data = kpi_1.3b_hb_chart,
+            aes(x = hbres,
+                y = `5 (least deprived)` + 8,  # move text higher
+                label = round(SIMD_5_minus_1, 1)),
+            inherit.aes = FALSE, color = "black", fontface = "bold", size = 4)
+
+
 ## KPI 1.3a year2 ----
 kpi_1.3a_y2 <- eval_seasonal_diff(
   season,
