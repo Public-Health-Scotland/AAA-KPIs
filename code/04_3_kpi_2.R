@@ -604,7 +604,12 @@ qa_reason <- crossing(hb_tibble, kpi_report_years) %>%
 qa_reason$value[is.nan(qa_reason$value)] <- NA
 
 rm(qa_standard_sum, qa_standard_totals)  
-  
+
+#Run in fall
+#x <- qa_standard |> 
+  #filter(is.na(audit_fail_1) & is.na(audit_fail_2) & is.na(audit_fail_3) & is.na(audit_fail_4) & is.na(audit_fail_5)) |> 
+  #count(audit_fail_reason_text) |> 
+  #adorn_totals(where = "row", name = "total no detail")  
 
 ### QA standard not met DETAIL ----
 ## Screens that did not meet the quality assurance standard by detailed reasons
@@ -952,6 +957,7 @@ kpi_2_full <- bind_rows(kpi_2_full, kpi_2_subgroup) |>
 
 viz_kpi_finyear(kpi_2_full)
 # note "table 4: self-referral" should only be in most recent FY as is cumulative
+
 
 ## Save data block
 
