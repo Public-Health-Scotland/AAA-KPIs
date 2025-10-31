@@ -192,6 +192,26 @@ kpi_1.3a_hb <- theme2 |>
   # match Excel output
   pivot_wider(names_from = FY_kpi_group, values_from = value)
 
+#kpi 1.3a simd comparison data 
+kpi_1.3a_hb_chart <- kpi_1.3a_hb %>% 
+  select(hbres, simd, `2024/25_KPI 1.3a HB SIMD_coverage_p`) %>% 
+  filter(!simd %in% c("Unknown", "Total")) %>%
+  pivot_wider(
+    names_from = simd,
+    values_from = `2024/25_KPI 1.3a HB SIMD_coverage_p`
+  ) %>% 
+  mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`)
+
+#kpi 1.3b simd comparisson data 
+kpi_1.3b_hb_chart <- kpi_1.3b_hb %>% 
+  select(hbres, simd, `2024/25_KPI 1.3b HB SIMD_uptake_p`) %>% 
+  filter(!simd %in% c("Unknown", "Total")) %>%
+  pivot_wider(
+    names_from = simd,
+    values_from = `2024/25_KPI 1.3b HB SIMD_uptake_p`
+  ) %>% 
+  mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`)
+           
 ## KPI 1.3a year2 ----
 kpi_1.3a_y2 <- eval_seasonal_diff(
   season,
