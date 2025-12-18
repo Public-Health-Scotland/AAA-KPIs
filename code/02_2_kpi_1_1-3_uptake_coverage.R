@@ -266,10 +266,7 @@ rm(pc_simd, simd_path)
 
 
 ##!! Is it possible to add KPI 1.2a/b prisoners??
-## (KPI1.2a/b prisoners is fall QPMG only)
-
-
-
+## (KPI1.2a/b prisoners is fall QPMG only
 
 ### Step 4: Save out basefiles ----
 query_write_rds(invite_uptake, paste0(temp_path, "/1_2_coverage_basefile.rds"))
@@ -505,6 +502,7 @@ rm(kpi_1_1, kpi_1_2a, kpi_1_2b, kpi_1_3a, kpi_1_3a_hb, kpi_1_3b, kpi_1_3b_hb)
 
 ## Full records (currently only from 2020/21; need to add historical)
 hist_db <- read_rds(paste0(hist_path,"/aaa_kpi_historical_theme2.rds"))
+         
 
 table(hist_db$kpi, hist_db$fin_year)
 table(kpi_summary$kpi, kpi_summary$fin_year)
