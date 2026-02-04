@@ -20,7 +20,7 @@ here::i_am("code/00_housekeeping.R")
 
 # year (YYYY) and month (MM) at time of running
 # e.g. autumn (usually september) YYYY09, spring (usually march) YYYY03
-yymm <- 202509
+yymm <- 202512
 
 season <- "autumn" # options are "spring" or "autumn"
 
@@ -78,7 +78,7 @@ temp_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
 hist_path <- "/PHI_conf/AAA/Topics/Screening/KPI/historical"
 
 simd_path <- paste0("/conf/linkage/output/lookups/Unicode/Deprivation",
-                    "/postcode_2024_2_simd2020v2.rds")
+                    "/postcode_2025_2_simd2020v2.rds")
 
 output_path <- paste0("/PHI_conf/AAA/Topics/Screening/KPI/", yymm,
                       "/output")

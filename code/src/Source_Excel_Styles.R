@@ -25,6 +25,7 @@ styles$black_bold_14 <- createStyle(fontSize = 14, fontColour = "#000000",
 # bold black size 14, no wrap
 styles$black_bold_nowrap_14 <- createStyle(fontSize = 14, fontColour = "#000000",
                                     fontName = "Arial", textDecoration = "bold")
+styles$red_bold_nowrap_14 <- createStyle(fontSize = 14, fontColour = "#FF0000", fontName = "Arial", textDecoration = "bold" )
 # bold black 12, wrapped
 styles$black_bold_12 <- createStyle(fontSize = 12, fontColour = "#000000",
                              fontName = "Arial", textDecoration = "bold",
@@ -65,11 +66,29 @@ styles$black_11 <- createStyle(fontSize = 11, fontColour = "#000000",
 # black without wrapping 11
 styles$black_nowrap_11 <- createStyle(fontSize = 11, fontColour = "#000000",
                                fontName = "Arial")
+# black without warping 12 center
+styles$black_nowrap_12_center <- createStyle(fontSize = 12, fontColour = "#000000",
+                                      fontName = "Arial", halign = "center", valign = "center",  wrapText = TRUE)
+
+#black 12 bold, no wrap
+styles$black_bold_nowrap_12 <- createStyle(fontSize = 12, fontColour = "#000000", textDecoration = "bold",
+                                    fontName = "Arial", wrapText = FALSE, halign = "center", valign = "center")
 # black complete border 11, no wrap
 styles$black_border_11 <- createStyle(fontSize = 11, fontName = "Arial",
                                       fontColour = "#000000", border = "TopBottomLeftRight",
                                       halign = "center", valign = "bottom")
-
+styles$black_12_center_leftright <- createStyle(fontSize = 12, fontColour = "#000000",
+                                                fontName = "Arial", halign = "center", valign = "center", 
+                                                wrapText = TRUE, border = c("left", "right"))
+styles$black_12_center_left <- createStyle(fontSize = 12, fontColour = "#000000",
+                                                fontName = "Arial", halign = "center", valign = "center", 
+                                                wrapText = TRUE, border = "left")
+styles$black_12_center_left_bold <- createStyle(fontSize = 12, fontColour = "#000000", textDecoration = "bold",
+                                           fontName = "Arial", halign = "center", valign = "center", 
+                                           wrapText = TRUE, border = "left")
+styles$black_12_center_leftright_bold <- createStyle(fontSize = 12, fontColour = "#000000", textDecoration = "bold",
+                                                fontName = "Arial", halign = "center", valign = "center", 
+                                                wrapText = TRUE, border = c("left", "right"))
 # orange size 11, wrapped
 styles$orange_11 <- createStyle(fontSize = 11, fontName = "Arial", 
                                 fontColour = "#ff9f00", wrapText = TRUE)
@@ -119,11 +138,17 @@ styles$b_left <- createStyle(border = "left")
 styles$b_top <- createStyle(border = "top")
 styles$b_left_bold <- createStyle(border = "left", borderStyle = "medium")
 styles$b_top_bold <- createStyle(border = "top", borderStyle = "medium")
+styles$b_bottom_bold <- createStyle(border = "bottom", borderStyle = "medium")
+styles$b_left_bold <- createStyle(border = "left", borderStyle = "medium")
+styles$all_border_bold <- createStyle(border = c("top", "bottom", "left", "right"), borderStyle = "medium")
+styles$leftrighttop_border_bold <- createStyle(border = c("top", "left", "right"), borderStyle = "medium")
 ### aligning
 styles$a_middle <- createStyle(valign = "center")
 styles$a_right <- createStyle(halign = "right")
 styles$a_centre <- createStyle(halign = "center")
 styles$a_left <- createStyle(halign = "left")
+
+wrap_style <- createStyle(wrapText = TRUE)
 
 
 # number formats ----------------------------------------------------------
