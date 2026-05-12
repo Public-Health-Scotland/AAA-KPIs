@@ -529,7 +529,7 @@ write_kpi4_add <- function(workbook, sheet_name, season_var, financial_years, da
   addStyle(workbook, sheet_name, styles$b_left_bold,
            rows = ref$head_C:(ref$src_C - 1), cols = c(1, 2, ncol(data_C) + 1), stack = T, gridExpand = T) # left bold
   addStyle(workbook, sheet_name, styles$b_left,
-           rows = (ref$head_C + 1):(ref$src_C - 1), cols = ncol(data_B), stack = T, gridExpand = T) # left
+           rows = (ref$head_C + 1):(ref$src_C - 1), cols = ncol(data_C), stack = T, gridExpand = T) # left
   addStyle(workbook, sheet_name, styles$b_top_bold,
            rows = c(ref$head_C, ref$head_C + 1, ref$start_C, ref$src_C - 1, ref$src_C), cols = 1:ncol(data_C), stack = T, gridExpand = T) # top bold
  
