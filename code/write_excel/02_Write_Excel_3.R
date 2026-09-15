@@ -389,7 +389,7 @@ qa_detail_note3 <- paste0("3. Over the 3 years presented, there were ", qa_detai
 
 ### workbook ----
 wb <- loadWorkbook(paste0(template_path, "/3_Quality Assurance_",
-                          season, ".xlsx"))
+                          season, "_rev.xlsx"))
 
 ## Table of Contents ----
 # notes

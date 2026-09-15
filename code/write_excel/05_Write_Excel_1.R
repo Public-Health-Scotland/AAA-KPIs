@@ -114,7 +114,7 @@ kpi_4 <- kpi_4 %>% select(-c(kpi, surg_method, group)) %>%
 
 # load workbook
 wb <- loadWorkbook(
-  paste0(template_path, "/1_Scotland KPI Summary_", season, ".xlsx")
+  paste0(template_path, "/1_Scotland KPI Summary_", season, "_rev.xlsx")
   )
 
 # Notes and headers

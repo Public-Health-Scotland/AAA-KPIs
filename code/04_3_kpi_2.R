@@ -606,10 +606,10 @@ qa_reason$value[is.nan(qa_reason$value)] <- NA
 rm(qa_standard_sum, qa_standard_totals)  
 
 #Run in fall
-#x <- qa_standard |> 
-  #filter(is.na(audit_fail_1) & is.na(audit_fail_2) & is.na(audit_fail_3) & is.na(audit_fail_4) & is.na(audit_fail_5)) |> 
-  #count(audit_fail_reason_text) |> 
-  #adorn_totals(where = "row", name = "total no detail")  
+x <- qa_standard |> 
+  filter(is.na(audit_fail_1) & is.na(audit_fail_2) & is.na(audit_fail_3) & is.na(audit_fail_4) & is.na(audit_fail_5)) |> 
+  count(audit_fail_reason_text) |> 
+  adorn_totals(where = "row", name = "total no detail")  
 
 ### QA standard not met DETAIL ----
 ## Screens that did not meet the quality assurance standard by detailed reasons
