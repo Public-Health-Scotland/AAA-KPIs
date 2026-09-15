@@ -185,9 +185,9 @@ kpi_1.3a <- kpi_1.3a[, -c(9:12)]
 
 # 1.3a slope index of inequality
 kpi_1.3a_slope <- kpi_1.3a %>% 
-  select(hbres, simd, `2024/25_KPI 1.3a Scotland SIMD_coverage_p`, `2024/25_KPI 1.3a Scotland SIMD_cohort_n` ) %>% 
+  select(hbres, simd, `2025/26_KPI 1.3a Scotland SIMD_coverage_p`, `2025/26_KPI 1.3a Scotland SIMD_cohort_n` ) %>% 
   filter(!simd %in% c("Unknown", "Total")) %>%
-  rename(denominator = `2024/25_KPI 1.3a Scotland SIMD_cohort_n`, HB = hbres, SIMD = simd , percent_uptake = `2024/25_KPI 1.3a Scotland SIMD_coverage_p`)
+  rename(denominator = `2025/26_KPI 1.3a Scotland SIMD_cohort_n`, HB = hbres, SIMD = simd , percent_uptake = `2025/26_KPI 1.3a Scotland SIMD_coverage_p`)
 
 kpi_1.3a_cum <- kpi_1.3a_slope %>%
   group_by(HB) %>%
@@ -215,7 +215,7 @@ slopes_1.3a<- results_1.3a %>%
   filter(term == "cum_denominator_prop") %>% 
   arrange(desc(HB == "Scotland"), HB) %>% 
   select(estimate) %>% 
-  mutate(estimate = format(estimate, nsmall = 1))
+  mutate(estimate = format(round(estimate, 1), nsmall = 1))
 
 slopes_1.3a_chart <- results_1.3a %>% 
   filter(term == "cum_denominator_prop") %>% 
@@ -224,11 +224,11 @@ slopes_1.3a_chart <- results_1.3a %>%
 
 # Chart 1.3a inequality 
 kpi_1.3a_chart <- kpi_1.3a %>% 
-  select(hbres, simd, `2024/25_KPI 1.3a Scotland SIMD_coverage_p`) %>% 
+  select(hbres, simd, `2025/26_KPI 1.3a Scotland SIMD_coverage_p`) %>% 
   filter(!simd %in% c("Unknown")) %>%
   pivot_wider(
     names_from = simd,
-    values_from = `2024/25_KPI 1.3a Scotland SIMD_coverage_p`
+    values_from = `2025/26_KPI 1.3a Scotland SIMD_coverage_p`
   ) %>% 
   mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`) %>% 
   mutate(`SIMD_5_minus_1` = round(`SIMD_5_minus_1`,1)) %>% 
@@ -284,13 +284,13 @@ p1a <- ggplot(kpi_long_1.3a, aes(x = hbres, y = coverage, , fill = SIMD_quintile
        x = "Health Board", y = "Percentage (%)", fill = "SIMD Quintile") +
   theme_minimal() +
   # Two black horizontal lines with different dash styles
-  geom_hline(aes(yintercept = 75, linetype = "Essential"), color = "black", size = 1) +
-  geom_hline(aes(yintercept = 85, linetype = "Desirable"), color = "black", size = 1) +
+  geom_hline(aes(yintercept = 75, linetype = "Essential"), color = "#FAA73F", size = 1) +
+  geom_hline(aes(yintercept = 85, linetype = "Desirable"), color = "#3A9948", size = 1) +
   
   # Custom legend for the lines
   scale_linetype_manual(
     name = "Thresholds",
-    values = c("Essential" = "dashed", "Desirable" = "dotdash")
+    values = c("Essential" = "dashed", "Desirable" = "dashed")
   )+
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5, color = "black"),
         axis.title.y = element_text(angle = 0, hjust = 0.5, size = 8, vjust = 0.5, color = "black"),
@@ -402,9 +402,9 @@ kpi_1.3b_hb <- theme2 |>
 
 # 1.3b slope index of inequality
 kpi_1.3b_slope <- kpi_1.3b %>% 
-  select(hbres, simd, `2024/25_KPI 1.3b Scotland SIMD_uptake_p`, `2024/25_KPI 1.3b Scotland SIMD_offer_n` ) %>% 
+  select(hbres, simd, `2025/26_KPI 1.3b Scotland SIMD_uptake_p`, `2025/26_KPI 1.3b Scotland SIMD_offer_n` ) %>% 
   filter(!simd %in% c("Unknown", "Total")) %>%
-  rename(denominator = `2024/25_KPI 1.3b Scotland SIMD_offer_n`, HB = hbres, SIMD = simd , percent_uptake = `2024/25_KPI 1.3b Scotland SIMD_uptake_p`)
+  rename(denominator = `2025/26_KPI 1.3b Scotland SIMD_offer_n`, HB = hbres, SIMD = simd , percent_uptake = `2025/26_KPI 1.3b Scotland SIMD_uptake_p`)
 
 kpi_1.3b_cum <- kpi_1.3b_slope %>%
   group_by(HB) %>%
@@ -432,7 +432,7 @@ slopes_1.3b<- results_1.3b%>%
   filter(term == "cum_denominator_prop") %>% 
   arrange(desc(HB == "Scotland"), HB) %>% 
   select(estimate) %>% 
-  mutate(estimate = format(estimate, nsmall = 1)) 
+  mutate(estimate = format(round(estimate, 1), nsmall = 1))
 
 slopes_1.3b_chart <- results_1.3b %>% 
   filter(term == "cum_denominator_prop") %>% 
@@ -442,11 +442,11 @@ slopes_1.3b_chart <- results_1.3b %>%
 
 #kpi 1.3b simd comparison data 
 kpi_1.3b_chart <- kpi_1.3b %>% 
-  select(hbres, simd, `2024/25_KPI 1.3b Scotland SIMD_uptake_p`) %>% 
+  select(hbres, simd, `2025/26_KPI 1.3b Scotland SIMD_uptake_p`) %>% 
   filter(!simd %in% c("Unknown")) %>%
   pivot_wider(
     names_from = simd,
-    values_from = `2024/25_KPI 1.3b Scotland SIMD_uptake_p`
+    values_from = `2025/26_KPI 1.3b Scotland SIMD_uptake_p`
   ) %>% 
   mutate(`SIMD_5_minus_1` = `5 (least deprived)` - `1 (most deprived)`) %>% 
   mutate(`SIMD_5_minus_1` = round(`SIMD_5_minus_1`, 1)) %>% 
@@ -502,13 +502,13 @@ p1b <- ggplot(kpi_long_1.3b, aes(x = hbres, y = coverage, , fill = SIMD_quintile
        x = "Health Board", y = "Percentage (%)", fill = "SIMD Quintile") +
   theme_minimal() +
   # Two black horizontal lines with different dash styles
-  geom_hline(aes(yintercept = 75, linetype = "Essential"), color = "black", size = 1) +
-  geom_hline(aes(yintercept = 85, linetype = "Desirable"), color = "black", size = 1) +
+  geom_hline(aes(yintercept = 75, linetype = "Essential"), color = "#FAA73F", size = 1) +
+  geom_hline(aes(yintercept = 85, linetype = "Desirable"), color = "#3A9948", size = 1) +
   
   # Custom legend for the lines
   scale_linetype_manual(
     name = "Thresholds",
-    values = c("Essential" = "dashed", "Desirable" = "dotdash")
+    values = c("Essential" = "dashed", "Desirable" = "dashed")
   )+
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5, color = "black"),
         axis.title.y = element_text(angle = 0, hjust = 0.5, size = 8, vjust = 0.5, color = "black"),
@@ -956,7 +956,7 @@ writeData(wb, sheet = "KPI 1.3a inequality", "Management Information", startCol 
 addStyle(wb, sheet = "KPI 1.3a inequality", styles$red_bold_nowrap_1, cols = 1, rows = 1)
 writeData(wb, sheet = "KPI 1.3a inequality", "Chart 1:  Percentage of eligible population who are tested before age 66 and 3 months by Scottish Index of Multiple Deprivation (SIMD) quintile", startCol = 1, startRow = 30)
 addStyle(wb, sheet = "KPI 1.3a inequality", styles$black_bold_nowrap_14, cols = 1, rows = 30)
-writeData(wb, sheet = "KPI 1.3a inequality", "Chart 2: Percentage of eligible population who are tested before age 66 and 3 months -  Difference between SIMD 5 and SIMD 1", startCol = 1, startRow = 63)
+writeData(wb, sheet = "KPI 1.3a inequality", "Chart 2: Percentage of eligible population who are tested before age 66 and 3 months -  Difference between SIMD 5 (Most Deprived) and SIMD 1 (Least Deprived)", startCol = 1, startRow = 63)
 addStyle(wb, sheet = "KPI 1.3a inequality", styles$black_bold_nowrap_14, cols = 1, rows = 63)
 writeData(wb, sheet = "KPI 1.3a inequality", "Chart 3: Percentage of eligible population who are tested before age 66 and 3 months -  Slope Index of inequality", startCol = 1, startRow = 96)
 addStyle(wb, sheet = "KPI 1.3a inequality", styles$black_bold_nowrap_14, cols = 1, rows = 96)
@@ -1010,7 +1010,7 @@ writeData(wb, sheet = "KPI 1.3b inequality", "Management Information", startCol 
 addStyle(wb, sheet = "KPI 1.3b inequality", styles$red_bold_nowrap_1, cols = 1, rows = 1)
 writeData(wb, sheet = "KPI 1.3b inequality", "Chart 1:  Percentage of men offered screening before age 66 who are tested before age 66 and 3 months by Scottish Index of Multiple Deprivation (SIMD) quintile", startCol = 1, startRow = 30)
 addStyle(wb, sheet = "KPI 1.3b inequality", styles$black_bold_nowrap_14, cols = 1, rows = 30)
-writeData(wb, sheet = "KPI 1.3b inequality", "Chart 2: Percentage of men offered screening before age 66 who are tested before age 66 and 3 months- Difference between SIMD 5-1", startCol = 1, startRow = 63)
+writeData(wb, sheet = "KPI 1.3b inequality", "Chart 2: Percentage of men offered screening before age 66 who are tested before age 66 and 3 months- Difference between SIMD 5 (Most Derived) and SIMD 1 (Least Deprived)", startCol = 1, startRow = 63)
 addStyle(wb, sheet = "KPI 1.3b inequality", styles$black_bold_nowrap_14, cols = 1, rows = 63)
 writeData(wb, sheet = "KPI 1.3b inequality", "Chart 3: Percentage of men offered screening before age 66 who are tested before age 66 and 3 months - Slope Index of inequality", startCol = 1, startRow = 96)
 addStyle(wb, sheet = "KPI 1.3b inequality", styles$black_bold_nowrap_14, cols = 1, rows = 96)

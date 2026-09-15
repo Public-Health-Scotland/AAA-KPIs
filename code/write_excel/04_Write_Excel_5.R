@@ -148,7 +148,7 @@ screened_year_xx <- paste0("Screened in year ending 31 March ", year_xx)
 screened_year_cum <- paste0("Cumulative total from implementation to 31 March ", year_xx)
 
 ## Write to workbook ----
-wb <- loadWorkbook(paste0(template_path, "/5_Results.xlsx"))
+wb <- loadWorkbook(paste0(template_path, "/5_Results_rev.xlsx"))
 
 rm(theme_5, temp_path)
 
